@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\RentACar.Application\RentACar.Application.csproj" />
-    <ProjectReference Include="..\..\Core\RentACar.Domain\RentACar.Domain.csproj" />
-  </ItemGroup>
+  <ProjectReference Include="..\..\Core\RentACar.Application\RentACar.Application.csproj" />
+  <ProjectReference Include="..\..\Core\RentACar.Domain\RentACar.Domain.csproj" />
+</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />

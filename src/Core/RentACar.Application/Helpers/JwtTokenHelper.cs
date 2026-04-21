@@ -6,49 +6,76 @@ using System.Text;
 
 namespace RentACar.Application.Helpers
 {
-    public static class JwtTokenHelper
+     public static class JwtTokenHelper
     {
-        public static string GenerateToken(IConfiguration configuration, int userId, string email, string fullName, string role, int? companyId)
+        // Config değerleri (appsettings.json’dan okunabilir hale getirilebilir)
+        private static readonly string SecretKey = "RentACar_Secret_Key_2026_Very_Long_String_Here"; // bu kısımda proje geliştime aşamasında old. için scretkey yazımı  statik ve görünür oldu  eğer daha güvenli hale getirmek istersek DI ile program.cs içindeki Jwt configrasyonu ile düzenleye biliriz 
+        private static readonly string Issuer = "RentACar"; //yayıncı
+        private static readonly string Audience = "RentACarClient"; //izleyici
+
+        // Token üret
+        public static string GenerateToken(int userId, string email, string fullName, int companyId, List<string> roles, int expireMinutes = 1440)
         {
-            var jwtSettings = configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings["SecretKey"];
-            var issuer = jwtSettings["Issuer"];
-            var audience = jwtSettings["Audience"];
-
-            // Güvenli okuma: Eğer ExpiryInMinutes bulunamazsa varsayılan 60 dakika kullan
-            var expiryMinutesStr = jwtSettings["ExpiryInMinutes"];
-            int expiryMinutes = !string.IsNullOrEmpty(expiryMinutesStr) ? Convert.ToInt32(expiryMinutesStr) : 60;
-
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-        new Claim(ClaimTypes.Email, email),
-        new Claim(ClaimTypes.Name, fullName),
-        new Claim(ClaimTypes.Role, role)
-    };
-
-            if (companyId.HasValue)
             {
-                claims.Add(new Claim("CompanyId", companyId.Value.ToString()));
-            }
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                NotBefore = DateTime.UtcNow, // Başlangıç zamanını açıkça belirtin
-                Expires = DateTime.UtcNow.AddMinutes(expiryMinutes), // Bitiş zamanı
-                Issuer = issuer,
-                Audience = audience,
-                SigningCredentials = credentials
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                //new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Name, email), 
+                new Claim("fullName", fullName),   
+                new Claim("companyId", companyId.ToString())
             };
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
+            foreach (var role in roles)
+                claims.Add(new Claim(ClaimTypes.Role, role));
 
-            return tokenHandler.WriteToken(token);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: Issuer,
+                audience: Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(expireMinutes),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        // Token doğrula
+        public static ClaimsPrincipal? ValidateToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(SecretKey);
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = Issuer,
+                    ValidAudience = Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ClockSkew = TimeSpan.Zero // expiration toleransı
+                }, out _);
+
+                return principal;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        // Token süresi dolmuş mu?
+        public static bool IsExpired(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+            return jwt.ValidTo < DateTime.UtcNow;
         }
     }
 }

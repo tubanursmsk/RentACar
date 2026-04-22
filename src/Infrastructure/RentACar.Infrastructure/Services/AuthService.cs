@@ -72,27 +72,44 @@ public class AuthService : IAuthService
         return ApiResponse<int>.SuccessResult(user.Id, "Şirket ve yönetici kaydı başarılı.");
     }
 
-    public async Task<ApiResponse<int>> RegisterCustomerAsync(RegisterDto dto)
+   public async Task<ApiResponse<int>> RegisterCustomerAsync(RegisterDto dto)
+{
+    // 1. Email kontrolü
+    if (await _unitOfWork.Repository<User>().AnyAsync(u => u.Email == dto.Email))
+        return ApiResponse<int>.ErrorResult("Email zaten kayıtlı.");
+
+    // 2. User nesnesini oluştur (Burada Phone alanını entity'e aktarmayı unutma)
+    var user = new User
     {
-        if (await _unitOfWork.Repository<User>().AnyAsync(u => u.Email == dto.Email))
-            return ApiResponse<int>.ErrorResult("Email zaten kayıtlı.");
+        FirstName = dto.FirstName,
+        LastName = dto.LastName,
+        Email = dto.Email,
+        Phone = dto.Phone, // DTO'da Phone alanı olduğundan emin ol
+        PasswordHash = PasswordHasher.HashPassword(dto.Password),
+        Role = "Customer",
+        CompanyId = null,
+        FullAddress = "" // Varsa DTO'dan al, yoksa boş geç
+    };
 
-        var user = new User
-        {
-            FirstName = dto.FirstName,
-            LastName = dto.LastName,
-            Email = dto.Email,
-            PasswordHash = PasswordHasher.HashPassword(dto.Password),
-            Role = "Customer",
-            CompanyId = null
-        };
+    await _unitOfWork.Repository<User>().AddAsync(user);
+    await _unitOfWork.SaveChangesAsync(); // User ID'sinin oluşması için kaydediyoruz
 
-        await _unitOfWork.Repository<User>().AddAsync(user);
-        await _unitOfWork.SaveChangesAsync();
+    // 3. KRİTİK ADIM: Customer tablosuna kayıt oluştur
+    var customer = new Customer
+    {
+        UserId = user.Id, 
+        IdentityNumber = "", 
+        Phone = dto.Phone, 
+        DateOfBirth = DateTime.Now.AddYears(-18), 
+        FindeksScore = 0 // Başlangıç puanı
+    };
+    
 
-        return ApiResponse<int>.SuccessResult(user.Id, "Kayıt başarılı.");
-    }
+    await _unitOfWork.Repository<Customer>().AddAsync(customer);
+    await _unitOfWork.SaveChangesAsync();
 
+    return ApiResponse<int>.SuccessResult(user.Id, "Müşteri kaydı başarıyla oluşturuldu.");
+}
     public async Task<ApiResponse<bool>> ChangePasswordAsync(ChangePasswordDto dto)
     {
         var user = await _unitOfWork.Repository<User>().GetByIdAsync(dto.UserId);

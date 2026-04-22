@@ -51,11 +51,27 @@ public class AppDbContext : DbContext
             .HasForeignKey(r => r.DropOffLocationId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Car -> CurrentLocation İlişkisi (İleride hata almamak için bunu da ekleyelim)
+        // Car -> CurrentLocation İlişkisi 
         modelBuilder.Entity<Car>()
             .HasOne(c => c.CurrentLocation)
             .WithMany()
             .HasForeignKey(c => c.CurrentLocationId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Tüm Entity'lerdeki DateTime alanlarını Türkiye saatine (UTC+3) göre ayarla
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var properties = entityType.ClrType.GetProperties()
+                .Where(p => p.PropertyType == typeof(DateTime) || p.PropertyType == typeof(DateTime?));
+
+            foreach (var property in properties)
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(property.Name)
+                    .HasDefaultValueSql("DATEADD(HOUR, 3, GETUTCDATE())");
+            }
+        }
     }
+
+
 }

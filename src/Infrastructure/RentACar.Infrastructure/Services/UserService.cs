@@ -19,8 +19,6 @@ public class UserService : IUserService
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
-
-    // SAYFALAMA TEST METODU
     public async Task<ApiResponse<PaginationModel<UserDto>>> GetPagedUsersAsync(int pageNumber, int pageSize)
     {
         var pagedUsers = await _unitOfWork.Repository<User>().GetPagedAsync(pageNumber, pageSize, u => !u.IsDeleted);

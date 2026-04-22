@@ -43,6 +43,9 @@ namespace RentACar.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
@@ -68,6 +71,9 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
@@ -169,6 +175,9 @@ namespace RentACar.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
                     b.Property<string>("TaxNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -205,9 +214,12 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
@@ -247,6 +259,9 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
@@ -360,6 +375,9 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");

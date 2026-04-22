@@ -5,43 +5,38 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using RentACar.WebApi.Configurations;
+using RentACar.Application.Mappings;
+using Microsoft.AspNetCore.Mvc;
+using RentACar.Application.DTOs.Responses;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Katman Servislerini Kaydet (Application & Infrastructure)
+//Katman Servisleri
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
-// 2. Controller ve JSON Ayarları
+//Controller ve JSON Ayarları
 builder.Services.AddControllers();
 
-// 3. Swagger Yapılandırması (JWT Yetkilendirme Desteği ile)
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+//CORS Politikası
+builder.Services.AddCors(options =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "RentA-Core API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Lütfen başına 'Bearer ' ekleyerek tokenınızı giriniz. Örn: Bearer eyJhbG...",
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        BearerFormat = "JWT",
-        Scheme = "Bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-            },
-            Array.Empty<string>()
-        }
-    });
+    options.AddPolicy("AllowAngularApp",
+        policy => policy.WithOrigins("http://localhost:4200",
+                                     "http://localhost:5048") 
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials());
 });
 
-// 4. JWT Authentication Ayarları (E-ticaret projesindeki kurgun)
+//Swagger Yapılandırması
+builder.Services.AddSwaggerWithJwt();
+builder.Services.AddEndpointsApiExplorer();
+
+
+// JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!);
 
@@ -64,38 +59,43 @@ builder.Services.AddAuthentication(opt =>
     };
 });
 
-// 5. CORS Politikası (Angular bağlantısı için kritik)
-builder.Services.AddCors(options =>
+//Standart Response Formatı
+builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
-    options.AddPolicy("AllowAngularApp",
-        policy => policy.WithOrigins("http://localhost:4200") // Angular portun
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .AllowCredentials());
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value?.Errors.Count > 0)
+            .SelectMany(x => x.Value!.Errors)
+            .Select(x => x.ErrorMessage)
+            .ToList();
+
+        var message = string.Join(" ", errors);
+        var response = ApiResponse<object>.ErrorResult(message);
+        
+        return new BadRequestObjectResult(response);
+    };
 });
+
 
 var app = builder.Build();
 
-// --- HTTP Request Pipeline ---
-
-// 6. Global Exception Handling (Senin kopyaladığın middleware)
-app.UseMiddleware<GlobalExceptionHandler>();
-
+// Swagger UI Active
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Rest API v1");
+        options.RoutePrefix = string.Empty; // http://localhost:5065/ adresinden erişim için
+    });
 }
 
-app.UseHttpsRedirection();
-
-// 7. CORS kullanımı
-app.UseCors("AllowAngularApp");
-
-// 8. Auth sıralaması (Önce Authentication sonra Authorization!)
+//app.UseHttpsRedirection();
+app.UseMiddleware<GlobalExceptionHandler>();
+app.UseCors("DefaultCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

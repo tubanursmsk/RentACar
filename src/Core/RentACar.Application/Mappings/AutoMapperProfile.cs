@@ -10,13 +10,14 @@ public class AutoMapperProfiles : Profile
 {
     public AutoMapperProfiles()
     {
-        // Auth / User Mappings
+        // Auth / Register Mappings
         CreateMap<RegisterDto, User>();
         CreateMap<RegisterCompanyDto, User>();
         CreateMap<LoginDto, User>();
         CreateMap<User, AuthResponseDto>();
-        CreateMap<User, UserDto>().ReverseMap();
         
-        // Diğer Entityler (Car, Brand vb.) eklendikçe buraya mappingleri ekleyeceğiz.
+        // User Profile & Update Mappings
+        CreateMap<User, UserDto>().ReverseMap();
+        CreateMap<User, UserUpdateDto>().ReverseMap();
     }
 }

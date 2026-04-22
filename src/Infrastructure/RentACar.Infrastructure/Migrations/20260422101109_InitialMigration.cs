@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RentACar.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,7 +21,8 @@ namespace RentACar.Infrastructure.Migrations
                     DailyPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -37,7 +38,8 @@ namespace RentACar.Infrastructure.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -59,7 +61,8 @@ namespace RentACar.Infrastructure.Migrations
                     IsApproved = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -77,7 +80,8 @@ namespace RentACar.Infrastructure.Migrations
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -100,7 +104,8 @@ namespace RentACar.Infrastructure.Migrations
                     CompanyId = table.Column<int>(type: "int", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -156,12 +161,13 @@ namespace RentACar.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     IdentityNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FindeksScore = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

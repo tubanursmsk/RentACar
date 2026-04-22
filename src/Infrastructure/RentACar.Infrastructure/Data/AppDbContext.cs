@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RentACar.Domain.Entities;
+using RentACar.Domain.Models;
 
 namespace RentACar.Infrastructure.Context;
 

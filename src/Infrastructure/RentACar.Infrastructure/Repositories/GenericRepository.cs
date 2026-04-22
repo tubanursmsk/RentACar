@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RentACar.Application.Interfaces;
+using RentACar.Domain.Models;
 using RentACar.Infrastructure.Context;
 using System.Linq.Expressions;
 
@@ -29,4 +30,19 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     public void Delete(T entity) => _dbSet.Remove(entity);
 
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate) => await _dbSet.AnyAsync(predicate);
+
+    public async Task<PaginationModel<T>> GetPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? predicate = null)
+    {
+        IQueryable<T> query = _dbSet;
+        if (predicate != null) query = query.Where(predicate);
+
+        var totalCount = await query.CountAsync();
+        var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        return new PaginationModel<T>
+        {
+            Items = items,
+            TotalCount = totalCount
+        };
+    }
 }

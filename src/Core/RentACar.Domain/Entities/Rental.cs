@@ -3,7 +3,7 @@ namespace RentACar.Domain.Entities
     public class Rental : BaseEntity
     {
         public int CarId { get; set; }
-        public string CarInfo { get; set; } = string.Empty; // Örn: "Audi A3 - 34TY114"
+        public string CarInfo { get; set; } = string.Empty; // Örn: "Audi A3 - 34TY114" bu kısım response body kısmında gösterilecek, veritabanında tutulmayacak
         public Car Car { get; set; } = null!;
         public int CustomerId { get; set; } 
         public Customer Customer { get; set; } = null!;

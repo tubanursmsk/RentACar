@@ -28,8 +28,8 @@ public class CarService : ICarService
         // 2. Çakışan (Overlapping) Rezervasyonları Bul
         // Formül: (Kiralama Başlangıç <= İstenen Bitiş) VE (Kiralama Bitiş >= İstenen Başlangıç)
         var overlappingCarIds = await _unitOfWork.Repository<Rental>()
-            .GetWhere(r => !r.IsDeleted && 
-                           r.RentStartDate <= searchDto.DropOffDate && 
+            .GetWhere(r => !r.IsDeleted &&
+                           r.RentStartDate <= searchDto.DropOffDate &&
                            r.RentEndDate >= searchDto.PickUpDate)
             .Select(r => r.CarId)
             .ToListAsync();
@@ -65,7 +65,7 @@ public class CarService : ICarService
     }
 
     // --- STANDART CRUD İŞLEMLERİ ---
-    
+
     public async Task<ApiResponse<PaginatedResult<CarDto>>> GetPagedCarsAsync(int pageNumber, int pageSize)
     {
         var query = _unitOfWork.Repository<Car>()
@@ -77,8 +77,8 @@ public class CarService : ICarService
         var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
         var dtos = _mapper.Map<List<CarDto>>(items);
-        return ApiResponse<PaginatedResult<CarDto>>.SuccessResult(new PaginatedResult<CarDto> 
-            { Items = dtos, TotalCount = totalCount, PageNumber = pageNumber, PageSize = pageSize });
+        return ApiResponse<PaginatedResult<CarDto>>.SuccessResult(new PaginatedResult<CarDto>
+        { Items = dtos, TotalCount = totalCount, PageNumber = pageNumber, PageSize = pageSize });
     }
 
     public async Task<ApiResponse<CarDto>> GetCarByIdAsync(int id)
@@ -103,16 +103,21 @@ public class CarService : ICarService
         return ApiResponse<int>.SuccessResult(car.Id, "Araç başarıyla eklendi.");
     }
 
-    public async Task<ApiResponse<bool>> UpdateCarAsync(int id, CarUpdateDto dto)
+    public async Task<ApiResponse<bool>> UpdateCarAsync(CarUpdateDto dto)
     {
-        var car = await _unitOfWork.Repository<Car>().GetByIdAsync(id);
-        if (car == null || car.IsDeleted) return ApiResponse<bool>.ErrorResult("Araç bulunamadı.");
+        // DTO içindeki ID ile veriyi buluyoruz
+        var car = await _unitOfWork.Repository<Car>().GetByIdAsync(dto.Id);
 
+        if (car == null || car.IsDeleted)
+            return ApiResponse<bool>.ErrorResult("Güncellenecek araç bulunamadı.");
+
+        // AutoMapper ile DTO'daki verileri mevcut entity üzerine yansıtıyoruz
         _mapper.Map(dto, car);
         car.UpdatedDate = DateTime.UtcNow;
 
         _unitOfWork.Repository<Car>().Update(car);
         await _unitOfWork.SaveChangesAsync();
+
         return ApiResponse<bool>.SuccessResult(true, "Araç başarıyla güncellendi.");
     }
 

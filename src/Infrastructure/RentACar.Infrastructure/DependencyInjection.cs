@@ -22,6 +22,8 @@ public static class DependencyInjection
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IBrandService, BrandService>();
         services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<ICarService, CarService>();
+        services.AddScoped<IRentalService, RentalService>();
 
         return services;
     }

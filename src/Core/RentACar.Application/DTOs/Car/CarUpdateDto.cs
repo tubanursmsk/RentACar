@@ -5,6 +5,9 @@ namespace RentACar.Application.DTOs.Car
 {
     public class CarUpdateDto
     {
+         [Required]
+         public int Id { get; set; }
+
         [Required]
         public int BrandId { get; set; }
         [Required]
@@ -25,6 +28,8 @@ namespace RentACar.Application.DTOs.Car
 
         [Range(0, 1900, ErrorMessage = "Findeks puanı 0-1900 arasında olmalıdır.")]
         public int MinFindeksScore { get; set; }
+
+         public CarStatus Status { get; set; }
 
         public string? ImageUrl { get; set; }
     }

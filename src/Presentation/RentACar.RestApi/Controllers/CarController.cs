@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentACar.Application.DTOs.Car;
+using RentACar.Application.DTOs.Responses;
 using RentACar.Application.Interfaces;
 
 namespace RentACar.RestApi.Controllers;
@@ -29,20 +30,34 @@ public class CarController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id) => Ok(await _carService.GetCarByIdAsync(id));
 
-    // Admin / Şube Çalışanı İşlemleri
+    
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin,CompanyManager,Staff")]
     public async Task<IActionResult> Create([FromBody] CarCreateDto dto) => Ok(await _carService.CreateCarAsync(dto));
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin,Staff")]
-    public async Task<IActionResult> Update(int id, [FromBody] CarUpdateDto dto)
+    [Authorize(Roles = "Admin,Staff")] // Yönergeye göre personel yetkisi
+    public async Task<IActionResult> Update(int id, [FromBody] CarUpdateDto carUpdateDto)
     {
-        dto. = id;
-        return Ok(await _carService.UpdateCarAsync(id, dto));
+        // 1. Güvenlik Kontrolü: URL ID'si ile Body ID'si aynı mı?
+        if (id != carUpdateDto.Id)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResult("URL'deki ID ile gönderilen nesnenin ID'si uyuşmuyor."));
+        }
+
+        // 2. Servis Çağrısı
+        var result = await _carService.UpdateCarAsync(carUpdateDto);
+
+        if (!result.Success)
+        {
+            return NotFound(result);
+        }
+
+        // 3. Başarılı Yanıt (Yönergeye uygun boş nesne ile)
+        return Ok(ApiResponse<object>.SuccessResult(new { }, "Araç bilgileri başarıyla güncellendi."));
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin,CompanyManager,Staff")]
     public async Task<IActionResult> Delete(int id) => Ok(await _carService.DeleteCarAsync(id));
 }

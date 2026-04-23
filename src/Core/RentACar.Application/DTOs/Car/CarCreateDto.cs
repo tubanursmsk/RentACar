@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using RentACar.Domain.Entities;
 
 namespace RentACar.Application.DTOs.Car;
 
 public class CarCreateDto
 {
+    //[Required]
+     //public int Id { get; set; }
     [Required]
      public int BrandId { get; set; } 
     [Required]
@@ -24,6 +27,8 @@ public class CarCreateDto
     
     [Range(0, 1900, ErrorMessage = "Findeks puanı 0-1900 arasında olmalıdır.")]
     public int MinFindeksScore { get; set; } 
+
+     public CarStatus Status { get; set; }
     
     public string? ImageUrl { get; set; }
 }

@@ -6,6 +6,7 @@ using RentACar.Application.DTOs;
 using RentACar.Application.DTOs.Brand;
 using RentACar.Application.DTOs.Location;
 using RentACar.Application.DTOs.Car;
+using RentACar.Application.DTOs.Rental;
 
 namespace RentACar.Application.Mappings;
 
@@ -40,5 +41,14 @@ public class AutoMapperProfiles : Profile
 
         CreateMap<CarCreateDto, Car>();
         CreateMap<CarUpdateDto, Car>();
+
+        // Rental Mappings
+        CreateMap<Rental, RentalDto>()
+            .ForMember(dest => dest.CarInfo, opt => opt.MapFrom(src => $"{src.Car.Brand.Name} {src.Car.Model} - {src.Car.Plate}"))
+            .ForMember(dest => dest.CustomerFullName, opt => opt.MapFrom(src => $"{src.Customer.User.FirstName} {src.Customer.User.LastName}"))
+            .ForMember(dest => dest.PickUpLocationName, opt => opt.MapFrom(src => src.PickUpLocation.Name))
+            .ForMember(dest => dest.DropOffLocationName, opt => opt.MapFrom(src => src.DropOffLocation.Name));
+
+        CreateMap<RentalCreateDto, Rental>();
     }
 }

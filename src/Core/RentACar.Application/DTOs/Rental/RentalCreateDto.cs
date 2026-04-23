@@ -1,10 +1,21 @@
-namespace RentACar.Application.DTOs.Rental
+using System.ComponentModel.DataAnnotations;
+
+namespace RentACar.Application.DTOs.Rental;
+
+public class RentalCreateDto
 {
-    public class RentalCreateDto
-    {
-        public int CarId { get; set; }
-        public int UserId { get; set; } // Şimdilik elle gireceğiz, Identity kurulunca Token'dan alacağız
-        public DateTime RentStartDate { get; set; }
-        public DateTime RentEndDate { get; set; }
-    }
+    [Required(ErrorMessage = "Araç seçimi zorunludur.")]
+    public int CarId { get; set; }
+
+    [Required(ErrorMessage = "Alış şubesi zorunludur.")]
+    public int PickUpLocationId { get; set; }
+
+    [Required(ErrorMessage = "Dönüş şubesi zorunludur.")]
+    public int DropOffLocationId { get; set; }
+
+    [Required(ErrorMessage = "Alış tarihi zorunludur.")]
+    public DateTime RentStartDate { get; set; }
+
+    [Required(ErrorMessage = "Dönüş tarihi zorunludur.")]
+    public DateTime RentEndDate { get; set; }
 }

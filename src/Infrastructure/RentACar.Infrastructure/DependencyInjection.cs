@@ -24,6 +24,8 @@ public static class DependencyInjection
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<ICarService, CarService>();
         services.AddScoped<IRentalService, RentalService>();
+        services.AddScoped<IAdditionalServiceService, AdditionalServiceService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         return services;
     }

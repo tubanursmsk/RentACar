@@ -7,6 +7,8 @@ using RentACar.Application.DTOs.Brand;
 using RentACar.Application.DTOs.Location;
 using RentACar.Application.DTOs.Car;
 using RentACar.Application.DTOs.Rental;
+using RentACar.Application.DTOs.AdditionalService;
+using RentACar.Application.DTOs.Dashboard;
 
 namespace RentACar.Application.Mappings;
 
@@ -50,5 +52,17 @@ public class AutoMapperProfiles : Profile
             .ForMember(dest => dest.DropOffLocationName, opt => opt.MapFrom(src => src.DropOffLocation.Name));
 
         CreateMap<RentalCreateDto, Rental>();
+
+        // Additional Service Mappings
+        CreateMap<AdditionalService, AdditionalServiceDto>().ReverseMap();
+        CreateMap<AdditionalServiceCreateDto, AdditionalService>();
+        CreateMap<AdditionalServiceUpdateDto, AdditionalService>();
+
+        // Dashboard Mappings
+        CreateMap<DashboardStatsDto, DashboardStatsDto>().ReverseMap();
+
+        
+        
+
     }
 }

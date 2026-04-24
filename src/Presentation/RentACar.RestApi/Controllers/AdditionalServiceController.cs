@@ -16,11 +16,11 @@ public class AdditionalServiceController : ControllerBase
     public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin,CompanyManager,Staff")]
     public async Task<IActionResult> Create(AdditionalServiceCreateDto dto) => Ok(await _service.CreateAsync(dto));
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin,CompanyManager,Staff")]
     public async Task<IActionResult> Update(int id, AdditionalServiceUpdateDto dto)
     {
         if (id != dto.Id) return BadRequest();
@@ -28,6 +28,6 @@ public class AdditionalServiceController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin,CompanyManager,Staff")]
     public async Task<IActionResult> Delete(int id) => Ok(await _service.DeleteAsync(id));
 }

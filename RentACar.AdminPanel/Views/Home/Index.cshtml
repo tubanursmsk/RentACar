@@ -1,8 +1,115 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard";
+    ViewData["Breadcrumb"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Dashboard</h1>
+        <p>Hoş geldiniz! Sistemin genel durumuna bakın.</p>
+    </div>
+    <div class="d-flex gap-8">
+        <a href="#" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-rotate-right"></i> Yenile
+        </a>
+    </div>
 </div>
+
+@* ── Stat Cards ── *@
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="fa-solid fa-car"></i>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Toplam Araç</div>
+            <div class="stat-value" id="statTotalCars">—</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="fa-solid fa-key"></i>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Aktif Kiralama</div>
+            <div class="stat-value" id="statActiveRentals">—</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon yellow">
+            <i class="fa-solid fa-clock"></i>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Bekleyen Rezervasyon</div>
+            <div class="stat-value" id="statPending">—</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon red">
+            <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Toplam Müşteri</div>
+            <div class="stat-value" id="statCustomers">—</div>
+        </div>
+    </div>
+</div>
+
+@* ── Quick Access ── *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Hızlı Erişim</span>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+
+            <a asp-controller="Car" asp-action="Create" class="btn btn-secondary" style="flex-direction: column; height: 80px; gap: 8px;">
+                <i class="fa-solid fa-car" style="font-size: 20px; color: var(--accent);"></i>
+                <span>Araç Ekle</span>
+            </a>
+
+            <a asp-controller="Brand" asp-action="Create" class="btn btn-secondary" style="flex-direction: column; height: 80px; gap: 8px;">
+                <i class="fa-solid fa-tag" style="font-size: 20px; color: var(--success);"></i>
+                <span>Marka Ekle</span>
+            </a>
+
+            <a asp-controller="Location" asp-action="Create" class="btn btn-secondary" style="flex-direction: column; height: 80px; gap: 8px;">
+                <i class="fa-solid fa-location-dot" style="font-size: 20px; color: var(--warning);"></i>
+                <span>Şube Ekle</span>
+            </a>
+
+            <a asp-controller="Rental" asp-action="Index" class="btn btn-secondary" style="flex-direction: column; height: 80px; gap: 8px;">
+                <i class="fa-solid fa-file-contract" style="font-size: 20px; color: var(--danger);"></i>
+                <span>Kiralamalar</span>
+            </a>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Dashboard istatistiklerini API'den çek
+    (async function() {
+        try {
+            const r = await fetch('/api/Dashboard/Stats', {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!r.ok) return;
+            const json = await r.json();
+            const d = json.data;
+            if (!d) return;
+
+            document.getElementById('statTotalCars').textContent   = d.totalCars ?? '—';
+            document.getElementById('statActiveRentals').textContent = d.activeRentedCars ?? '—';
+            document.getElementById('statPending').textContent      = d.pendingReservations ?? '—';
+            document.getElementById('statCustomers').textContent    = d.totalCustomers ?? '—';
+        } catch(e) {
+            console.warn('Dashboard stats yüklenemedi:', e);
+        }
+    })();
+</script>
+}

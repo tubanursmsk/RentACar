@@ -1,50 +1,220 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="tr" data-theme="dark">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RentACar.AdminPanel</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/RentACar.AdminPanel.styles.css" asp-append-version="true" />
+    <title>@ViewData["Title"] — RentACar Admin</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">RentACar.AdminPanel</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+
+<body class="admin-body">
+
+    @* ─── Sidebar ─── *@
+    <aside class="sidebar" id="sidebar">
+
+        @* Logo *@
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <i class="fa-solid fa-car-side"></i>
+            </div>
+            <span class="logo-text">RentACar</span>
+        </div>
+
+        @* Navigation *@
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+
+                <li
+                    class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link" data-tooltip="Dashboard">
+                        <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                        <span class="nav-label">Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Car" ? "active" : "")">
+                    <a asp-controller="Car" asp-action="Index" class="nav-link" data-tooltip="Araçlar">
+                        <span class="nav-icon"><i class="fa-solid fa-car"></i></span>
+                        <span class="nav-label">Araçlar</span>
+                    </a>
+                </li>
+
+                <li
+                    class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Brand" ? "active" : "")">
+                    <a asp-controller="Brand" asp-action="Index" class="nav-link" data-tooltip="Markalar">
+                        <span class="nav-icon"><i class="fa-solid fa-tag"></i></span>
+                        <span class="nav-label">Markalar</span>
+                    </a>
+                </li>
+
+                <li
+                    class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Location" ? "active" : "")">
+                    <a asp-controller="Location" asp-action="Index" class="nav-link" data-tooltip="Şubeler">
+                        <span class="nav-icon"><i class="fa-solid fa-location-dot"></i></span>
+                        <span class="nav-label">Şubeler</span>
+                    </a>
+                </li>
+
+                <li
+                    class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Rental" ? "active" : "")">
+                    <a asp-controller="Rental" asp-action="Index" class="nav-link" data-tooltip="Kiralamalar">
+                        <span class="nav-icon"><i class="fa-solid fa-file-contract"></i></span>
+                        <span class="nav-label">Kiralamalar</span>
+                    </a>
+                </li>
+
+                <li
+                    class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "User" ? "active" : "")">
+                    <a asp-controller="User" asp-action="Index" class="nav-link" data-tooltip="Kullanıcılar">
+                        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                        <span class="nav-label">Kullanıcılar</span>
+                    </a>
+                </li>
+
+                <li
+                    class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdditionalService" ? "active" : "")">
+                    <a asp-controller="AdditionalService" asp-action="Index" class="nav-link"
+                           data-tooltip="Ek Hizmetler">
+                        <span class="nav-icon"><i class="fa-solid fa-puzzle-piece"></i></span>
+                        <span class="nav-label">Ek Hizmetler</span>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+
+        @* Bottom: Profile & Settings *@
+        <div class="sidebar-bottom">
+            <div class="nav-divider"></div>
+
+            <ul class="nav-list">
+                <li
+                    class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Profile" ? "active" : "")">
+                    <a asp-controller="Profile" asp-action="Index" class="nav-link" data-tooltip="Profil">
+                        <span class="nav-icon"><i class="fa-solid fa-circle-user"></i></span>
+                        <span class="nav-label">Profil</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a asp-controller="Auth" asp-action="Logout" class="nav-link nav-link--danger" data-tooltip="Çıkış">
+                        <span class="nav-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></span>
+                        <span class="nav-label">Çıkış Yap</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    @* ─── Main Wrapper ─── *@
+    <div class="main-wrapper" id="mainWrapper">
+
+        @* Topbar *@
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="topbar-toggle" id="sidebarToggle" aria-label="Menüyü aç/kapat">
+                    <i class="fa-solid fa-bars"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                <nav aria-label="breadcrumb" class="breadcrumb-nav">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a asp-controller="Home" asp-action="Index">
+                                <i class="fa-solid fa-house"></i>
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+                        @if (ViewData["Breadcrumb"] != null)
+                        {
+                            <li class="breadcrumb-item active">@ViewData["Breadcrumb"]</li>
+                        }
+                        else
+                        {
+                            <li class="breadcrumb-item active">@ViewData["Title"]</li>
+                        }
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="topbar-right">
+                @* Dark / Light Mode Toggle *@
+                <button class="topbar-btn theme-toggle" id="themeToggle" aria-label="Tema değiştir">
+                    <i class="fa-solid fa-moon" id="themeIcon"></i>
+                </button>
+
+                @* Notifications *@
+                <button class="topbar-btn" aria-label="Bildirimler">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge-dot"></span>
+                </button>
+
+                @* User Avatar Dropdown *@
+                <div class="user-menu" id="userMenu">
+                    <button class="user-avatar-btn" id="userMenuToggle" aria-expanded="false">
+                        <div class="user-avatar">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">@User.Identity?.Name?.Split('@')[0]</span>
+                            <span class="user-role">
+                                @(User.IsInRole("Admin") ? "Admin" :
+                                  User.IsInRole("Staff") ? "Personel" : "Kullanıcı")
+                            </span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down user-chevron"></i>
+                    </button>
+
+                    <div class="user-dropdown" id="userDropdown">
+                        <a asp-controller="Profile" asp-action="Index" class="dropdown-item">
+                            <i class="fa-solid fa-circle-user"></i> Profilim
+                        </a>
+                        <a asp-controller="Profile" asp-action="ChangePassword" class="dropdown-item">
+                            <i class="fa-solid fa-key"></i> Şifre Değiştir
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a asp-controller="Auth" asp-action="Logout" class="dropdown-item dropdown-item--danger">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i> Çıkış Yap
+                        </a>
+                    </div>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+        </header>
+
+        @* Page Content *@
+        <main class="page-content">
             @RenderBody()
         </main>
+
+        @* Footer *@
+        <footer class="page-footer">
+            <span>&copy; @DateTime.Now.Year RentACar Admin Panel</span>
+            <span>v1.0.0</span>
+        </footer>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - RentACar.AdminPanel - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    @* Overlay for mobile *@
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+
+    @* Toastr mesajları *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>toastr.success('@TempData["SuccessMessage"]');</script>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>toastr.error('@TempData["ErrorMessage"]');</script>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+        <script>toastr.warning('@TempData["WarningMessage"]');</script>
+    }
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
-</html>
+</html><

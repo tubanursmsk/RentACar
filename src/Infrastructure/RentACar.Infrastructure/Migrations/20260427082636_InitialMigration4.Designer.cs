@@ -12,8 +12,8 @@ using RentACar.Infrastructure.Context;
 namespace RentACar.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260423195311_InitialMigration2")]
-    partial class InitialMigration2
+    [Migration("20260427082636_InitialMigration4")]
+    partial class InitialMigration4
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -295,10 +295,6 @@ namespace RentACar.Infrastructure.Migrations
 
                     b.Property<int>("CarId")
                         .HasColumnType("int");
-
-                    b.Property<string>("CarInfo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()

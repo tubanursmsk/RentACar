@@ -9,6 +9,8 @@ using RentACar.WebApi.Configurations;
 using RentACar.Application.Mappings;
 using Microsoft.AspNetCore.Mvc;
 using RentACar.Application.DTOs.Responses;
+using Microsoft.AspNetCore.Authorization;
+using RentACar.RestApi.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +25,7 @@ builder.Services.AddControllers();
 //CORS Politikası
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngularApp",
+    options.AddPolicy("DefaultCorsPolicy",
         policy => policy.WithOrigins("http://localhost:4200",
                                      "http://localhost:5048") 
                         .AllowAnyMethod()
@@ -34,6 +36,15 @@ builder.Services.AddCors(options =>
 //Swagger Yapılandırması
 builder.Services.AddSwaggerWithJwt();
 builder.Services.AddEndpointsApiExplorer();
+
+
+// CompanyDataIsolationHanler - kontol dosyalarının üzerine eklenmeli
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IAuthorizationHandler, CompanyDataIsolationHandler>();
+builder.Services.AddAuthorization(opt => {
+    opt.AddPolicy("CompanyIsolation", p =>
+        p.Requirements.Add(new CompanyDataRequirement()));
+});
 
 
 // JWT Authentication

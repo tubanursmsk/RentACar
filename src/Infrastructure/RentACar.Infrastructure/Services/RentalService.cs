@@ -74,7 +74,7 @@ public class RentalService : IRentalService
         
         // Aracı fiziksel olarak "Kirada" statüsüne çekiyoruz
         var car = await _unitOfWork.Repository<Car>().GetByIdAsync(rental.CarId);
-        car.Status = CarStatus.Rented; 
+        if (car == null) return ApiResponse<bool>.ErrorResult("Araç bulunamadı.");
         
         _unitOfWork.Repository<Rental>().Update(rental);
         _unitOfWork.Repository<Car>().Update(car);

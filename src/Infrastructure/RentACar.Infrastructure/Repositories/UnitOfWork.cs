@@ -1,13 +1,14 @@
 using RentACar.Application.Interfaces;
 using RentACar.Infrastructure.Context;
-using System.Collections;
 
 namespace RentACar.Infrastructure.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {
     private readonly AppDbContext _context;
-    private Hashtable _repositories;
+    
+    // Doğru tanımlama ve başlatma
+    private readonly Dictionary<string, object> _repositories = new();
 
     public UnitOfWork(AppDbContext context)
     {
@@ -16,14 +17,18 @@ public class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<T> Repository<T>() where T : class
     {
-        if (_repositories == null) _repositories = new Hashtable();
+        // Artık _repositories null olamayacağı için if (_repositories == null) kontrolünü sildik (CS0191 Çözümü)
 
         var type = typeof(T).Name;
 
         if (!_repositories.ContainsKey(type))
         {
             var repositoryType = typeof(GenericRepository<>);
-            var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(T)), _context);
+            
+            // Activator null dönerse diye null-coalescing (??) operatörü ekledik (CS8604 Çözümü)
+            var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(T)), _context) 
+                                     ?? throw new InvalidOperationException($"'{type}' için repository oluşturulamadı.");
+            
             _repositories.Add(type, repositoryInstance);
         }
 

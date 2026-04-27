@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace RentACar.Application.DTOs.Customer;
+namespace RentACar.Application.DTOs.Rental;
 public class RentalDeleteDto
 {
     [Required]

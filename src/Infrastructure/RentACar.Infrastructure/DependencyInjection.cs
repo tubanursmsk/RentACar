@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RentACar.Infrastructure.Context;
 using RentACar.Infrastructure.Repositories;
 using RentACar.Application.Interfaces;
+using RentACar.Application.Helpers;
 using RentACar.Infrastructure.Services;
 
 namespace RentACar.Infrastructure;
@@ -17,6 +18,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped<IJwtTokenHelper, JwtTokenHelper>();
         
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();

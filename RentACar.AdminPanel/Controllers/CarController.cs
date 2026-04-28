@@ -2,208 +2,222 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentACar.AdminPanel.Models;
 using RentACar.AdminPanel.Services;
+using RentACar.Application.DTOs.Car;
+using RentACar.Application.DTOs.Brand;
+using RentACar.Application.DTOs.Location;
+using RentACar.Application.DTOs.Responses;
 
 namespace RentACar.AdminPanel.Controllers;
 
-[Authorize]
-[Route("Car")]
+[Authorize(Roles = "Admin,Staff")]
 public class CarController : Controller
 {
-    private readonly BaseApiService _api;
+    private readonly BaseApiService _apiService;
+    private readonly ILogger<CarController> _logger;
 
-    public CarController(BaseApiService api)
+    public CarController(BaseApiService apiService, ILogger<CarController> logger)
     {
-        _api = api;
+        _apiService = apiService;
+        _logger = logger;
     }
 
-    // ── GET /Car ── Liste + modal verileri ──────────────────────
-    [HttpGet("")]
-    [HttpGet("Index")]
+    // GET: /Car — Araç Listesi (Sayfalanmış)
+    [HttpGet]
     public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 10)
     {
-        // 1. Araç listesi (sayfalı)
-        var carsResp = await _api.GetAsync<PagedCarResult>(
+        ViewData["Title"] = "Araç Yönetimi";
+        ViewData["Breadcrumb"] = "Araçlar";
+
+        var response = await _apiService.GetAsync<PaginatedResult<CarDto>>(
             $"api/Car/Paged?pageNumber={pageNumber}&pageSize={pageSize}");
 
-        // 2. Dropdown verileri (Create/Edit modal için)
-        var brandsResp = await _api.GetAsync<List<BrandItem>>("api/Brand/All");
-        var locationsResp = await _api.GetAsync<List<LocationItem>>("api/Location/All");
-
-        var vm = new CarListViewModel
+        if (response == null || !response.Success)
         {
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-        };
-
-        if (carsResp?.Success == true && carsResp.Data != null)
-        {
-            vm.TotalCount = carsResp.Data.TotalCount;
-            vm.Cars = carsResp.Data.Items.Select(c => new CarItemViewModel
-            {
-                Id = c.Id,
-                BrandId = c.BrandId,
-                BrandName = c.BrandName,
-                Model = c.Model,
-                Year = c.Year,
-                Plate = c.Plate,
-                DailyPrice = c.DailyPrice,
-                MinFindeksScore = c.MinFindeksScore,
-                CurrentLocationId = c.CurrentLocationId,
-                CurrentLocationName = c.CurrentLocationName,
-                Status = c.Status,
-                ImageUrl = c.ImageUrl,
-            }).ToList();
+            TempData["ErrorMessage"] = response?.Message ?? "Araçlar yüklenemedi.";
+            var emptyModel = new CarPaginatedViewModel();
+            return View(emptyModel);
         }
 
-        if (brandsResp?.Success == true && brandsResp.Data != null)
-            vm.Brands = brandsResp.Data.Select(b => new SelectItem { Id = b.Id, Name = b.Name }).ToList();
+        var cars = response.Data?.Items?.Select(c => new CarListViewModel
+        {
+            Id = c.Id,
+            BrandName = c.BrandName,
+            Model = c.Model,
+            Year = c.Year,
+            Plate = c.Plate,
+            DailyPrice = c.DailyPrice,
+            CurrentLocationName = c.CurrentLocationName,
+            Status = c.Status,
+            ImageUrl = c.ImageUrl,
+            CreatedDate = DateTime.Now // API'de CreatedDate gelmiyorsa buraya eklenmeli
+        }).ToList() ?? new List<CarListViewModel>();
 
-        if (locationsResp?.Success == true && locationsResp.Data != null)
-            vm.Locations = locationsResp.Data.Select(l => new SelectItem { Id = l.Id, Name = l.Name }).ToList();
+        var model = new CarPaginatedViewModel
+        {
+            Cars = cars,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = response.Data?.TotalCount ?? 0
+        };
 
-        return View(vm);
+        return View(model);
     }
 
-    // ── GET /Car/Detail/{id} ── Detay modalı için JSON ──────────
-    [HttpGet("Detail/{id}")]
-    public async Task<IActionResult> Detail(int id)
+    // GET: /Car/Create — Araç Ekleme Formu
+    [HttpGet]
+    public async Task<IActionResult> Create()
     {
-        var resp = await _api.GetAsync<CarDto>($"api/Car/{id}");
-        if (resp?.Success != true || resp.Data == null)
-            return NotFound();
+        ViewData["Title"] = "Araç Ekle";
+        ViewData["Breadcrumb"] = "Araç Ekle";
 
-        return Json(resp.Data);
+        await PopulateDropdowns();
+        return View();
     }
 
-    // ── POST /Car/Create ── Yeni araç ekle (multipart) ──────────
-    [HttpPost("Create")]
-    [ValidateAntiForgeryToken]
+    // POST: /Car/Create — Araç Ekleme İşlemi
+    [HttpPost]
     public async Task<IActionResult> Create(CarCreateViewModel model)
     {
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] = "Lütfen tüm zorunlu alanları doldurun.";
-            return RedirectToAction(nameof(Index));
+            ViewData["Title"] = "Araç Ekle";
+            await PopulateDropdowns();
+            return View(model);
         }
 
-        // Multipart form oluştur
-        var content = new MultipartFormDataContent();
-        content.Add(new StringContent(model.BrandId.ToString()), "BrandId");
-        content.Add(new StringContent(model.CurrentLocationId.ToString()), "CurrentLocationId");
-        content.Add(new StringContent(model.Model), "Model");
-        content.Add(new StringContent(model.Year.ToString()), "Year");
-        content.Add(new StringContent(model.Plate), "Plate");
-        content.Add(new StringContent(model.DailyPrice.ToString()), "DailyPrice");
-        content.Add(new StringContent(model.MinFindeksScore.ToString()), "MinFindeksScore");
-        content.Add(new StringContent("Available"), "Status");
-
-        if (model.Image != null && model.Image.Length > 0)
+        // DTO'ya dönüştür
+        var dto = new CarCreateDto
         {
-            var stream = model.Image.OpenReadStream();
-            var fileContent = new StreamContent(stream);
-            fileContent.Headers.ContentType =
-                new System.Net.Http.Headers.MediaTypeHeaderValue(model.Image.ContentType);
-            content.Add(fileContent, "Image", model.Image.FileName);
+            BrandId = model.BrandId,
+            CurrentLocationId = model.CurrentLocationId,
+            Model = model.Model,
+            Year = model.Year,
+            Plate = model.Plate,
+            DailyPrice = model.DailyPrice,
+            MinFindeksScore = model.MinFindeksScore,
+            Status = model.Status
+        };
+
+        // API'ye gönder
+        var response = await _apiService.PostAsync<CarCreateDto, int>("api/Car", dto);
+
+        if (response == null || !response.Success)
+        {
+            TempData["ErrorMessage"] = response?.Message ?? "Araç eklenirken hata oluştu.";
+            await PopulateDropdowns();
+            return View(model);
         }
 
-        var resp = await _api.PostMultipartAsync<int>("api/Car", content);
-
-        if (resp?.Success == true)
-            TempData["SuccessMessage"] = "Araç başarıyla eklendi.";
-        else
-            TempData["ErrorMessage"] = resp?.Message ?? "Araç eklenemedi.";
-
+        TempData["SuccessMessage"] = "Araç başarıyla eklendi.";
         return RedirectToAction(nameof(Index));
     }
 
-    // ── POST /Car/Edit ── Araç güncelle (multipart) ─────────────
-    [HttpPost("Edit")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(CarEditViewModel model)
+    // GET: /Car/Edit/5 — Araç Düzenleme Formu
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
     {
+        ViewData["Title"] = "Araç Düzenle";
+        ViewData["Breadcrumb"] = "Araç Düzenle";
+
+        var response = await _apiService.GetAsync<CarDto>($"api/Car/{id}");
+
+        if (response == null || !response.Success || response.Data == null)
+        {
+            TempData["ErrorMessage"] = "Araç bulunamadı.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var car = response.Data;
+        var model = new CarEditViewModel
+        {
+            Id = car.Id,
+            BrandId = car.BrandId,
+            CurrentLocationId = car.CurrentLocationId,
+            Model = car.Model,
+            Year = car.Year,
+            Plate = car.Plate,
+            DailyPrice = car.DailyPrice,
+            MinFindeksScore = car.MinFindeksScore,
+            Status = car.Status,
+            CurrentImageUrl = car.ImageUrl
+        };
+
+        await PopulateDropdowns();
+        return View(model);
+    }
+
+    // POST: /Car/Edit/5 — Araç Güncelleme İşlemi
+    [HttpPost]
+    public async Task<IActionResult> Edit(int id, CarEditViewModel model)
+    {
+        if (id != model.Id)
+        {
+            TempData["ErrorMessage"] = "Araç ID'si uyuşmuyor.";
+            return RedirectToAction(nameof(Index));
+        }
+
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] = "Lütfen tüm zorunlu alanları doldurun.";
-            return RedirectToAction(nameof(Index));
+            ViewData["Title"] = "Araç Düzenle";
+            await PopulateDropdowns();
+            return View(model);
         }
 
-        var content = new MultipartFormDataContent();
-        content.Add(new StringContent(model.Id.ToString()), "Id");
-        content.Add(new StringContent(model.BrandId.ToString()), "BrandId");
-        content.Add(new StringContent(model.CurrentLocationId.ToString()), "CurrentLocationId");
-        content.Add(new StringContent(model.Model), "Model");
-        content.Add(new StringContent(model.Year.ToString()), "Year");
-        content.Add(new StringContent(model.Plate), "Plate");
-        content.Add(new StringContent(model.DailyPrice.ToString()), "DailyPrice");
-        content.Add(new StringContent(model.MinFindeksScore.ToString()), "MinFindeksScore");
-        content.Add(new StringContent(model.Status), "Status");
-
-        if (model.Image != null && model.Image.Length > 0)
+        // DTO'ya dönüştür
+        var dto = new CarUpdateDto
         {
-            var stream = model.Image.OpenReadStream();
-            var fileContent = new StreamContent(stream);
-            fileContent.Headers.ContentType =
-                new System.Net.Http.Headers.MediaTypeHeaderValue(model.Image.ContentType);
-            content.Add(fileContent, "Image", model.Image.FileName);
+            Id = model.Id,
+            BrandId = model.BrandId,
+            CurrentLocationId = model.CurrentLocationId,
+            Model = model.Model,
+            Year = model.Year,
+            Plate = model.Plate,
+            DailyPrice = model.DailyPrice,
+            MinFindeksScore = model.MinFindeksScore,
+            Status = model.Status
+        };
+
+        // API'ye gönder
+        var response = await _apiService.PutAsync<CarUpdateDto, bool>($"api/Car/{id}", dto);
+
+        if (response == null || !response.Success)
+        {
+            TempData["ErrorMessage"] = response?.Message ?? "Araç güncellenirken hata oluştu.";
+            await PopulateDropdowns();
+            return View(model);
         }
 
-        var resp = await _api.PutMultipartAsync<bool>($"api/Car/{model.Id}", content);
-
-        if (resp?.Success == true)
-            TempData["SuccessMessage"] = "Araç başarıyla güncellendi.";
-        else
-            TempData["ErrorMessage"] = resp?.Message ?? "Araç güncellenemedi.";
-
+        TempData["SuccessMessage"] = "Araç başarıyla güncellendi.";
         return RedirectToAction(nameof(Index));
     }
 
-    // ── POST /Car/Delete/{id} ── Soft delete ────────────────────
-    [HttpPost("Delete/{id}")]
-    [ValidateAntiForgeryToken]
+    // POST: /Car/Delete/5 — Araç Silme İşlemi
+    [HttpPost]
     public async Task<IActionResult> Delete(int id)
     {
-        var resp = await _api.DeleteAsync($"api/Car/{id}");
+        var response = await _apiService.DeleteAsync($"api/Car/{id}");
 
-        if (resp?.Success == true)
-            TempData["SuccessMessage"] = "Araç başarıyla silindi.";
+        if (response == null || !response.Success)
+        {
+            TempData["ErrorMessage"] = response?.Message ?? "Araç silinirken hata oluştu.";
+        }
         else
-            TempData["ErrorMessage"] = resp?.Message ?? "Araç silinemedi.";
+        {
+            TempData["SuccessMessage"] = "Araç başarıyla silindi.";
+        }
 
         return RedirectToAction(nameof(Index));
     }
 
-    // ── İç yardımcı tipler (API deserialize için) ───────────────
-    private class PagedCarResult
+    // ── Helper Metot: Dropdown'ları Doldur ──
+    private async Task PopulateDropdowns()
     {
-        public List<CarDto> Items { get; set; } = new();
-        public int TotalCount { get; set; }
-    }
+        // Markaları al
+        var brandsResponse = await _apiService.GetAsync<IEnumerable<BrandDto>>("api/Brand/All");
+        ViewBag.Brands = brandsResponse?.Data ?? new List<BrandDto>();
 
-    private class CarDto
-    {
-        public int Id { get; set; }
-        public int BrandId { get; set; }
-        public string BrandName { get; set; } = string.Empty;
-        public int CurrentLocationId { get; set; }
-        public string CurrentLocationName { get; set; } = string.Empty;
-        public string Model { get; set; } = string.Empty;
-        public int Year { get; set; }
-        public string Plate { get; set; } = string.Empty;
-        public decimal DailyPrice { get; set; }
-        public int MinFindeksScore { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string? ImageUrl { get; set; }
-    }
-
-    private class BrandItem
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-    }
-
-    private class LocationItem
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
+        // Şubeleri al
+        var locationsResponse = await _apiService.GetAsync<IEnumerable<LocationDto>>("api/Location/All");
+        ViewBag.Locations = locationsResponse?.Data ?? new List<LocationDto>();
     }
 }

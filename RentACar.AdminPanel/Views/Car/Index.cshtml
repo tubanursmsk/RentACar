@@ -1,0 +1,182 @@
+@using RentACar.Domain.Entities
+@model CarPaginatedViewModel
+@{
+    ViewData["Title"] = "Araç Yönetimi";
+    ViewData["Breadcrumb"] = "Araçlar";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Araç Yönetimi</h1>
+        <p>Tüm araçları ve durumlarını yönetin.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Yeni Araç Ekle
+    </a>
+</div>
+
+@* ── Status Badge ── *@
+@functions {
+    string GetStatusBadge(CarStatus status) => status switch
+    {
+        CarStatus.Available => "badge-success",
+        CarStatus.Rented => "badge-info",
+        CarStatus.InMaintenance => "badge-warning",
+        CarStatus.Passive => "badge-danger",
+        _ => "badge-neutral"
+    };
+
+    string GetStatusText(CarStatus status) => status switch
+    {
+        CarStatus.Available => "Müsait",
+        CarStatus.Rented => "Kirada",
+        CarStatus.InMaintenance => "Bakımda",
+        CarStatus.Passive => "Pasif",
+        _ => "Bilinmiyor"
+    };
+}
+
+@* ── Table ── *@
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Araçlar (@Model.TotalCount)</span>
+    </div>
+    <div class="table-wrapper">
+        @if (Model.Cars.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Resim</th>
+                        <th>Marka & Model</th>
+                        <th>Plaka</th>
+                        <th>Yıl</th>
+                        <th>Günlük Fiyat</th>
+                        <th>Şube</th>
+                        <th>Durumu</th>
+                        <th style="width: 100px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var car in Model.Cars)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(car.ImageUrl))
+                                {
+                                    <img src="@car.ImageUrl" alt="@car.Model" 
+                                         style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div style="width: 40px; height: 40px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                                        <i class="fa-solid fa-car" style="font-size: 16px;"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <strong>@car.BrandName</strong><br />
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">@car.Model</span>
+                            </td>
+                            <td><code>@car.Plate</code></td>
+                            <td>@car.Year</td>
+                            <td class="fw-600">@car.DailyPrice.ToString("C2")</td>
+                            <td>@car.CurrentLocationName</td>
+                            <td>
+                                <span class="badge @GetStatusBadge(car.Status)">
+                                    @GetStatusText(car.Status)
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <a asp-action="Edit" asp-route-id="@car.Id" 
+                                       class="btn btn-icon btn-secondary" title="Düzenle">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@car.Id" method="post" style="display: inline;">
+                                        <button type="submit" class="btn btn-icon btn-danger" 
+                                                title="Sil" 
+                                                onclick="return confirm('Bu araçı silmek istediğinizden emin misiniz?');">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div style="padding: 40px; text-align: center;">
+                <i class="fa-solid fa-inbox" style="font-size: 32px; color: var(--text-muted); opacity: 0.5;"></i>
+                <p style="margin-top: 12px; color: var(--text-muted);">Henüz araç kaydı bulunamadı.</p>
+                <a asp-action="Create" class="btn btn-primary mt-16">
+                    <i class="fa-solid fa-plus"></i> İlk Araçı Ekle
+                </a>
+            </div>
+        }
+    </div>
+
+    @* ── Pagination ── *@
+    @if (Model.TotalPages > 1)
+    {
+        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">
+                Sayfa @Model.PageNumber / @Model.TotalPages
+            </span>
+            <nav aria-label="Pagination" class="pagination">
+                @if (Model.HasPreviousPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-route-pageNumber="1">
+                            <i class="fa-solid fa-angles-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" asp-route-pageNumber="@(Model.PageNumber - 1)">
+                            <i class="fa-solid fa-angle-left"></i>
+                        </a>
+                    </li>
+                }
+
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    if (i == Model.PageNumber)
+                    {
+                        <li class="page-item active">
+                            <span class="page-link">@i</span>
+                        </li>
+                    }
+                    else if ((i >= Model.PageNumber - 2 && i <= Model.PageNumber + 2) || i == 1 || i == Model.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-route-pageNumber="@i">@i</a>
+                        </li>
+                    }
+                    else if (i == Model.PageNumber - 3 || i == Model.PageNumber + 3)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                }
+
+                @if (Model.HasNextPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-route-pageNumber="@(Model.PageNumber + 1)">
+                            <i class="fa-solid fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" asp-route-pageNumber="@Model.TotalPages">
+                            <i class="fa-solid fa-angles-right"></i>
+                        </a>
+                    </li>
+                }
+            </nav>
+        </div>
+    }
+</div>

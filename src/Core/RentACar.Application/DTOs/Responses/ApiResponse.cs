@@ -15,7 +15,8 @@ namespace RentACar.Application.DTOs.Responses
         // Hatalı işlemler için pratik metotlar
         public static ApiResponse<T> ErrorResult(string message)
         {
-            return new ApiResponse<T> { Success = false, Message = message  };
+            return new ApiResponse<T> { Success = false, Message = message };
         }
+
     }
 }

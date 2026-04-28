@@ -61,7 +61,7 @@ public class CarCreateViewModel
 /// <summary>
 /// Araç güncelleme formunda kullanılacak
 /// </summary>
-public class CarEditViewModel
+public class CarUpdateViewModel
 {
     [Required]
     public int Id { get; set; }

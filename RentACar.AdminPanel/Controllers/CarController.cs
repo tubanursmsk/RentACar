@@ -112,9 +112,9 @@ public class CarController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // GET: /Car/Edit/5 — Araç Düzenleme Formu
+    // GET: /Car/Update/5 — Araç Düzenleme Formu
     [HttpGet]
-    public async Task<IActionResult> Edit(int id)
+    public async Task<IActionResult> Update(int id)
     {
         ViewData["Title"] = "Araç Düzenle";
         ViewData["Breadcrumb"] = "Araç Düzenle";
@@ -128,7 +128,7 @@ public class CarController : Controller
         }
 
         var car = response.Data;
-        var model = new CarEditViewModel
+        var model = new CarUpdateViewModel
         {
             Id = car.Id,
             BrandId = car.BrandId,
@@ -146,9 +146,9 @@ public class CarController : Controller
         return View(model);
     }
 
-    // POST: /Car/Edit/5 — Araç Güncelleme İşlemi
+    // POST: /Car/Update/5 — Araç Güncelleme İşlemi
     [HttpPost]
-    public async Task<IActionResult> Edit(int id, CarEditViewModel model)
+    public async Task<IActionResult> Update(int id, CarUpdateViewModel model)
     {
         if (id != model.Id)
         {

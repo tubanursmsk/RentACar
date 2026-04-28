@@ -74,7 +74,7 @@ public class CarController : Controller
         return View();
     }
 
-    // POST: /Car/Create — Araç Ekleme İşlemi
+    /// POST: /Car/Create — Araç Ekleme İşlemi
     [HttpPost]
     public async Task<IActionResult> Create(CarCreateViewModel model)
     {
@@ -85,21 +85,31 @@ public class CarController : Controller
             return View(model);
         }
 
-        // DTO'ya dönüştür
-        var dto = new CarCreateDto
-        {
-            BrandId = model.BrandId,
-            CurrentLocationId = model.CurrentLocationId,
-            Model = model.Model,
-            Year = model.Year,
-            Plate = model.Plate,
-            DailyPrice = model.DailyPrice,
-            MinFindeksScore = model.MinFindeksScore,
-            Status = model.Status
-        };
+        // 1. JSON yerine Multipart form datası oluşturuyoruz
+        using var content = new MultipartFormDataContent();
+        
+        content.Add(new StringContent(model.BrandId.ToString()), "BrandId");
+        content.Add(new StringContent(model.CurrentLocationId.ToString()), "CurrentLocationId");
+        content.Add(new StringContent(model.Model), "Model");
+        content.Add(new StringContent(model.Year.ToString()), "Year");
+        content.Add(new StringContent(model.Plate), "Plate");
+        
+        // Fiyatlarda virgül/nokta kültür sorununu çözmek için InvariantCulture kullanıyoruz
+        content.Add(new StringContent(model.DailyPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)), "DailyPrice");
+        
+        content.Add(new StringContent(model.MinFindeksScore.ToString()), "MinFindeksScore");
+        content.Add(new StringContent(((int)model.Status).ToString()), "Status");
 
-        // API'ye gönder
-        var response = await _apiService.PostAsync<CarCreateDto, int>("api/Car", dto);
+        // 2. Eğer resim seçildiyse Multipart'a dosyayı ekle
+        if (model.ImageFile != null && model.ImageFile.Length > 0)
+        {
+            var streamContent = new StreamContent(model.ImageFile.OpenReadStream());
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(model.ImageFile.ContentType);
+            content.Add(streamContent, "ImageFile", model.ImageFile.FileName); 
+        }
+
+        // 3. PostAsync yerine PostMultipartAsync kullanıyoruz
+        var response = await _apiService.PostMultipartAsync<int>("api/Car", content);
 
         if (response == null || !response.Success)
         {
@@ -112,39 +122,6 @@ public class CarController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // GET: /Car/Update/5 — Araç Düzenleme Formu
-    [HttpGet]
-    public async Task<IActionResult> Update(int id)
-    {
-        ViewData["Title"] = "Araç Düzenle";
-        ViewData["Breadcrumb"] = "Araç Düzenle";
-
-        var response = await _apiService.GetAsync<CarDto>($"api/Car/{id}");
-
-        if (response == null || !response.Success || response.Data == null)
-        {
-            TempData["ErrorMessage"] = "Araç bulunamadı.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        var car = response.Data;
-        var model = new CarUpdateViewModel
-        {
-            Id = car.Id,
-            BrandId = car.BrandId,
-            CurrentLocationId = car.CurrentLocationId,
-            Model = car.Model,
-            Year = car.Year,
-            Plate = car.Plate,
-            DailyPrice = car.DailyPrice,
-            MinFindeksScore = car.MinFindeksScore,
-            Status = car.Status,
-            CurrentImageUrl = car.ImageUrl
-        };
-
-        await PopulateDropdowns();
-        return View(model);
-    }
 
     // POST: /Car/Update/5 — Araç Güncelleme İşlemi
     [HttpPost]
@@ -163,22 +140,28 @@ public class CarController : Controller
             return View(model);
         }
 
-        // DTO'ya dönüştür
-        var dto = new CarUpdateDto
-        {
-            Id = model.Id,
-            BrandId = model.BrandId,
-            CurrentLocationId = model.CurrentLocationId,
-            Model = model.Model,
-            Year = model.Year,
-            Plate = model.Plate,
-            DailyPrice = model.DailyPrice,
-            MinFindeksScore = model.MinFindeksScore,
-            Status = model.Status
-        };
+        using var content = new MultipartFormDataContent();
+        
+        content.Add(new StringContent(model.Id.ToString()), "Id");
+        content.Add(new StringContent(model.BrandId.ToString()), "BrandId");
+        content.Add(new StringContent(model.CurrentLocationId.ToString()), "CurrentLocationId");
+        content.Add(new StringContent(model.Model), "Model");
+        content.Add(new StringContent(model.Year.ToString()), "Year");
+        content.Add(new StringContent(model.Plate), "Plate");
+        content.Add(new StringContent(model.DailyPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)), "DailyPrice");
+        content.Add(new StringContent(model.MinFindeksScore.ToString()), "MinFindeksScore");
+        content.Add(new StringContent(((int)model.Status).ToString()), "Status");
 
-        // API'ye gönder
-        var response = await _apiService.PutAsync<CarUpdateDto, bool>($"api/Car/{id}", dto);
+        // Eğer YENİ bir resim seçildiyse onu da yolla
+        if (model.ImageFile != null && model.ImageFile.Length > 0)
+        {
+            var streamContent = new StreamContent(model.ImageFile.OpenReadStream());
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(model.ImageFile.ContentType);
+            content.Add(streamContent, "ImageFile", model.ImageFile.FileName); 
+        }
+
+        // PutAsync yerine PutMultipartAsync kullanıyoruz
+        var response = await _apiService.PutMultipartAsync<bool>($"api/Car/{id}", content);
 
         if (response == null || !response.Success)
         {

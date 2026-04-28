@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using RentACar.Domain.Entities;
 
 namespace RentACar.Application.DTOs.Car
@@ -31,6 +32,6 @@ namespace RentACar.Application.DTOs.Car
 
          public CarStatus Status { get; set; }
 
-        public string? ImageUrl { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 }

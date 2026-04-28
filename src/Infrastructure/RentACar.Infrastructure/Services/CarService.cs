@@ -98,6 +98,29 @@ public class CarService : ICarService
         var car = _mapper.Map<Car>(dto);
         car.Status = CarStatus.Available; // Yeni eklenen araç varsayılan olarak müsaittir
 
+        // RESİM KAYDETME BLOĞU 
+        if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+        {
+            // 1. Dosyanın kaydedileceği klasör yolu (wwwroot/images/cars)
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "cars");
+
+            // Klasör yoksa oluştur
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            // 2. Çakışmaları önlemek için ismin başına benzersiz bir Guid ekle
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + dto.ImageFile.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            // 3. Fiziksel olarak dosyayı API'nin wwwroot klasörüne kopyala
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await dto.ImageFile.CopyToAsync(fileStream);
+            }
+
+            // 4. Veritabanına kaydedilecek URL yolunu belirle
+            car.ImageUrl = "/images/cars/" + uniqueFileName;
+        }
+
         await _unitOfWork.Repository<Car>().AddAsync(car);
         await _unitOfWork.SaveChangesAsync();
         return ApiResponse<int>.SuccessResult(car.Id, "Araç başarıyla eklendi.");
@@ -111,8 +134,48 @@ public class CarService : ICarService
         if (car == null || car.IsDeleted)
             return ApiResponse<bool>.ErrorResult("Güncellenecek araç bulunamadı.");
 
-        // AutoMapper ile DTO'daki verileri mevcut entity üzerine yansıtıyoruz
+        // 1. DİKKAT: AutoMapper'ın mevcut resmi silmesini engellemek için eski URL'i yedekliyoruz
+        var oldImageUrl = car.ImageUrl;
+
+        // AutoMapper ile DTO'daki verileri (Model, Yıl, Fiyat vb.) mevcut entity üzerine yansıtıyoruz
         _mapper.Map(dto, car);
+
+        // 2. YENİ RESİM EKLENDİ Mİ KONTROLÜ
+        if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+        {
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "cars");
+
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + dto.ImageFile.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await dto.ImageFile.CopyToAsync(fileStream);
+            }
+
+            // Yeni resmin URL'ini ata
+            car.ImageUrl = "/images/cars/" + uniqueFileName;
+            
+            // Opsiyonel: Sunucuda yer kaplamaması için eski resmi fiziksel olarak silebilirsin
+            /*
+            if (!string.IsNullOrEmpty(oldImageUrl))
+            {
+                var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", oldImageUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldFilePath))
+                {
+                    System.IO.File.Delete(oldFilePath);
+                }
+            }
+            */
+        }
+        else
+        {
+            // Eğer yeni resim seçilmediyse, yedeklediğimiz eski resmi geri koyuyoruz
+            car.ImageUrl = oldImageUrl;
+        }
+
         car.UpdatedDate = DateTime.UtcNow;
 
         _unitOfWork.Repository<Car>().Update(car);

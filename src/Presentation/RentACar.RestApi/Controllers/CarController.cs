@@ -30,14 +30,14 @@ public class CarController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id) => Ok(await _carService.GetCarByIdAsync(id));
 
-    
+
     [HttpPost]
     [Authorize(Roles = "Admin,CompanyManager,Staff")]
-    public async Task<IActionResult> Create([FromBody] CarCreateDto dto) => Ok(await _carService.CreateCarAsync(dto));
+    public async Task<IActionResult> Create([FromForm] CarCreateDto dto) => Ok(await _carService.CreateCarAsync(dto));
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Staff")] // Yönergeye göre personel yetkisi
-    public async Task<IActionResult> Update(int id, [FromBody] CarUpdateDto carUpdateDto)
+    public async Task<IActionResult> Update(int id, [FromForm] CarUpdateDto carUpdateDto)
     {
         // 1. Güvenlik Kontrolü: URL ID'si ile Body ID'si aynı mı?
         if (id != carUpdateDto.Id)

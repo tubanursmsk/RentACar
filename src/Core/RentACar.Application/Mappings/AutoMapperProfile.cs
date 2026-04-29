@@ -38,11 +38,12 @@ public class AutoMapperProfiles : Profile
 
         // Car Mappings
         CreateMap<Car, CarDto>()
-            .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Brand.Name))
-            .ForMember(dest => dest.CurrentLocationName, opt => opt.MapFrom(src => src.CurrentLocation.Name));
-
+            .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Brand.Name!= null ? src.Brand.Name : string.Empty))
+            .ForMember(dest => dest.CurrentLocationName, opt => opt.MapFrom(src => src.CurrentLocation.Name))
+            .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.CarImages.Select(x => x.ImageUrl).ToList())); // Car.CarImages listesindeki her bir elemanın ImageUrl'ini al ve listeye çevir
         CreateMap<CarCreateDto, Car>();
-        CreateMap<CarUpdateDto, Car>();
+        CreateMap<CarUpdateDto, Car>()
+            .ForMember(dest => dest.CarImages, opt => opt.Ignore()); // CarUpdateDto'da CarImages yok, bu yüzden bu alanı yoksay
 
         // Rental Mappings
         CreateMap<Rental, RentalDto>()
@@ -60,9 +61,6 @@ public class AutoMapperProfiles : Profile
 
         // Dashboard Mappings
         CreateMap<DashboardStatsDto, DashboardStatsDto>().ReverseMap();
-
-        
-        
 
     }
 }

@@ -31,6 +31,11 @@ public class CarCreateDto
 
     public CarStatus Status { get; set; }
 
-    //public string? ImageUrl { get; set; }
-    public IFormFile? ImageFile { get; set; }
+   // Veritabanına dosya yolu olarak bu kaydedilecek (String olarak)
+    public string? ImageUrl { get; set; }
+
+    // Frontend'den dosya gelirken buraya dolacak
+    public IFormFile? ImageFile { get; set; } 
+    // Tekil IFormFile yerine List yapıyoruz
+    public List<IFormFile>? ImageFiles { get; set; }
 }

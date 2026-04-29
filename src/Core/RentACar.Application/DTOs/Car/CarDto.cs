@@ -16,5 +16,6 @@ namespace RentACar.Application.DTOs.Car
         public int MinFindeksScore { get; set; }
         public CarStatus Status { get; set; }
         public string? ImageUrl { get; set; }
+        public List<string> Images { get; set; } = new List<string>();
     }
 }

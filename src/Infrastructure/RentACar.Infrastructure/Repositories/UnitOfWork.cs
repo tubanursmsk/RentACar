@@ -1,4 +1,5 @@
 using RentACar.Application.Interfaces;
+using RentACar.Domain.Interfaces;
 using RentACar.Infrastructure.Context;
 
 namespace RentACar.Infrastructure.Repositories;
@@ -6,13 +7,17 @@ namespace RentACar.Infrastructure.Repositories;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly AppDbContext _context;
-    
-    // Doğru tanımlama ve başlatma
     private readonly Dictionary<string, object> _repositories = new();
+
+    // 1. Özel Repository Tanımlaması
+    public ICarRepository Cars { get; }
 
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
+
+        // Constructor içinde atama
+        Cars = new CarRepository(_context);
     }
 
     public IGenericRepository<T> Repository<T>() where T : class
@@ -24,16 +29,17 @@ public class UnitOfWork : IUnitOfWork
         if (!_repositories.ContainsKey(type))
         {
             var repositoryType = typeof(GenericRepository<>);
-            
+
             // Activator null dönerse diye null-coalescing (??) operatörü ekledik (CS8604 Çözümü)
-            var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(T)), _context) 
+            var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(T)), _context)
                                      ?? throw new InvalidOperationException($"'{type}' için repository oluşturulamadı.");
-            
+
             _repositories.Add(type, repositoryInstance);
         }
 
         return (IGenericRepository<T>)_repositories[type];
     }
+
 
     public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
 

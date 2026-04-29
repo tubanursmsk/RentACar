@@ -13,9 +13,11 @@ namespace RentACar.Domain.Entities
         public string Plate { get; set; } = string.Empty;
         public decimal DailyPrice { get; set; }
         public int MinFindeksScore { get; set; } // Bu araç için gereken minimum Findeks kredi notu 
-        
+
         public CarStatus Status { get; set; } = CarStatus.Available;
         public string? ImageUrl { get; set; }
+
+        public ICollection<CarImage> CarImages { get; set; } = new List<CarImage>();
     }
 
     public enum CarStatus

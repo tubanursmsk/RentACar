@@ -17,7 +17,7 @@ public class CarController : ControllerBase
         _carService = carService;
     }
 
-    [HttpGet("List")]
+    [HttpGet("Paged")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {

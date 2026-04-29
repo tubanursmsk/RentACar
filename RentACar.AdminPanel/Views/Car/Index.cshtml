@@ -1,5 +1,5 @@
 @using RentACar.Domain.Entities
-@model CarPaginatedViewModel
+@model RentACar.AdminPanel.Models.CarListViewModel
 @{
     ViewData["Title"] = "Araç Yönetimi";
     ViewData["Breadcrumb"] = "Araçlar";
@@ -10,9 +10,15 @@
         <h1>Araç Yönetimi</h1>
         <p>Tüm araçları ve durumlarını yönetin.</p>
     </div>
-    <a asp-action="Create" class="btn btn-primary">
-        <i class="fa-solid fa-plus"></i> Yeni Araç Ekle
-    </a>
+    <div style="display:flex; gap:10px;">
+        @* Excel İndirme Butonu Eklendi *@
+        <a asp-action="ExportExcel" class="btn btn-secondary">
+            <i class="fa-solid fa-file-excel"></i> Excel İndir
+        </a>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Yeni Araç Ekle
+        </a>
+    </div>
 </div>
 
 @* ── Status Badge ── *@
@@ -39,10 +45,11 @@
 @* ── Table ── *@
 <div class="card">
     <div class="card-header">
-        <span class="card-title">Araçlar (@Model.TotalCount)</span>
+        <span class="card-title">Araçlar (@Model.Cars.TotalCount)</span>
     </div>
     <div class="table-wrapper">
-        @if (Model.Cars.Any())
+        @* DİKKAT: Model.Cars.Items.Any() olarak değiştirildi *@
+        @if (Model.Cars.Items.Any())
         {
             <table class="table">
                 <thead>
@@ -58,7 +65,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var car in Model.Cars)
+                    @* DİKKAT: Model.Cars.Items üzerinde dönüyoruz *@
+                    @foreach (var car in Model.Cars.Items)
                     {
                         <tr>
                             <td>
@@ -96,7 +104,7 @@
                                     <form asp-action="Delete" asp-route-id="@car.Id" method="post" style="display: inline;">
                                         <button type="submit" class="btn btn-icon btn-danger" 
                                                 title="Sil" 
-                                                onclick="return confirm('Bu araçı silmek istediğinizden emin misiniz?');">
+                                                onclick="return confirm('Bu aracı silmek istediğinizden emin misiniz?');">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </form>
@@ -113,49 +121,50 @@
                 <i class="fa-solid fa-inbox" style="font-size: 32px; color: var(--text-muted); opacity: 0.5;"></i>
                 <p style="margin-top: 12px; color: var(--text-muted);">Henüz araç kaydı bulunamadı.</p>
                 <a asp-action="Create" class="btn btn-primary mt-16">
-                    <i class="fa-solid fa-plus"></i> İlk Araçı Ekle
+                    <i class="fa-solid fa-plus"></i> İlk Aracı Ekle
                 </a>
             </div>
         }
     </div>
 
     @* ── Pagination ── *@
-    @if (Model.TotalPages > 1)
+    @* Tüm Model. özelliklerini Model.Cars. olarak güncelledik *@
+    @if (Model.Cars.TotalPages > 1)
     {
         <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
             <span style="font-size: 0.85rem; color: var(--text-muted);">
-                Sayfa @Model.PageNumber / @Model.TotalPages
+                Sayfa @Model.Cars.PageNumber / @Model.Cars.TotalPages
             </span>
             <nav aria-label="Pagination" class="pagination">
-                @if (Model.HasPreviousPage)
+                @if (Model.Cars.HasPreviousPage)
                 {
                     <li class="page-item">
-                        <a class="page-link" asp-route-pageNumber="1">
+                        <a class="page-link" asp-route-page="1">
                             <i class="fa-solid fa-angles-left"></i>
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" asp-route-pageNumber="@(Model.PageNumber - 1)">
+                        <a class="page-link" asp-route-page="@(Model.Cars.PageNumber - 1)">
                             <i class="fa-solid fa-angle-left"></i>
                         </a>
                     </li>
                 }
 
-                @for (int i = 1; i <= Model.TotalPages; i++)
+                @for (int i = 1; i <= Model.Cars.TotalPages; i++)
                 {
-                    if (i == Model.PageNumber)
+                    if (i == Model.Cars.PageNumber)
                     {
                         <li class="page-item active">
                             <span class="page-link">@i</span>
                         </li>
                     }
-                    else if ((i >= Model.PageNumber - 2 && i <= Model.PageNumber + 2) || i == 1 || i == Model.TotalPages)
+                    else if ((i >= Model.Cars.PageNumber - 2 && i <= Model.Cars.PageNumber + 2) || i == 1 || i == Model.Cars.TotalPages)
                     {
                         <li class="page-item">
-                            <a class="page-link" asp-route-pageNumber="@i">@i</a>
+                            <a class="page-link" asp-route-page="@i">@i</a>
                         </li>
                     }
-                    else if (i == Model.PageNumber - 3 || i == Model.PageNumber + 3)
+                    else if (i == Model.Cars.PageNumber - 3 || i == Model.Cars.PageNumber + 3)
                     {
                         <li class="page-item disabled">
                             <span class="page-link">...</span>
@@ -163,15 +172,15 @@
                     }
                 }
 
-                @if (Model.HasNextPage)
+                @if (Model.Cars.HasNextPage)
                 {
                     <li class="page-item">
-                        <a class="page-link" asp-route-pageNumber="@(Model.PageNumber + 1)">
+                        <a class="page-link" asp-route-page="@(Model.Cars.PageNumber + 1)">
                             <i class="fa-solid fa-angle-right"></i>
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" asp-route-pageNumber="@Model.TotalPages">
+                        <a class="page-link" asp-route-page="@Model.Cars.TotalPages">
                             <i class="fa-solid fa-angles-right"></i>
                         </a>
                     </li>

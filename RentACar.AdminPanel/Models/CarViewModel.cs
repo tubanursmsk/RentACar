@@ -53,15 +53,12 @@ public class CarCreateViewModel
     public int MinFindeksScore { get; set; }
 
     public CarStatus Status { get; set; } = CarStatus.Available;
-
-    [FileExtensions(Extensions = "jpg,jpeg,png,gif", ErrorMessage = "Sadece jpg, jpeg, png, gif dosyaları yüklenebilir.")]
-    public IFormFile? ImageFile { get; set; }
 }
 
 /// <summary>
 /// Araç güncelleme formunda kullanılacak
 /// </summary>
-public class CarUpdateViewModel
+public class CarEditViewModel
 {
     [Required]
     public int Id { get; set; }
@@ -96,9 +93,6 @@ public class CarUpdateViewModel
 
     // Mevcut resim URL'i (düzenleme anında gösterim için)
     public string? CurrentImageUrl { get; set; }
-
-    [FileExtensions(Extensions = "jpg,jpeg,png,gif", ErrorMessage = "Sadece jpg, jpeg, png, gif dosyaları yüklenebilir.")]
-    public IFormFile? ImageFile { get; set; }
 }
 
 /// <summary>

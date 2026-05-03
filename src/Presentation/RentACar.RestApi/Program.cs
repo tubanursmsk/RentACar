@@ -104,6 +104,7 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 app.UseMiddleware<GlobalExceptionHandler>();
+app.UseStaticFiles(); // wwwroot klasörünü dış dünyaya açar
 app.UseCors("DefaultCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();

@@ -16,13 +16,19 @@ namespace RentACar.AdminPanel.Controllers;
 public class CarController : Controller
 {
     private readonly BaseApiService _apiService;
+    private readonly IConfiguration _configuration;
+    private readonly string _apiBaseUrl;
 
-    public CarController(BaseApiService apiService)
+    public CarController(BaseApiService apiService, IConfiguration configuration)
     {
         _apiService = apiService;
+        _configuration = configuration;
+        
+        // appsettings.json'dan API adresini okur, bulamazsa varsayılanı kullanır
+        _apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5065/";
     }
 
-    // ── Dropdown verisini çekmek için helper ──
+    // ── KOD TEKRARINI ÖNLEMEK İÇİN YARDIMCI METOT ──
     private async Task LoadViewBags()
     {
         var brandResponse = await _apiService.GetAsync<IEnumerable<BrandDto>>("api/Brand/All");
@@ -36,21 +42,56 @@ public class CarController : Controller
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
     {
-        var response = await _apiService.GetAsync<PaginatedResult<CarDto>>(
-            $"api/Car/Paged?pageNumber={page}&pageSize={pageSize}");
+        var model = new CarListViewModel();
+        model.Cars.PageNumber = page;
+        model.Cars.PageSize = pageSize;
 
-        var viewModel = new CarListViewModel
+        try
         {
-            Cars = new Models.PagedResult<CarDto>
-            {
-                Items = response?.Data?.Items ?? new List<CarDto>(),
-                TotalCount = response?.Data?.TotalCount ?? 0,
-                PageNumber = page,
-                PageSize = pageSize
-            }
-        };
+            var response = await _apiService.GetAsync<RentACar.Application.DTOs.Responses.PaginatedResult<CarDto>>(
+                $"api/Car/Paged?pageNumber={page}&pageSize={pageSize}");
 
-        return View(viewModel);
+            if (response != null && response.Success && response.Data != null)
+            {
+                var cars = response.Data.Items.ToList();
+                
+                // RESİM URL DÜZELTMESİ BURADA YAPILIYOR
+                foreach (var car in cars)
+                {
+                    if (!string.IsNullOrEmpty(car.ImageUrl) && !car.ImageUrl.StartsWith("http"))
+                    {
+                        car.ImageUrl = $"{_apiBaseUrl.TrimEnd('/')}{car.ImageUrl}";
+                    }
+                }
+
+                model.Cars.Items = cars;
+                model.Cars.TotalCount = response.Data.TotalCount;
+            }
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            var listResponse = await _apiService.GetAsync<IEnumerable<CarDto>>(
+                $"api/Car/Paged?pageNumber={page}&pageSize={pageSize}");
+
+            if (listResponse != null && listResponse.Success && listResponse.Data != null)
+            {
+                var cars = listResponse.Data.ToList();
+                
+                // RESİM URL DÜZELTMESİ BURADA YAPILIYOR
+                foreach (var car in cars)
+                {
+                    if (!string.IsNullOrEmpty(car.ImageUrl) && !car.ImageUrl.StartsWith("http"))
+                    {
+                        car.ImageUrl = $"{_apiBaseUrl.TrimEnd('/')}{car.ImageUrl}";
+                    }
+                }
+
+                model.Cars.Items = cars;
+                model.Cars.TotalCount = cars.Count;
+            }
+        }
+
+        return View(model);
     }
 
     // ── YENİ ARAÇ EKLEME (GET) ──
@@ -58,7 +99,8 @@ public class CarController : Controller
     public async Task<IActionResult> Create()
     {
         await LoadViewBags();
-        return View(new CreateViewModel());
+        var model = new CreateViewModel();
+        return View(model);
     }
 
     // ── YENİ ARAÇ EKLEME (POST) ──
@@ -78,17 +120,15 @@ public class CarController : Controller
         content.Add(new StringContent(viewModel.Model ?? ""), nameof(CarCreateDto.Model));
         content.Add(new StringContent(viewModel.Year.ToString()), nameof(CarCreateDto.Year));
         content.Add(new StringContent(viewModel.Plate ?? ""), nameof(CarCreateDto.Plate));
-        content.Add(new StringContent(viewModel.DailyPrice.ToString(CultureInfo.InvariantCulture)),
-            nameof(CarCreateDto.DailyPrice));
+        content.Add(new StringContent(viewModel.DailyPrice.ToString(CultureInfo.InvariantCulture)), nameof(CarCreateDto.DailyPrice));
         content.Add(new StringContent(viewModel.MinFindeksScore.ToString()), nameof(CarCreateDto.MinFindeksScore));
         content.Add(new StringContent(((int)viewModel.Status).ToString()), nameof(CarCreateDto.Status));
 
-        // ÖNEMLİ: DTO'da `ImageFiles` (List) field'ı için form name'i de "ImageFiles" olmalı
         if (viewModel.ImageFile != null && viewModel.ImageFile.Length > 0)
         {
             var fileContent = new StreamContent(viewModel.ImageFile.OpenReadStream());
             fileContent.Headers.ContentType = new MediaTypeHeaderValue(viewModel.ImageFile.ContentType);
-            content.Add(fileContent, "ImageFiles", viewModel.ImageFile.FileName);
+            content.Add(fileContent, "ImageFile", viewModel.ImageFile.FileName);
         }
 
         var response = await _apiService.PostMultipartAsync<int>("api/Car", content);
@@ -129,7 +169,10 @@ public class CarController : Controller
             DailyPrice = car.DailyPrice,
             MinFindeksScore = car.MinFindeksScore,
             Status = car.Status,
-            CurrentImageUrl = car.ImageUrl
+            // RESİM URL DÜZELTMESİ BURADA YAPILIYOR (Edit sayfasındaki "Mevcut Resim" için)
+            CurrentImageUrl = string.IsNullOrEmpty(car.ImageUrl) || car.ImageUrl.StartsWith("http") 
+                              ? car.ImageUrl 
+                              : $"{_apiBaseUrl.TrimEnd('/')}{car.ImageUrl}"
         };
 
         return View(model);
@@ -153,17 +196,15 @@ public class CarController : Controller
         content.Add(new StringContent(viewModel.Model ?? ""), nameof(CarUpdateDto.Model));
         content.Add(new StringContent(viewModel.Year.ToString()), nameof(CarUpdateDto.Year));
         content.Add(new StringContent(viewModel.Plate ?? ""), nameof(CarUpdateDto.Plate));
-        content.Add(new StringContent(viewModel.DailyPrice.ToString(CultureInfo.InvariantCulture)),
-            nameof(CarUpdateDto.DailyPrice));
+        content.Add(new StringContent(viewModel.DailyPrice.ToString(CultureInfo.InvariantCulture)), nameof(CarUpdateDto.DailyPrice));
         content.Add(new StringContent(viewModel.MinFindeksScore.ToString()), nameof(CarUpdateDto.MinFindeksScore));
         content.Add(new StringContent(((int)viewModel.Status).ToString()), nameof(CarUpdateDto.Status));
 
-        // ImageFile gelmezse mevcut ImageUrl korunur (CarService'te yönetiliyor)
         if (viewModel.ImageFile != null && viewModel.ImageFile.Length > 0)
         {
             var fileContent = new StreamContent(viewModel.ImageFile.OpenReadStream());
             fileContent.Headers.ContentType = new MediaTypeHeaderValue(viewModel.ImageFile.ContentType);
-            content.Add(fileContent, "ImageFiles", viewModel.ImageFile.FileName);
+            content.Add(fileContent, "ImageFile", viewModel.ImageFile.FileName);
         }
 
         var response = await _apiService.PutMultipartAsync<object>($"api/Car/{viewModel.Id}", content);
@@ -187,56 +228,64 @@ public class CarController : Controller
         var response = await _apiService.DeleteAsync($"api/Car/{id}");
 
         if (response != null && response.Success)
+        {
             TempData["SuccessMessage"] = "Araç başarıyla silindi.";
+        }
         else
+        {
             TempData["ErrorMessage"] = response?.Message ?? "Araç silinemedi.";
+        }
 
         return RedirectToAction(nameof(Index));
     }
 
-    // ── EXCEL EXPORT ──
+    // ── EXCEL ÇIKTISI (CLOSEDXML) ──
     [HttpGet]
     public async Task<IActionResult> ExportExcel()
     {
-        var response = await _apiService.GetAsync<PaginatedResult<CarDto>>(
-            "api/Car/Paged?pageNumber=1&pageSize=1000");
+        var response = await _apiService.GetAsync<RentACar.Application.DTOs.Responses.PaginatedResult<CarDto>>("api/Car/Paged?pageNumber=1&pageSize=1000");
         var cars = response?.Data?.Items?.ToList() ?? new List<CarDto>();
 
-        using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add("Araç Listesi");
-
-        worksheet.Cell(1, 1).Value = "Marka";
-        worksheet.Cell(1, 2).Value = "Model";
-        worksheet.Cell(1, 3).Value = "Yıl";
-        worksheet.Cell(1, 4).Value = "Plaka";
-        worksheet.Cell(1, 5).Value = "Günlük Fiyat";
-        worksheet.Cell(1, 6).Value = "Şube";
-        worksheet.Cell(1, 7).Value = "Durum";
-
-        var headerRange = worksheet.Range("A1:G1");
-        headerRange.Style.Font.Bold = true;
-        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
-        headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-        int row = 2;
-        foreach (var item in cars)
+        using (var workbook = new XLWorkbook())
         {
-            worksheet.Cell(row, 1).Value = item.BrandName;
-            worksheet.Cell(row, 2).Value = item.Model;
-            worksheet.Cell(row, 3).Value = item.Year;
-            worksheet.Cell(row, 4).Value = item.Plate;
-            worksheet.Cell(row, 5).Value = item.DailyPrice;
-            worksheet.Cell(row, 6).Value = item.CurrentLocationName;
-            worksheet.Cell(row, 7).Value = item.Status.ToString();
-            row++;
+            var worksheet = workbook.Worksheets.Add("Araç Listesi");
+
+            worksheet.Cell(1, 1).Value = "Marka";
+            worksheet.Cell(1, 2).Value = "Model";
+            worksheet.Cell(1, 3).Value = "Yıl";
+            worksheet.Cell(1, 4).Value = "Plaka";
+            worksheet.Cell(1, 5).Value = "Günlük Fiyat";
+            worksheet.Cell(1, 6).Value = "Şube";
+            worksheet.Cell(1, 7).Value = "Durum";
+
+            var headerRange = worksheet.Range("A1:G1");
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+            headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            int row = 2;
+            foreach (var item in cars)
+            {
+                worksheet.Cell(row, 1).Value = item.BrandName;
+                worksheet.Cell(row, 2).Value = item.Model;
+                worksheet.Cell(row, 3).Value = item.Year;
+                worksheet.Cell(row, 4).Value = item.Plate;
+                worksheet.Cell(row, 5).Value = item.DailyPrice;
+                worksheet.Cell(row, 6).Value = item.CurrentLocationName;
+                worksheet.Cell(row, 7).Value = item.Status.ToString();
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            using (var stream = new MemoryStream())
+            {
+                workbook.SaveAs(stream);
+                var content = stream.ToArray();
+                var fileName = $"Araclar_{DateTime.Now:ddMMyyyy}.xlsx";
+
+                return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
         }
-
-        worksheet.Columns().AdjustToContents();
-
-        using var stream = new MemoryStream();
-        workbook.SaveAs(stream);
-        var fileName = $"Araclar_{DateTime.Now:ddMMyyyy}.xlsx";
-        return File(stream.ToArray(),
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 }

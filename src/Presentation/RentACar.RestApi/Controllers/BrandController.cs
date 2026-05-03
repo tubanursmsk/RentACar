@@ -22,19 +22,19 @@ public class BrandController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id) => Ok(await _brandService.GetBrandByIdAsync(id));
 
-    [HttpPost]
-    [Authorize(Roles = "Admin,Staff")] // Sadece yetkili personel
-    public async Task<IActionResult> Create(BrandCreateDto dto) => Ok(await _brandService.CreateBrandAsync(dto));
+   [HttpPost]
+    [Authorize(Roles = "Admin,CompanyManager,Staff")]
+    public async Task<IActionResult> Create([FromForm] BrandCreateDto dto) => Ok(await _brandService.CreateBrandAsync(dto));
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin,Staff")]
-    public async Task<IActionResult> Update(int id, BrandUpdateDto dto)
+    [Authorize(Roles = "Admin,CompanyManager,Staff")]
+    public async Task<IActionResult> Update(int id, [FromForm] BrandUpdateDto dto)
     {
-        dto.Id = id; // Güvenlik için URL'den gelen ID'yi DTO'ya basıyoruz
+        dto.Id = id;
         return Ok(await _brandService.UpdateBrandAsync(id, dto));
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin,CompanyManager,Staff")]
     public async Task<IActionResult> Delete(int id) => Ok(await _brandService.DeleteBrandAsync(id));
 }

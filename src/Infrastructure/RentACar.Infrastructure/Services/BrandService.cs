@@ -42,9 +42,26 @@ public class BrandService : IBrandService
     public async Task<ApiResponse<int>> CreateBrandAsync(BrandCreateDto dto)
     {
         var brand = _mapper.Map<Brand>(dto);
+
+        // --- LOGO KAYDETME BLOĞU ---
+        if (dto.LogoFile != null && dto.LogoFile.Length > 0)
+        {
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "brands");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + dto.LogoFile.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await dto.LogoFile.CopyToAsync(fileStream);
+            }
+            brand.LogoUrl = "/images/brands/" + uniqueFileName;
+        }
+
         await _unitOfWork.Repository<Brand>().AddAsync(brand);
         await _unitOfWork.SaveChangesAsync();
-        return ApiResponse<int>.SuccessResult(brand.Id, "Marka başarıyla eklendi.");
+        return ApiResponse<int>.SuccessResult(brand.Id, "Marka eklendi.");
     }
 
     public async Task<ApiResponse<bool>> UpdateBrandAsync(int id, BrandUpdateDto dto)
@@ -52,12 +69,36 @@ public class BrandService : IBrandService
         var brand = await _unitOfWork.Repository<Brand>().GetByIdAsync(id);
         if (brand == null || brand.IsDeleted) return ApiResponse<bool>.ErrorResult("Marka bulunamadı.");
 
-        _mapper.Map(dto, brand);
-        brand.UpdatedDate = DateTime.UtcNow;
+        // Eski logoyu yedekle
+        var oldLogoUrl = brand.LogoUrl;
 
+        _mapper.Map(dto, brand);
+
+        // --- LOGO GÜNCELLEME BLOĞU ---
+        if (dto.LogoFile != null && dto.LogoFile.Length > 0)
+        {
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "brands");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + dto.LogoFile.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await dto.LogoFile.CopyToAsync(fileStream);
+            }
+            brand.LogoUrl = "/images/brands/" + uniqueFileName;
+        }
+        else
+        {
+            brand.LogoUrl = oldLogoUrl; // Yeni resim yoksa eskiyi koru
+        }
+
+        brand.UpdatedDate = DateTime.UtcNow;
         _unitOfWork.Repository<Brand>().Update(brand);
         await _unitOfWork.SaveChangesAsync();
-        return ApiResponse<bool>.SuccessResult(true, "Marka başarıyla güncellendi.");
+
+        return ApiResponse<bool>.SuccessResult(true, "Marka güncellendi.");
     }
 
     public async Task<ApiResponse<bool>> DeleteBrandAsync(int id)

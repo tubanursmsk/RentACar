@@ -1,0 +1,140 @@
+@model RentACar.AdminPanel.Models.BrandCreateViewModel
+@{
+    ViewData["Title"] = "Marka Ekle";
+    ViewData["Breadcrumb"] = "Marka Ekle";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Yeni Marka Ekle</h1>
+        <p>Sisteme yeni bir araç markası tanımlayın.</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 350px; gap: 20px; max-width: 1000px;">
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="card">
+        @Html.AntiForgeryToken()
+
+        <div class="card-header">
+            <span class="card-title">Marka Bilgileri</span>
+        </div>
+
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display:none;"></div>
+
+            <div class="form-group" style="margin-bottom: 18px;">
+                <label asp-for="Name" class="form-label">Marka Adı <span style="color: var(--danger);">*</span></label>
+                <input asp-for="Name" type="text" class="form-control" placeholder="Örn: BMW, Mercedes, Renault" />
+                <span asp-validation-for="Name" class="invalid-feedback"></span>
+            </div>
+
+            @* ── RESİM YÜKLEME (drag-drop) ── *@
+            <div class="form-group">
+                <label class="form-label">Marka Logosu</label>
+                <div id="dropZone"
+                     style="position: relative; border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 28px 20px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--bg-elevated);">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 28px; color: var(--accent); margin-bottom: 10px;"></i>
+                    <p style="color: var(--text-muted); margin: 8px 0;">
+                        Logoyu sürükleyip bırakın veya <strong>tıklayarak</strong> seçin
+                    </p>
+                    <small style="color: var(--text-muted);">JPG, PNG, WEBP — Max 5MB</small>
+                    <input type="file" asp-for="LogoFile" id="LogoFile" accept="image/*" style="display: none;" />
+                </div>
+
+                <div id="imagePreview" style="display: none; margin-top: 12px; text-align: center;">
+                    <img id="previewImg" src="" alt="Önizleme"
+                         style="max-width: 150px; max-height: 150px; border-radius: var(--radius-md); border: 1px solid var(--border-color); padding: 10px; background: #fff; object-fit: contain;" />
+                    <div style="margin-top: 10px;">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="clearImage()">
+                            <i class="fa-solid fa-times"></i> Kaldır
+                        </button>
+                    </div>
+                </div>
+                <span asp-validation-for="LogoFile" class="invalid-feedback"></span>
+            </div>
+        </div>
+
+        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; justify-content: flex-end;">
+            <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-save"></i> Markayı Kaydet
+            </button>
+        </div>
+    </form>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Bilgiler</span>
+        </div>
+        <div class="card-body" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.7;">
+            <p>
+                <strong style="color: var(--text-primary);">Şeffaf Logolar</strong><br />
+                Arayüzde daha şık durması için arkası şeffaf (PNG veya WEBP) formatında logolar kullanmanızı tavsiye ederiz.
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+<script>
+    (function () {
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('LogoFile');
+        const preview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+
+        if (!dropZone || !fileInput) return;
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+            dropZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+        });
+
+        ['dragenter', 'dragover'].forEach(ev => {
+            dropZone.addEventListener(ev, () => {
+                dropZone.style.borderColor = 'var(--accent)';
+                dropZone.style.backgroundColor = 'var(--accent-muted)';
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(ev => {
+            dropZone.addEventListener(ev, () => {
+                dropZone.style.borderColor = 'var(--border-color)';
+                dropZone.style.backgroundColor = 'var(--bg-elevated)';
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                showPreview(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files && fileInput.files[0]) {
+                showPreview(fileInput.files[0]);
+            }
+        });
+
+        function showPreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        window.clearImage = function () {
+            fileInput.value = '';
+            preview.style.display = 'none';
+            previewImg.src = '';
+        };
+    })();
+</script>
+}

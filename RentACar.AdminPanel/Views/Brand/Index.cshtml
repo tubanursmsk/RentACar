@@ -1,0 +1,133 @@
+@model RentACar.AdminPanel.Models.BrandListViewModel
+@{
+    ViewData["Title"] = "Marka Yönetimi";
+    ViewData["Breadcrumb"] = "Markalar";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Marka Yönetimi</h1>
+        <p>Sistemdeki araç markalarını ve logolarını yönetin.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <a asp-action="ExportExcel" class="btn btn-secondary">
+            <i class="fa-solid fa-file-excel"></i> Excel İndir
+        </a>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Yeni Marka Ekle
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Markalar (@Model.Brands.TotalCount)</span>
+    </div>
+    <div class="table-wrapper">
+        @if (Model.Brands.Items.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Logo</th>
+                        <th>Marka Adı</th>
+                        <th style="width: 100px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var brand in Model.Brands.Items)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(brand.LogoUrl))
+                                {
+                                    <img src="@brand.LogoUrl" alt="@brand.Name" 
+                                         style="width: 40px; height: 40px; border-radius: 6px; object-fit: contain; background: #fff; padding: 2px; border: 1px solid var(--border-color);" />
+                                }
+                                else
+                                {
+                                    <div style="width: 40px; height: 40px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); border: 1px solid var(--border-color);">
+                                        <i class="fa-solid fa-image" style="font-size: 16px;"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td class="fw-600">@brand.Name</td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <a asp-action="Edit" asp-route-id="@brand.Id" 
+                                       class="btn btn-icon btn-secondary" title="Düzenle">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@brand.Id" method="post" style="display: inline;">
+                                        <button type="submit" class="btn btn-icon btn-danger" 
+                                                title="Sil" 
+                                                onclick="return confirm('Bu markayı silmek istediğinizden emin misiniz?');">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div style="padding: 40px; text-align: center;">
+                <i class="fa-solid fa-copyright" style="font-size: 32px; color: var(--text-muted); opacity: 0.5;"></i>
+                <p style="margin-top: 12px; color: var(--text-muted);">Henüz marka kaydı bulunamadı.</p>
+                <a asp-action="Create" class="btn btn-primary mt-16">
+                    <i class="fa-solid fa-plus"></i> İlk Markayı Ekle
+                </a>
+            </div>
+        }
+    </div>
+
+    @* ── Pagination ── *@
+    @if (Model.Brands.TotalPages > 1)
+    {
+        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">
+                Sayfa @Model.Brands.PageNumber / @Model.Brands.TotalPages
+            </span>
+            <nav aria-label="Pagination" class="pagination">
+                @if (Model.Brands.HasPreviousPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-route-page="1"><i class="fa-solid fa-angles-left"></i></a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" asp-route-page="@(Model.Brands.PageNumber - 1)"><i class="fa-solid fa-angle-left"></i></a>
+                    </li>
+                }
+
+                @for (int i = 1; i <= Model.Brands.TotalPages; i++)
+                {
+                    if (i == Model.Brands.PageNumber)
+                    {
+                        <li class="page-item active"><span class="page-link">@i</span></li>
+                    }
+                    else if ((i >= Model.Brands.PageNumber - 2 && i <= Model.Brands.PageNumber + 2) || i == 1 || i == Model.Brands.TotalPages)
+                    {
+                        <li class="page-item"><a class="page-link" asp-route-page="@i">@i</a></li>
+                    }
+                    else if (i == Model.Brands.PageNumber - 3 || i == Model.Brands.PageNumber + 3)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    }
+                }
+
+                @if (Model.Brands.HasNextPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-route-page="@(Model.Brands.PageNumber + 1)"><i class="fa-solid fa-angle-right"></i></a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" asp-route-page="@Model.Brands.TotalPages"><i class="fa-solid fa-angles-right"></i></a>
+                    </li>
+                }
+            </nav>
+        </div>
+    }
+</div>

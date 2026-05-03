@@ -21,6 +21,23 @@ public class CarService : ICarService
         _hostEnvironment = hostEnvironment;
     }
 
+    // ── PAGED LIST ──
+    public async Task<ApiResponse<PaginatedResult<CarDto>>> GetPagedAsync(int pageNumber, int pageSize)
+    {
+        var (items, totalCount) = await _unitOfWork.Cars.GetPagedWithDetailsAsync(pageNumber, pageSize);
+        var dtos = _mapper.Map<List<CarDto>>(items);
+
+        var result = new PaginatedResult<CarDto>
+        {
+            Items = dtos,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        return ApiResponse<PaginatedResult<CarDto>>.SuccessResult(result, "Araçlar başarıyla listelendi.");
+    }
+
     public async Task<ApiResponse<IEnumerable<CarDto>>> GetAllAsync()
     {
         var cars = await _unitOfWork.Cars.GetAllWithDetailsAsync();
@@ -31,109 +48,47 @@ public class CarService : ICarService
     public async Task<ApiResponse<CarDto>> GetByIdAsync(int id)
     {
         var car = await _unitOfWork.Cars.GetByIdWithImagesAsync(id);
-        if (car == null) 
+        if (car == null)
             return ApiResponse<CarDto>.ErrorResult("Araç bulunamadı.");
 
         var dto = _mapper.Map<CarDto>(car);
         return ApiResponse<CarDto>.SuccessResult(dto);
     }
 
+    // ── CREATE ──
     public async Task<ApiResponse<int>> CreateAsync(CarCreateDto dto)
     {
         var car = _mapper.Map<Car>(dto);
+        car.Status = dto.Status == 0 ? CarStatus.Available : dto.Status;
 
-        // --- ÇOKLU RESİM YÜKLEME MANTIĞI ---
-        if (dto.ImageFiles != null && dto.ImageFiles.Count > 0)
-        {
-            var uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "images", "cars");
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-            bool isFirstImage = true;
-
-            foreach (var file in dto.ImageFiles)
-            {
-                if (file.Length > 0)
-                {
-                    // 1. Dosyayı Kaydet
-                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(fileStream);
-                    }
-
-                    var dbPath = $"/images/cars/{uniqueFileName}";
-
-                    // 2. İlk resimse Car tablosundaki ana ImageUrl'e de yaz
-                    if (isFirstImage)
-                    {
-                        car.ImageUrl = dbPath;
-                    }
-
-                    // 3. CarImages tablosuna ekle
-                    car.CarImages.Add(new CarImage
-                    {
-                        ImageUrl = dbPath,
-                        IsMain = isFirstImage
-                    });
-
-                    isFirstImage = false;
-                }
-            }
-        }
+        // Resimleri işle
+        await ProcessImageUploadsAsync(car, dto.ImageFiles, isNewCar: true);
 
         await _unitOfWork.Cars.AddAsync(car);
         await _unitOfWork.SaveChangesAsync();
-        
-        return ApiResponse<int>.SuccessResult(car.Id, "Araç ve görseller başarıyla eklendi.");
+
+        return ApiResponse<int>.SuccessResult(car.Id, "Araç başarıyla eklendi.");
     }
 
+    // ── UPDATE ──
     public async Task<ApiResponse<bool>> UpdateAsync(int id, CarUpdateDto dto)
     {
         var car = await _unitOfWork.Cars.GetByIdWithImagesAsync(id);
-
         if (car == null)
             return ApiResponse<bool>.ErrorResult("Güncellenecek araç bulunamadı.");
 
-        // DTO -> Entity eşlemesi (Resimler hariç, AutoMapper Ignore kurallarına göre)
+        // Mevcut ImageUrl ve CarImages koruyacağız (AutoMapper override etmeyecek)
+        var currentImageUrl = car.ImageUrl;
+
+        // DTO -> Entity (ImageUrl, CarImages, IFormFile alanları AutoMapper'da Ignore edildi)
         _mapper.Map(dto, car);
 
-        // --- Yeni resimler eklendiyse ---
-        if (dto.ImageFiles is { Count: > 0 })
-        {
-            var uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "images", "cars");
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+        // ImageUrl'i geri yükle (DTO'dan gelen null olabilir)
+        car.ImageUrl = currentImageUrl;
+        car.UpdatedDate = DateTime.UtcNow;
 
-            foreach (var file in dto.ImageFiles)
-            {
-                if (file == null || file.Length <= 0) continue;
-
-                var safeFileName = Path.GetFileName(file.FileName);
-                var uniqueFileName = $"{Guid.NewGuid()}_{safeFileName}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(fileStream);
-                }
-
-                var dbPath = $"/images/cars/{uniqueFileName}";
-
-                car.CarImages.Add(new CarImage
-                {
-                    CarId = car.Id,
-                    ImageUrl = dbPath,
-                    IsMain = false 
-                });
-                
-                // Eğer aracın mevcut bir ana resmi yoksa, yüklenen ilk resmi ana resim yap
-                if (string.IsNullOrEmpty(car.ImageUrl))
-                {
-                    car.ImageUrl = dbPath;
-                }
-            }
-        }
+        // Yeni resimler eklendiyse işle
+        await ProcessImageUploadsAsync(car, dto.ImageFiles, isNewCar: false);
 
         _unitOfWork.Cars.Update(car);
         await _unitOfWork.SaveChangesAsync();
@@ -141,15 +96,79 @@ public class CarService : ICarService
         return ApiResponse<bool>.SuccessResult(true, "Araç başarıyla güncellendi.");
     }
 
+    // ── DELETE (Soft) ──
     public async Task<ApiResponse<bool>> DeleteAsync(int id)
     {
         var car = await _unitOfWork.Cars.GetByIdAsync(id);
-        if (car == null) 
+        if (car == null)
             return ApiResponse<bool>.ErrorResult("Silinecek araç bulunamadı.");
 
-        _unitOfWork.Cars.Delete(car);
+        car.IsDeleted = true;
+        car.UpdatedDate = DateTime.UtcNow;
+        _unitOfWork.Cars.Update(car);
         await _unitOfWork.SaveChangesAsync();
 
         return ApiResponse<bool>.SuccessResult(true, "Araç silindi.");
+    }
+
+    // ── HELPER: Resim upload işlemi ──
+    private async Task ProcessImageUploadsAsync(Car car, List<IFormFile>? imageFiles, bool isNewCar)
+    {
+        if (imageFiles == null || imageFiles.Count == 0)
+            return;
+
+        var webRoot = _hostEnvironment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+        var uploadsFolder = Path.Combine(webRoot, "images", "cars");
+        if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+
+        // Yeni araçsa: ilk resim ana resim olur
+        // Mevcut araçsa: zaten ana resim varsa yeni gelenler ek resim
+        bool isFirstImage = isNewCar || string.IsNullOrEmpty(car.ImageUrl);
+
+        foreach (var file in imageFiles)
+        {
+            if (file == null || file.Length == 0) continue;
+
+            // Validasyon
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(ext))
+                continue;
+
+            if (file.Length > 5 * 1024 * 1024) // 5MB
+                continue;
+
+            // Güvenli dosya adı
+            var safeFileName = $"{Guid.NewGuid():N}{ext}";
+            var filePath = Path.Combine(uploadsFolder, safeFileName);
+            var dbPath = $"/images/cars/{safeFileName}";
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Ana resim
+            if (isFirstImage)
+            {
+                car.ImageUrl = dbPath;
+                isFirstImage = false;
+
+                car.CarImages.Add(new CarImage
+                {
+                    ImageUrl = dbPath,
+                    IsMain = true
+                });
+            }
+            else
+            {
+                car.CarImages.Add(new CarImage
+                {
+                    ImageUrl = dbPath,
+                    IsMain = false
+                });
+            }
+        }
     }
 }

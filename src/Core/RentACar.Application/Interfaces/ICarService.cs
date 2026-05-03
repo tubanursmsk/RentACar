@@ -5,6 +5,7 @@ namespace RentACar.Application.Interfaces;
 
 public interface ICarService
 {
+    Task<ApiResponse<PaginatedResult<CarDto>>> GetPagedAsync(int pageNumber, int pageSize);
     Task<ApiResponse<IEnumerable<CarDto>>> GetAllAsync();
     Task<ApiResponse<CarDto>> GetByIdAsync(int id);
     Task<ApiResponse<int>> CreateAsync(CarCreateDto dto);

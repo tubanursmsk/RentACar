@@ -106,4 +106,47 @@ public class UserService : IUserService
         await _unitOfWork.SaveChangesAsync();
         return ApiResponse<bool>.SuccessResult(true, "Şifre değiştirildi.");
     }
+
+    
+    // admin panelden personelin manuel olarak müşteri eklenmesi için oluşturulan metod
+    public async Task<ApiResponse<int>> CreateUserAsync(UserCreateDto dto)
+    {
+        // 1. E-posta kontrolü (Aynı mailden var mı?)
+        bool isEmailExists = await _unitOfWork.Repository<User>().AnyAsync(u => u.Email == dto.Email && !u.IsDeleted);
+        if (isEmailExists)
+            return ApiResponse<int>.ErrorResult("Bu e-posta adresi ile kayıtlı bir kullanıcı zaten var.");
+
+        // 2. Kullanıcıyı oluştur
+        var user = new User
+        {
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            Email = dto.Email,
+            Role = dto.Role,
+            PasswordHash = PasswordHasher.HashPassword(dto.Password), // Şifreyi güvenli hale getiriyoruz
+            CreatedDate = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Repository<User>().AddAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ApiResponse<int>.SuccessResult(user.Id, "Kullanıcı başarıyla oluşturuldu.");
+    }
+
+    public async Task<ApiResponse<bool>> DeleteUserAsync(int id)
+    {
+        var user = await _unitOfWork.Repository<User>().GetByIdAsync(id);
+        if (user == null || user.IsDeleted)
+            return ApiResponse<bool>.ErrorResult("Silinecek kullanıcı bulunamadı.");
+
+        // Admin kendi kendini silemesin (Güvenlik Önlemi)
+        // Eğer giriş yapan kullanıcının ID'sini buraya gönderirsek kontrol edebiliriz, şimdilik basit soft-delete yapıyoruz.
+        
+        user.IsDeleted = true;
+
+        _unitOfWork.Repository<User>().Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ApiResponse<bool>.SuccessResult(true, "Kullanıcı başarıyla silindi.");
+    }
 }

@@ -35,4 +35,21 @@ public class UserController : ControllerBase
         dto.Id = userId;
         return Ok(await _userService.UpdateProfileAsync(userId, dto));
     }
+    
+    // admin panelden personelin manuel olarak müşteri eklenmesi için oluşturulan metod
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Create([FromBody] UserCreateDto dto)
+    {
+        var result = await _userService.CreateUserAsync(dto);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await _userService.DeleteUserAsync(id);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
 }

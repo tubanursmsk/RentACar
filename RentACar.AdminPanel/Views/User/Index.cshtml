@@ -1,0 +1,102 @@
+@model RentACar.AdminPanel.Models.UserListViewModel
+@{
+    ViewData["Title"] = "Kullanıcı Yönetimi";
+    ViewData["Breadcrumb"] = "Kullanıcılar";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Kullanıcı Yönetimi</h1>
+        <p>Sistemdeki yöneticileri, personelleri ve müşterileri yönetin.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <a asp-action="ExportExcel" class="btn btn-secondary">
+            <i class="fa-solid fa-file-excel"></i> Excel İndir
+        </a>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fa-solid fa-user-plus"></i> Yeni Kullanıcı
+        </a>
+    </div>
+</div>
+
+@functions {
+    string GetRoleBadge(string role) => role switch
+    {
+        "Admin" => "badge-danger",
+        "CompanyManager" => "badge-warning",
+        "Staff" => "badge-info",
+        "Customer" => "badge-success",
+        _ => "badge-neutral"
+    };
+}
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Kayıtlı Kullanıcılar (@Model.Users.TotalCount)</span>
+    </div>
+    <div class="table-wrapper">
+        @if (Model.Users.Items.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ad Soyad</th>
+                        <th>E-Posta Adresi</th>
+                        <th>Yetki (Rol)</th>
+                        <th>Kayıt Tarihi</th>
+                        <th style="width: 100px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Users.Items)
+                    {
+                        <tr>
+                            <td class="fw-600">@user.FirstName @user.LastName</td>
+                            <td>@user.Email</td>
+                            <td>
+                                <span class="badge @GetRoleBadge(user.Role)">@user.Role</span>
+                            </td>
+                            <td style="font-size: 0.85rem; color: var(--text-muted);">@user.CreatedDate.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-icon btn-secondary" title="Düzenle">
+                                        <i class="fa-solid fa-user-pen"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@user.Id" method="post" style="display: inline;">
+                                        <button type="submit" class="btn btn-icon btn-danger" title="Sil" onclick="return confirm('Bu kullanıcıyı sistemden silmek istediğinize emin misiniz?');">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div style="padding: 40px; text-align: center;">
+                <i class="fa-solid fa-users-slash" style="font-size: 32px; color: var(--text-muted); opacity: 0.5;"></i>
+                <p style="margin-top: 12px; color: var(--text-muted);">Sistemde kayıtlı kullanıcı bulunamadı.</p>
+            </div>
+        }
+    </div>
+
+    @if (Model.Users.TotalPages > 1)
+    {
+        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Sayfa @Model.Users.PageNumber / @Model.Users.TotalPages</span>
+            <nav aria-label="Pagination" class="pagination">
+                @if (Model.Users.HasPreviousPage)
+                {
+                    <li class="page-item"><a class="page-link" asp-route-page="@(Model.Users.PageNumber - 1)">Önceki</a></li>
+                }
+                @if (Model.Users.HasNextPage)
+                {
+                    <li class="page-item"><a class="page-link" asp-route-page="@(Model.Users.PageNumber + 1)">Sonraki</a></li>
+                }
+            </nav>
+        </div>
+    }
+</div>

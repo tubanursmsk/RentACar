@@ -6,6 +6,7 @@ namespace RentACar.Application.Interfaces;
 
 public interface IUserService
 {
+    Task<ApiResponse<int>> CreateUserAsync(UserCreateDto dto);
     Task<ApiResponse<PaginationModel<UserDto>>> GetPagedUsersAsync(int pageNumber, int pageSize);
     Task<ApiResponse<IEnumerable<UserDto>>> GetAllUsersAsync();
     Task<ApiResponse<IEnumerable<UserDto>>?> GetCompanyStaffAsync(int companyId);
@@ -14,4 +15,6 @@ public interface IUserService
     Task<ApiResponse<bool>> AssignRoleAsync(UserDto dto);
     Task<ApiResponse<bool>> RemoveRoleAsync(UserDto dto);
     Task<ApiResponse<bool>> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
+    Task<ApiResponse<bool>> DeleteUserAsync(int id);
+
 }

@@ -57,10 +57,14 @@
                                     <i class="fa-solid fa-gauge-high"></i> @customer.FindeksScore
                                 </span>
                             </td>
+                            
                             <td>
-                                <a asp-action="Edit" asp-route-id="@customer.Id" class="btn btn-icon btn-secondary" title="Düzenle">
-                                    <i class="fa-solid fa-user-pen"></i>
-                                </a>
+                                <form asp-action="Delete" asp-route-id="@customer.Id" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-icon btn-danger" title="Müşteriyi Sil"
+                                            onclick="return confirm('Bu müşteriyi ve ona bağlı verileri silmek istediğinize emin misiniz?');">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     }

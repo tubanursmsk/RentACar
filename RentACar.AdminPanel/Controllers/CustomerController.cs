@@ -7,7 +7,7 @@ using ClosedXML.Excel;
 
 namespace RentACar.AdminPanel.Controllers;
 
-[Authorize(Roles = "Admin,CompanyManager,Staff")] // İş mantığımıza göre herkes erişebilir
+[Authorize(Roles = "Admin,CompanyManager,Staff")] 
 public class CustomerController : Controller
 {
     private readonly BaseApiService _apiService;
@@ -17,7 +17,6 @@ public class CustomerController : Controller
         _apiService = apiService;
     }
 
-    // ── 1. GET: /Customer (Müşteri Listesi) ──
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -35,75 +34,29 @@ public class CustomerController : Controller
         return View(model);
     }
 
-    // ── 2. GET: /Customer/Edit/{id} (Düzenleme Formu) ──
-    [HttpGet]
-    public async Task<IActionResult> Edit(int id)
-    {
-        ViewData["Title"] = "Müşteri Düzenle";
-        ViewData["Breadcrumb"] = "Müşteri Düzenle";
-
-        var response = await _apiService.GetAsync<CustomerDto>($"api/Customer/{id}");
-        
-        if (response == null || !response.Success || response.Data == null)
-        {
-            TempData["ErrorMessage"] = "Güncellenecek müşteri bulunamadı.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        var customer = response.Data;
-        var model = new CustomerUpdateViewModel
-        {
-            Id = customer.Id,
-            UserId = customer.UserId,
-            FullName = customer.FullName,
-            IdentityNumber = customer.IdentityNumber,
-            Phone = customer.Phone,
-            DateOfBirth = customer.DateOfBirth,
-            FindeksScore = customer.FindeksScore
-        };
-
-        return View(model);
-    }
-
-    // ── 3. POST: /Customer/Edit/{id} ──
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(CustomerUpdateViewModel model)
+    public async Task<IActionResult> Delete(int id)
     {
-        if (!ModelState.IsValid) return View(model);
+        // Yalnızca Admin veya Şube Yöneticisi müşteri silebilir kısıtlaması ekleyebilirsin
+        var response = await _apiService.DeleteAsync($"api/Customer/{id}");
 
-        var dto = new CustomerUpdateDto
-        {
-            UserId = model.UserId,
-            IdentityNumber = model.IdentityNumber,
-            Phone = model.Phone,
-            DateOfBirth = model.DateOfBirth,
-            FindeksScore = model.FindeksScore
-        };
+        if (response != null && response.Success) TempData["SuccessMessage"] = "Müşteri sistemden silindi.";
+        else TempData["ErrorMessage"] = response?.Message ?? "Müşteri silinemedi (Aktif kiralaması olabilir).";
 
-        var response = await _apiService.PutAsync<CustomerUpdateDto, object>($"api/Customer/{model.Id}", dto);
-
-        if (response != null && response.Success)
-        {
-            TempData["SuccessMessage"] = "Müşteri bilgileri başarıyla güncellendi.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        TempData["ErrorMessage"] = response?.Message ?? "Güncelleme sırasında hata oluştu.";
-        return View(model);
+        return RedirectToAction(nameof(Index));
     }
 
-    // ── 4. EXCEL ÇIKTISI ──
     [HttpGet]
     public async Task<IActionResult> ExportExcel()
     {
+        // ... (Önceki mesajdaki ExportExcel kodunun aynısı kalacak)
         var response = await _apiService.GetAsync<IEnumerable<CustomerDto>>("api/Customer/All");
         var customers = response?.Data?.ToList() ?? new List<CustomerDto>();
 
         using (var workbook = new XLWorkbook())
         {
             var worksheet = workbook.Worksheets.Add("Müşteriler");
-
             worksheet.Cell(1, 1).Value = "Müşteri No";
             worksheet.Cell(1, 2).Value = "Ad Soyad";
             worksheet.Cell(1, 3).Value = "TC Kimlik No";

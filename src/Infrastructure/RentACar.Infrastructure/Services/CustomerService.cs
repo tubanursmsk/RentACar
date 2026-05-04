@@ -62,4 +62,21 @@ public class CustomerService : ICustomerService
 
         return ApiResponse<bool>.SuccessResult(true, "Müşteri bilgileri başarıyla güncellendi.");
     }
+
+    public async Task<ApiResponse<bool>> DeleteAsync(int id)
+    {
+        var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(id);
+        
+        if (customer == null || customer.IsDeleted) 
+            return ApiResponse<bool>.ErrorResult("Müşteri bulunamadı.");
+
+        // Silme işlemi yerine, IsDeleted flag'ini true yaparak soft delete uyguluyoruz
+        customer.IsDeleted = true;
+        customer.UpdatedDate = DateTime.UtcNow;
+
+        _unitOfWork.Repository<Customer>().Update(customer);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ApiResponse<bool>.SuccessResult(true, "Müşteri başarıyla silindi.");
+    }
 }

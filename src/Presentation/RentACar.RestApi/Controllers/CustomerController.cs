@@ -33,14 +33,12 @@ public class CustomerController : ControllerBase
         return Ok(await _customerService.GetCustomerByIdAsync(id));
     }
 
-    // ── EKLENEN METOT: PUT: api/Customer/{id} ──
-    [HttpPut("{id}")]
-    [Authorize(Roles = "Admin,CompanyManager,Staff")]
-    public async Task<IActionResult> Update(int id, CustomerUpdateDto dto)
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin,CompanyManager,Staff")] 
+    public async Task<IActionResult> Delete(int id)
     {
-        // Güvenlik için URL'den gelen ID'yi Dto'daki ile aynı yapıyoruz (isteğe bağlı)
-        if (dto.UserId == 0) dto.UserId = id; 
-        
-        return Ok(await _customerService.UpdateCustomerAsync(id, dto));
+        var result = await _customerService.DeleteAsync(id);
+        if (result.Success) return Ok(result);
+        return BadRequest(result);
     }
 }

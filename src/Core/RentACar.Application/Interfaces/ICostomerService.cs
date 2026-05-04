@@ -7,5 +7,5 @@ public interface ICustomerService
 {
     Task<ApiResponse<IEnumerable<CustomerDto>>> GetAllCustomersAsync();
     Task<ApiResponse<CustomerDto>> GetCustomerByIdAsync(int id);
-    Task<ApiResponse<bool>> UpdateCustomerAsync(int id, CustomerUpdateDto dto);
+    Task<ApiResponse<bool>> DeleteAsync(int id);
 }

@@ -126,17 +126,25 @@ public class UserController : Controller
         if (!ModelState.IsValid) return View(model);
 
         // 1. Profil Bilgilerini Güncelle (API'deki UpdateProfile)
-        var profileDto = new UserUpdateDto 
-        { 
-            Id = model.Id, 
-            FirstName = model.FirstName, 
-            LastName = model.LastName, 
-            Email = model.Email 
+        var profileDto = new UserUpdateDto
+        {
+            Id = model.Id,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            Email = model.Email
         };
         var profileResponse = await _apiService.PutAsync<UserUpdateDto, object>($"api/User/UpdateProfile/{model.Id}", profileDto);
 
         // 2. Rolü Güncelle (API'deki AssignRole)
-        var roleDto = new UserDto { Id = model.Id, Role = model.Role };
+        // API'deki [Required] etiketlerine takılmamak için formdaki diğer bilgileri de DTO'ya ekliyorum.
+        var roleDto = new UserDto
+        {
+            Id = model.Id,
+            Role = model.Role,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            Email = model.Email
+        };
         var roleResponse = await _apiService.PostAsync<UserDto, object>("api/User/AssignRole", roleDto);
 
         if (profileResponse != null && profileResponse.Success)

@@ -41,4 +41,25 @@ public class CustomerService : ICustomerService
 
         return ApiResponse<CustomerDto>.SuccessResult(_mapper.Map<CustomerDto>(customer));
     }
+
+    
+    public async Task<ApiResponse<bool>> UpdateCustomerAsync(int id, CustomerUpdateDto dto)
+    {
+        var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(id);
+        
+        if (customer == null || customer.IsDeleted) 
+            return ApiResponse<bool>.ErrorResult("Müşteri bulunamadı.");
+
+        // Müşteriye ait bilgileri DTO'dan gelen verilerle güncelliyoruz
+        customer.IdentityNumber = dto.IdentityNumber;
+        customer.Phone = dto.Phone;
+        customer.DateOfBirth = dto.DateOfBirth;
+        customer.FindeksScore = dto.FindeksScore;
+        customer.UpdatedDate = DateTime.UtcNow;
+
+        _unitOfWork.Repository<Customer>().Update(customer);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ApiResponse<bool>.SuccessResult(true, "Müşteri bilgileri başarıyla güncellendi.");
+    }
 }

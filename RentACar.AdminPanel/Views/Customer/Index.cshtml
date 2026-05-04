@@ -1,0 +1,78 @@
+@model RentACar.AdminPanel.Models.CustomerListViewModel
+@{
+    ViewData["Title"] = "Müşteri Yönetimi";
+    ViewData["Breadcrumb"] = "Müşteriler";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Müşteri Yönetimi</h1>
+        <p>Kiralama yapan müşterilerin bilgilerini ve Findeks puanlarını yönetin.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <a asp-action="ExportExcel" class="btn btn-secondary">
+            <i class="fa-solid fa-file-excel"></i> Excel İndir
+        </a>
+    </div>
+</div>
+
+@functions {
+    string GetFindeksBadge(int score) => score switch
+    {
+        >= 1500 => "badge-success",
+        >= 1100 => "badge-info",
+        >= 700 => "badge-warning",
+        _ => "badge-danger"
+    };
+}
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Müşteriler (@Model.Customers.Count)</span>
+    </div>
+    <div class="table-wrapper">
+        @if (Model.Customers.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ad Soyad</th>
+                        <th>TC Kimlik No</th>
+                        <th>Telefon</th>
+                        <th>Doğum Tarihi</th>
+                        <th>Findeks Puanı</th>
+                        <th style="width: 80px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var customer in Model.Customers)
+                    {
+                        <tr>
+                            <td class="fw-600">@customer.FullName</td>
+                            <td style="font-family: monospace;">@customer.IdentityNumber</td>
+                            <td>@customer.Phone</td>
+                            <td>@customer.DateOfBirth.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <span class="badge @GetFindeksBadge(customer.FindeksScore)">
+                                    <i class="fa-solid fa-gauge-high"></i> @customer.FindeksScore
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@customer.Id" class="btn btn-icon btn-secondary" title="Düzenle">
+                                    <i class="fa-solid fa-user-pen"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div style="padding: 40px; text-align: center;">
+                <i class="fa-solid fa-users" style="font-size: 32px; color: var(--text-muted); opacity: 0.5;"></i>
+                <p style="margin-top: 12px; color: var(--text-muted);">Sistemde kayıtlı müşteri bulunamadı.</p>
+            </div>
+        }
+    </div>
+</div>

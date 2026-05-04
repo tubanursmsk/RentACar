@@ -69,9 +69,17 @@
 
                 <li
                     class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "User" ? "active" : "")">
-                    <a asp-controller="User" asp-action="Index" class="nav-link" data-tooltip="Kullanıcılar">
+                    <a asp-controller="User" asp-action="Index" class="nav-link" data-tooltip="Kullanıcı Yetkilendirme">
                         <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
-                        <span class="nav-label">Kullanıcılar</span>
+                        <span class="nav-label">Kullanıcı Yetkilendirme</span>
+                    </a>
+                </li>
+                 
+                <li
+                    class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customer" ? "active" : "")">
+                    <a asp-controller="Customer" asp-action="Index" class="nav-link" data-tooltip="Müşteri Yönetimi">
+                        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                        <span class="nav-label">Müşteri Yönetimi</span>
                     </a>
                 </li>
 

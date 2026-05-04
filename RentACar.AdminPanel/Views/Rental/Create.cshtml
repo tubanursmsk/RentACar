@@ -1,0 +1,122 @@
+@using RentACar.Application.DTOs.Car
+@using RentACar.Application.DTOs.Location
+@using RentACar.Application.DTOs.Customer
+@model RentACar.AdminPanel.Models.RentalCreateViewModel
+@{
+    ViewData["Title"] = "Manuel Kiralama Oluştur";
+    ViewData["Breadcrumb"] = "Kiralama Ekle";
+
+    var cars = (List<CarDto>)(ViewBag.AllCars ?? new List<CarDto>());
+    var locations = (List<LocationDto>)(ViewBag.AllLocations ?? new List<LocationDto>());
+    
+    // NOT: Müşteriler listesi için DTO'nun yapısına göre Value ve Text alanlarını düzenleyebilirsin.
+    // Örnekte Id ve FullName/Name kullanıldığı varsayılmıştır.
+    var customers = (List<CustomerDto>)(ViewBag.AllCustomers ?? new List<CustomerDto>());
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Kiralama Oluştur</h1>
+        <p>Müşteri adına ofisten manuel kiralama kaydı girin.</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr; max-width: 800px;">
+    <form asp-action="Create" method="post" class="card">
+        @Html.AntiForgeryToken()
+
+        <div class="card-header">
+            <span class="card-title">Kiralama Formu</span>
+        </div>
+
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display:none;"></div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
+                <div class="form-group">
+                    <label asp-for="CustomerId" class="form-label">Müşteri <span
+                        style="color: var(--danger);">*</span></label>
+                        <select asp-for="CustomerId" class="form-control">
+                            <option value="">-- Müşteri Seçin --</option>
+                            @foreach (var c in customers)
+                            {
+                                // DİKKAT: Artık c.FullName ve c.IdentityNumber kullanıyoruz
+                                <option value="@c.Id">@c.FullName (TC: @c.IdentityNumber)</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CustomerId" class="invalid-feedback"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="CarId" class="form-label">Araç <span style="color: var(--danger);">*</span></label>
+                        <select asp-for="CarId" class="form-control">
+                            <option value="">-- Araç Seçin --</option>
+                            @foreach (var c in cars)
+                            {
+                                <option value="@c.Id">@c.BrandName @c.Model - @c.Plate</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CarId" class="invalid-feedback"></span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
+                    <div class="form-group">
+                        <label asp-for="PickUpLocationId" class="form-label">Alış Şubesi <span
+                            style="color: var(--danger);">*</span></label>
+                            <select asp-for="PickUpLocationId" class="form-control"
+                                    asp-items="@(new SelectList(locations, "Id", "Name"))">
+                                <option value="">-- Şube Seçin --</option>
+                            </select>
+                            <span asp-validation-for="PickUpLocationId" class="invalid-feedback"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="DropOffLocationId" class="form-label">Dönüş Şubesi <span
+                                style="color: var(--danger);">*</span></label>
+                                <select asp-for="DropOffLocationId" class="form-control"
+                                        asp-items="@(new SelectList(locations, "Id", "Name"))">
+                                    <option value="">-- Şube Seçin --</option>
+                                </select>
+                                <span asp-validation-for="DropOffLocationId" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
+                            <div class="form-group">
+                                <label asp-for="RentStartDate" class="form-label">Alış Tarihi <span
+                                    style="color: var(--danger);">*</span></label>
+                                    <input asp-for="RentStartDate" type="datetime-local" class="form-control"
+                                           value="@Model.RentStartDate.ToString("yyyy-MM-ddTHH:mm")" />
+                                    <span asp-validation-for="RentStartDate" class="invalid-feedback"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="RentEndDate" class="form-label">Dönüş Tarihi <span
+                                        style="color: var(--danger);">*</span></label>
+                                        <input asp-for="RentEndDate" type="datetime-local" class="form-control"
+                                               value="@Model.RentEndDate.ToString("yyyy-MM-ddTHH:mm")" />
+                                        <span asp-validation-for="RentEndDate" class="invalid-feedback"></span>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <strong>Bilgi:</strong> Toplam tutar ve findeks kontrolleri API tarafından otomatik olarak hesaplanıp
+                                    doğrulanacaktır.
+                                </div>
+
+                            </div>
+
+                            <div
+                                style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; justify-content: flex-end;">
+                                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa-solid fa-save"></i> Kiralamayı Başlat
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    @section Scripts {
+                        <partial name="_ValidationScriptsPartial" />
+                    }

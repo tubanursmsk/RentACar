@@ -1,10 +1,16 @@
+using RentACar.Application.DTOs.Rental;
 using System.ComponentModel.DataAnnotations;
 
-namespace RentACar.Application.DTOs.Rental;
+namespace RentACar.AdminPanel.Models;
 
-public class RentalCreateDto
+public class RentalListViewModel
 {
-    // Admin panelinden kiralama yaparken müşteriyi seçebilmek için
+    public PagedResult<RentalDto> Rentals { get; set; } = new();
+}
+
+public class RentalCreateViewModel
+{
+    [Required(ErrorMessage = "Müşteri seçimi zorunludur.")]
     public int CustomerId { get; set; }
 
     [Required(ErrorMessage = "Araç seçimi zorunludur.")]
@@ -17,8 +23,8 @@ public class RentalCreateDto
     public int DropOffLocationId { get; set; }
 
     [Required(ErrorMessage = "Alış tarihi zorunludur.")]
-    public DateTime RentStartDate { get; set; }
+    public DateTime RentStartDate { get; set; } = DateTime.Now;
 
     [Required(ErrorMessage = "Dönüş tarihi zorunludur.")]
-    public DateTime RentEndDate { get; set; }
+    public DateTime RentEndDate { get; set; } = DateTime.Now.AddDays(1);
 }

@@ -9,6 +9,7 @@ using RentACar.Application.DTOs.Car;
 using RentACar.Application.DTOs.Rental;
 using RentACar.Application.DTOs.AdditionalService;
 using RentACar.Application.DTOs.Dashboard;
+using RentACar.Application.DTOs.Customer; // DİKKAT: Customer DTO namespace'i eklendi
 
 namespace RentACar.Application.Mappings;
 
@@ -26,6 +27,11 @@ public class AutoMapperProfiles : Profile
         CreateMap<User, UserDto>().ReverseMap();
         CreateMap<User, UserUpdateDto>().ReverseMap();
 
+        // ── Customer Mappings 
+        CreateMap<Customer, CustomerDto>()
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src =>
+                src.User != null ? $"{src.User.FirstName} {src.User.LastName}" : string.Empty));
+
         // Brand Mappings
         CreateMap<Brand, BrandDto>().ReverseMap();
         CreateMap<BrandCreateDto, Brand>();
@@ -36,7 +42,7 @@ public class AutoMapperProfiles : Profile
         CreateMap<LocationCreateDto, Location>();
         CreateMap<LocationUpdateDto, Location>();
 
-        // ── Car Mappings ── (önemli düzeltmeler)
+        // ── Car Mappings 
         CreateMap<Car, CarDto>()
             .ForMember(dest => dest.BrandName,
                 opt => opt.MapFrom(src => src.Brand != null ? src.Brand.Name : string.Empty))

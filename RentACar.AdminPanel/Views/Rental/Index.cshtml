@@ -1,0 +1,151 @@
+@using RentACar.Domain.Entities
+@model RentACar.AdminPanel.Models.RentalListViewModel
+@{
+    ViewData["Title"] = "Kiralama Yönetimi";
+    ViewData["Breadcrumb"] = "Kiralamalar";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Kiralama Yönetimi</h1>
+        <p>Sistemdeki tüm rezervasyon ve kiralama süreçlerini yönetin.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <a asp-action="ExportExcel" class="btn btn-secondary">
+            <i class="fa-solid fa-file-excel"></i> Excel İndir
+        </a>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Manuel Kiralama Ekle
+        </a>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadge(ReservationStatus status) => status switch
+    {
+        ReservationStatus.Pending => "badge-warning",
+        ReservationStatus.Approved => "badge-info",
+        ReservationStatus.Completed => "badge-success",
+        ReservationStatus.Cancelled => "badge-danger",
+        _ => "badge-neutral"
+    };
+
+    string GetStatusText(ReservationStatus status) => status switch
+    {
+        ReservationStatus.Pending => "Onay Bekliyor",
+        ReservationStatus.Approved => "Onaylandı (Kirada)",
+        ReservationStatus.Completed => "Teslim Alındı",
+        ReservationStatus.Cancelled => "İptal Edildi",
+        _ => "Bilinmiyor"
+    };
+}
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Kiralamalar (@Model.Rentals.TotalCount)</span>
+    </div>
+    <div class="table-wrapper">
+        @if (Model.Rentals.Items.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Müşteri</th>
+                        <th>Araç</th>
+                        <th>Alış / Dönüş Ofisi</th>
+                        <th>Tarihler</th>
+                        <th>Tutar</th>
+                        <th>Durum</th>
+                        <th style="width: 140px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var rental in Model.Rentals.Items)
+                    {
+                        <tr>
+                            <td class="fw-600">@rental.CustomerFullName</td>
+                            <td><span class="badge badge-neutral">@rental.CarInfo</span></td>
+                            <td style="font-size: 0.85rem;">
+                                <i class="fa-solid fa-arrow-up-from-bracket text-success"></i> @rental.PickUpLocationName <br />
+                                <i class="fa-solid fa-arrow-right-to-bracket text-danger"></i> @rental.DropOffLocationName
+                            </td>
+                            <td style="font-size: 0.85rem;">
+                                @rental.RentStartDate.ToString("dd MMM yyyy") <br />
+                                @rental.RentEndDate.ToString("dd MMM yyyy")
+                            </td>
+                            <td class="fw-600">@rental.TotalAmount.ToString("C2")</td>
+                            <td>
+                                <span class="badge @GetStatusBadge(rental.Status)">
+                                    @GetStatusText(rental.Status)
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    @if (rental.Status == ReservationStatus.Pending)
+                                    {
+                                        <form asp-action="Approve" asp-route-id="@rental.Id" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-icon btn-success" title="Onayla" onclick="return confirm('Bu rezervasyonu onaylamak istiyor musunuz?');">
+                                                <i class="fa-solid fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form asp-action="Cancel" asp-route-id="@rental.Id" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-icon btn-danger" title="İptal Et" onclick="return confirm('İptal etmek istediğinize emin misiniz?');">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (rental.Status == ReservationStatus.Approved)
+                                    {
+                                        <form asp-action="Complete" asp-route-id="@rental.Id" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-icon btn-info" title="Teslim Al (Tamamla)" onclick="return confirm('Aracı teslim aldığınızı onaylıyor musunuz?');">
+                                                <i class="fa-solid fa-flag-checkered"></i>
+                                            </button>
+                                        </form>
+                                        <form asp-action="Cancel" asp-route-id="@rental.Id" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-icon btn-danger" title="İptal Et" onclick="return confirm('Kiralamayı iptal etmek istediğinize emin misiniz?');">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@rental.Id" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-icon btn-secondary" title="Kaydı Sil" onclick="return confirm('Bu kaydı tamamen silmek istediğinize emin misiniz?');">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div style="padding: 40px; text-align: center;">
+                <i class="fa-solid fa-file-invoice-dollar" style="font-size: 32px; color: var(--text-muted); opacity: 0.5;"></i>
+                <p style="margin-top: 12px; color: var(--text-muted);">Henüz kiralama kaydı bulunamadı.</p>
+            </div>
+        }
+    </div>
+
+    @* Sayfalama kodları (Diğer sayfalardaki ile aynı mantık) *@
+    @if (Model.Rentals.TotalPages > 1)
+    {
+        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Sayfa @Model.Rentals.PageNumber / @Model.Rentals.TotalPages</span>
+            <nav aria-label="Pagination" class="pagination">
+                @if (Model.Rentals.HasPreviousPage)
+                {
+                    <li class="page-item"><a class="page-link" asp-route-page="@(Model.Rentals.PageNumber - 1)">Önceki</a></li>
+                }
+                @if (Model.Rentals.HasNextPage)
+                {
+                    <li class="page-item"><a class="page-link" asp-route-page="@(Model.Rentals.PageNumber + 1)">Sonraki</a></li>
+                }
+            </nav>
+        </div>
+    }
+</div>

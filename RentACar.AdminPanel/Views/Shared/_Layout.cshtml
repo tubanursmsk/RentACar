@@ -9,6 +9,18 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>@ViewData["Title"] - RentACar Admin</title>
+    
+        <!-- Mevcut CSS linklerin buradadır (Bootstrap, FontAwesome vs.) -->
+        <link rel="stylesheet" href="~/css/site.css" />
+
+        <!-- İŞTE EKLENMESİ GEREKEN KOD BURASI -->
+        @await RenderSectionAsync("Styles", required: false)
+    </head>
 </head>
 
 <body class="admin-body">

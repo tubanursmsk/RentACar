@@ -9,108 +9,773 @@
         <p>Hoş geldiniz! Sistemin genel durumuna bakın.</p>
     </div>
     <div class="d-flex gap-8">
-        <a href="#" class="btn btn-secondary btn-sm">
+        <button id="refreshBtn" class="btn btn-secondary btn-sm">
             <i class="fa-solid fa-arrow-rotate-right"></i> Yenile
-        </a>
+        </button>
     </div>
 </div>
 
-@* ── Stat Cards ── *@
+@* ── Zenginleştirilmiş Stat Kartları ── *@
 <div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-icon blue">
-            <i class="fa-solid fa-car"></i>
+    <div class="stat-card stat-card-rich">
+        <div class="stat-card-header">
+            <div class="stat-icon blue">
+                <i class="fa-solid fa-car"></i>
+            </div>
+            <div class="stat-trend" id="trendCars">
+                <i class="fa-solid fa-minus"></i> <span>—</span>
+            </div>
         </div>
         <div class="stat-info">
             <div class="stat-label">Toplam Araç</div>
             <div class="stat-value" id="statTotalCars">—</div>
+            <div class="stat-subtext">Bu ay <span id="carsThisMonth">—</span> yeni eklendi</div>
         </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-icon green">
-            <i class="fa-solid fa-key"></i>
+    <div class="stat-card stat-card-rich">
+        <div class="stat-card-header">
+            <div class="stat-icon green">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <div class="stat-trend" id="trendRentals">
+                <i class="fa-solid fa-minus"></i> <span>—</span>
+            </div>
         </div>
         <div class="stat-info">
             <div class="stat-label">Aktif Kiralama</div>
             <div class="stat-value" id="statActiveRentals">—</div>
+            <div class="stat-subtext">Bu ay <span id="rentalsThisMonth">—</span> tamamlandı</div>
         </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-icon yellow">
-            <i class="fa-solid fa-clock"></i>
-        </div>
-        <div class="stat-info">
-            <div class="stat-label">Bekleyen Rezervasyon</div>
-            <div class="stat-value" id="statPending">—</div>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon red">
-            <i class="fa-solid fa-users"></i>
+    <div class="stat-card stat-card-rich">
+        <div class="stat-card-header">
+            <div class="stat-icon yellow">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <div class="stat-trend" id="trendCustomers">
+                <i class="fa-solid fa-minus"></i> <span>—</span>
+            </div>
         </div>
         <div class="stat-info">
             <div class="stat-label">Toplam Müşteri</div>
             <div class="stat-value" id="statCustomers">—</div>
+            <div class="stat-subtext">Bu ay <span id="customersThisMonth">—</span> yeni</div>
+        </div>
+    </div>
+
+    <div class="stat-card stat-card-rich">
+        <div class="stat-card-header">
+            <div class="stat-icon red">
+                <i class="fa-solid fa-turkish-lira-sign"></i>
+            </div>
+            <div class="stat-trend" id="trendRevenue">
+                <i class="fa-solid fa-minus"></i> <span>—</span>
+            </div>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Aylık Gelir</div>
+            <div class="stat-value" id="statRevenue">—</div>
+            <div class="stat-subtext"><span id="pendingCount">—</span> bekleyen rezervasyon</div>
         </div>
     </div>
 </div>
 
-@* ── Quick Access ── *@
+@* ── Grafikler Satırı ── *@
+<div class="dashboard-row">
+    <div class="card chart-card chart-card-wide">
+        <div class="card-header">
+            <span class="card-title">Gelir Trendi (Son 30 Gün)</span>
+            <div class="d-flex gap-8 align-items-center">
+                <span class="text-muted" id="revenueTotalText">—</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <canvas id="revenueChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <div class="card chart-card">
+        <div class="card-header">
+            <span class="card-title">Araç Durumu</span>
+        </div>
+        <div class="card-body">
+            <canvas id="statusChart" height="200"></canvas>
+            <div class="status-legend" id="statusLegend"></div>
+        </div>
+    </div>
+</div>
+
+@* ── Son Kiralamalar + Bildirimler Satırı ── *@
+<div class="dashboard-row">
+    <div class="card chart-card-wide">
+        <div class="card-header">
+            <span class="card-title">Son Kiralamalar</span>
+            <a asp-controller="Rental" asp-action="Index" class="btn btn-sm btn-secondary">
+                Tümünü Gör <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-modern m-0">
+                <thead>
+                    <tr>
+                        <th>Müşteri</th>
+                        <th>Araç</th>
+                        <th>Tarih</th>
+                        <th>Tutar</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody id="recentRentalsBody">
+                    <tr>
+                        <td colspan="5" class="text-center text-muted p-3">Yükleniyor...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card notifications-card">
+        <div class="card-header">
+            <span class="card-title">
+                <i class="fa-solid fa-bell"></i> Bildirimler
+            </span>
+        </div>
+        <div class="card-body p-0">
+            <div id="notificationsList" class="notifications-list">
+                <div class="text-center text-muted p-3">Yükleniyor...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Top Araçlar + Şube Doluluğu Satırı ── *@
+<div class="dashboard-row">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">
+                <i class="fa-solid fa-trophy" style="color: var(--warning);"></i>
+                En Çok Kiralanan Araçlar
+            </span>
+        </div>
+        <div class="card-body p-0">
+            <div id="topCarsList" class="top-cars-list">
+                <div class="text-center text-muted p-3">Yükleniyor...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">
+                <i class="fa-solid fa-location-dot" style="color: var(--accent);"></i>
+                Şube Doluluk Oranları
+            </span>
+        </div>
+        <div class="card-body">
+            <div id="locationOccupancyList" class="occupancy-list">
+                <div class="text-center text-muted p-3">Yükleniyor...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Hızlı Erişim ── *@
 <div class="card">
     <div class="card-header">
         <span class="card-title">Hızlı Erişim</span>
     </div>
     <div class="card-body">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
-
-            <a asp-controller="Car" asp-action="Create" class="btn btn-secondary" style="flex-direction: column; height: 80px; gap: 8px;">
+        <div class="quick-access-grid">
+            <a asp-controller="Car" asp-action="Create" class="btn btn-secondary quick-btn">
                 <i class="fa-solid fa-car" style="font-size: 20px; color: var(--accent);"></i>
                 <span>Araç Ekle</span>
             </a>
-
-            <a asp-controller="Brand" asp-action="Create" class="btn btn-secondary" style="flex-direction: column; height: 80px; gap: 8px;">
+            <a asp-controller="Brand" asp-action="Create" class="btn btn-secondary quick-btn">
                 <i class="fa-solid fa-tag" style="font-size: 20px; color: var(--success);"></i>
                 <span>Marka Ekle</span>
             </a>
-
-            <a asp-controller="Location" asp-action="Create" class="btn btn-secondary" style="flex-direction: column; height: 80px; gap: 8px;">
+            <a asp-controller="Location" asp-action="Create" class="btn btn-secondary quick-btn">
                 <i class="fa-solid fa-location-dot" style="font-size: 20px; color: var(--warning);"></i>
                 <span>Şube Ekle</span>
             </a>
-
-            <a asp-controller="Rental" asp-action="Index" class="btn btn-secondary" style="flex-direction: column; height: 80px; gap: 8px;">
+            <a asp-controller="Rental" asp-action="Index" class="btn btn-secondary quick-btn">
                 <i class="fa-solid fa-file-contract" style="font-size: 20px; color: var(--danger);"></i>
                 <span>Kiralamalar</span>
             </a>
-
         </div>
     </div>
 </div>
 
-@section Scripts {
-<script>
-    // Dashboard istatistiklerini API'den çek
-    (async function() {
-        try {
-            const r = await fetch('/api/Dashboard/Stats', {
-                headers: { 'Accept': 'application/json' }
-            });
-            if (!r.ok) return;
-            const json = await r.json();
-            const d = json.data;
-            if (!d) return;
-
-            document.getElementById('statTotalCars').textContent   = d.totalCars ?? '—';
-            document.getElementById('statActiveRentals').textContent = d.activeRentedCars ?? '—';
-            document.getElementById('statPending').textContent      = d.pendingReservations ?? '—';
-            document.getElementById('statCustomers').textContent    = d.totalCustomers ?? '—';
-        } catch(e) {
-            console.warn('Dashboard stats yüklenemedi:', e);
+@section Styles {
+    <style>
+        /* ── Zenginleştirilmiş Stat Kartları ── */
+        .stat-card-rich {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
-    })();
-</script>
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .stat-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.05);
+        }
+        .stat-trend.up { color: var(--success); background: rgba(34,197,94,.1); }
+        .stat-trend.down { color: var(--danger); background: rgba(239,68,68,.1); }
+        .stat-trend.neutral { color: var(--text-muted); }
+        .stat-subtext {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ── Dashboard Row ── */
+        .dashboard-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        @@media (max-width: 1100px) {
+            .dashboard-row { grid-template-columns: 1fr; }
+        }
+
+        /* ── Chart Cards ── */
+        .chart-card {
+            min-height: 320px;
+        }
+        .chart-card-wide canvas {
+            max-height: 280px;
+        }
+
+        /* ── Status Legend ── */
+        .status-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* ── Notifications ── */
+        .notifications-card {
+            max-height: 480px;
+            display: flex;
+            flex-direction: column;
+        }
+        .notifications-list {
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        .notification-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            transition: background .15s;
+        }
+        .notification-item:hover {
+            background: var(--bg-hover);
+        }
+        .notification-item:last-child { border-bottom: none; }
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59,130,246,.12);
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+        .notification-icon.car { background: rgba(34,197,94,.12); color: var(--success); }
+        .notification-icon.warning { background: rgba(234,179,8,.12); color: var(--warning); }
+        .notification-content { flex: 1; min-width: 0; }
+        .notification-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+        .notification-message {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .notification-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ── Top Cars ── */
+        .top-car-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+        .top-car-item:last-child { border-bottom: none; }
+        .top-car-rank {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-hover);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .top-car-rank.gold { background: rgba(234,179,8,.15); color: #eab308; }
+        .top-car-rank.silver { background: rgba(148,163,184,.15); color: #94a3b8; }
+        .top-car-rank.bronze { background: rgba(251,146,60,.15); color: #fb923c; }
+        .top-car-image {
+            width: 48px;
+            height: 36px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: var(--bg-hover);
+        }
+        .top-car-info { flex: 1; min-width: 0; }
+        .top-car-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text);
+        }
+        .top-car-plate {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+        .top-car-stats {
+            text-align: right;
+        }
+        .top-car-count {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent);
+        }
+        .top-car-revenue {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ── Location Occupancy ── */
+        .occupancy-item {
+            margin-bottom: 16px;
+        }
+        .occupancy-item:last-child { margin-bottom: 0; }
+        .occupancy-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .occupancy-name { font-weight: 600; color: var(--text); }
+        .occupancy-rate { font-weight: 700; color: var(--accent); }
+        .occupancy-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-hover);
+            overflow: hidden;
+        }
+        .occupancy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #60a5fa);
+            border-radius: 4px;
+            transition: width .6s ease;
+        }
+        .occupancy-fill.high { background: linear-gradient(90deg, var(--success), #4ade80); }
+        .occupancy-fill.medium { background: linear-gradient(90deg, var(--warning), #fbbf24); }
+        .occupancy-fill.low { background: linear-gradient(90deg, var(--danger), #f87171); }
+        .occupancy-detail {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ── Quick Access ── */
+        .quick-access-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        .quick-btn {
+            flex-direction: column !important;
+            height: 80px;
+            gap: 8px;
+        }
+
+        /* ── Status Badges ── */
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-pending { background: rgba(234,179,8,.15); color: var(--warning); }
+        .badge-approved { background: rgba(59,130,246,.15); color: var(--accent); }
+        .badge-completed { background: rgba(34,197,94,.15); color: var(--success); }
+        .badge-cancelled { background: rgba(239,68,68,.15); color: var(--danger); }
+    </style>
 }
 
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Chart.js varsayılanları (tema ile uyumlu)
+        Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#94a3b8';
+        Chart.defaults.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || 'rgba(255,255,255,.08)';
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+
+        let revenueChart = null;
+        let statusChart = null;
+
+        // ─── Dashboard verilerini tek seferde çek ───
+        async function loadDashboard() {
+            try {
+                const r = await fetch('/api/Dashboard/Overview', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!r.ok) {
+                    console.warn('Dashboard yüklenemedi:', r.status);
+                    return;
+                }
+                const json = await r.json();
+                const data = json.data;
+                if (!data) return;
+
+                renderStats(data.stats);
+                renderRevenueChart(data.revenueTrend);
+                renderStatusChart(data.carStatusBreakdown);
+                renderRecentRentals(data.recentRentals);
+                renderNotifications(data.notifications);
+                renderTopCars(data.topCars);
+                renderLocationOccupancy(data.locationOccupancy);
+            } catch (e) {
+                console.error('Dashboard hatası:', e);
+            }
+        }
+
+        // ─── Stat kartları ───
+        function renderStats(s) {
+            if (!s) return;
+            document.getElementById('statTotalCars').textContent = s.totalCars ?? 0;
+            document.getElementById('statActiveRentals').textContent = s.activeRentedCars ?? 0;
+            document.getElementById('statCustomers').textContent = s.totalCustomers ?? 0;
+            document.getElementById('statRevenue').textContent = formatCurrency(s.revenueThisMonth ?? 0);
+
+            document.getElementById('carsThisMonth').textContent = s.carsAddedThisMonth ?? 0;
+            document.getElementById('rentalsThisMonth').textContent = s.rentalsCompletedThisMonth ?? 0;
+            document.getElementById('customersThisMonth').textContent = s.newCustomersThisMonth ?? 0;
+            document.getElementById('pendingCount').textContent = s.pendingReservations ?? 0;
+
+            renderTrend('trendCars', s.carsTrendPercent);
+            renderTrend('trendRentals', s.rentalsTrendPercent);
+            renderTrend('trendCustomers', s.customersTrendPercent);
+            renderTrend('trendRevenue', s.revenueTrendPercent);
+        }
+
+        function renderTrend(elId, pct) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            const span = el.querySelector('span');
+            const icon = el.querySelector('i');
+            const value = pct ?? 0;
+
+            el.classList.remove('up', 'down', 'neutral');
+            if (value > 0) {
+                el.classList.add('up');
+                icon.className = 'fa-solid fa-arrow-up';
+            } else if (value < 0) {
+                el.classList.add('down');
+                icon.className = 'fa-solid fa-arrow-down';
+            } else {
+                el.classList.add('neutral');
+                icon.className = 'fa-solid fa-minus';
+            }
+            span.textContent = `%${Math.abs(value).toFixed(1)}`;
+        }
+
+        // ─── Gelir trendi (line chart) ───
+        function renderRevenueChart(trend) {
+            if (!trend || !trend.dataPoints) return;
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const labels = trend.dataPoints.map(p =>
+                new Date(p.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })
+            );
+            const data = trend.dataPoints.map(p => p.revenue);
+
+            const totalText = `Toplam: ${formatCurrency(trend.totalRevenue ?? 0)} • ${trend.totalRentalsCount ?? 0} kiralama`;
+            document.getElementById('revenueTotalText').textContent = totalText;
+
+            if (revenueChart) revenueChart.destroy();
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+            gradient.addColorStop(0, 'rgba(59,130,246,.3)');
+            gradient.addColorStop(1, 'rgba(59,130,246,0)');
+
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Gelir',
+                        data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => formatCurrency(ctx.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: (v) => formatCurrency(v, true) },
+                            grid: { color: 'rgba(255,255,255,.04)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxTicksLimit: 10 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ─── Araç durum dağılımı (donut) ───
+        function renderStatusChart(s) {
+            if (!s) return;
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            const data = [s.available ?? 0, s.rented ?? 0, s.inMaintenance ?? 0, s.passive ?? 0];
+            const labels = ['Müsait', 'Kirada', 'Bakımda', 'Pasif'];
+            const colors = ['#22c55e', '#3b82f6', '#eab308', '#94a3b8'];
+
+            if (statusChart) statusChart.destroy();
+            statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Custom legend
+            const legend = document.getElementById('statusLegend');
+            legend.innerHTML = labels.map((label, i) => `
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:${colors[i]}"></span>
+                    <span>${label}: <b>${data[i]}</b></span>
+                </div>
+            `).join('');
+        }
+
+        // ─── Son kiralamalar tablosu ───
+        function renderRecentRentals(rentals) {
+            const tbody = document.getElementById('recentRentalsBody');
+            if (!rentals || rentals.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-3">Henüz kiralama yok</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = rentals.map(r => `
+                <tr>
+                    <td>${escapeHtml(r.customerFullName)}</td>
+                    <td>${escapeHtml(r.carInfo)}</td>
+                    <td>${formatDate(r.rentStartDate)} → ${formatDate(r.rentEndDate)}</td>
+                    <td><b>${formatCurrency(r.totalAmount)}</b></td>
+                    <td>${statusBadge(r.status)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // ─── Bildirimler ───
+        function renderNotifications(notifications) {
+            const list = document.getElementById('notificationsList');
+            if (!notifications || notifications.length === 0) {
+                list.innerHTML = '<div class="text-center text-muted p-3">Henüz bildirim yok</div>';
+                return;
+            }
+
+            list.innerHTML = notifications.map(n => `
+                <div class="notification-item">
+                    <div class="notification-icon ${n.type}">
+                        <i class="fa-solid ${n.icon}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">${escapeHtml(n.title)}</div>
+                        <div class="notification-message">${escapeHtml(n.message)}</div>
+                        <div class="notification-time">${escapeHtml(n.timeAgo)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ─── En çok kiralanan araçlar ───
+        function renderTopCars(cars) {
+            const list = document.getElementById('topCarsList');
+            if (!cars || cars.length === 0) {
+                list.innerHTML = '<div class="text-center text-muted p-3">Henüz kiralama verisi yok</div>';
+                return;
+            }
+
+            const ranks = ['gold', 'silver', 'bronze', '', ''];
+            list.innerHTML = cars.map((c, i) => `
+                <div class="top-car-item">
+                    <div class="top-car-rank ${ranks[i] || ''}">${i + 1}</div>
+                    ${c.imageUrl
+                        ? `<img src="${c.imageUrl}" class="top-car-image" alt="" onerror="this.style.display='none'">`
+                        : `<div class="top-car-image" style="display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-car" style="color:var(--text-muted);"></i></div>`
+                    }
+                    <div class="top-car-info">
+                        <div class="top-car-name">${escapeHtml(c.carInfo)}</div>
+                        <div class="top-car-plate">${escapeHtml(c.plate)}</div>
+                    </div>
+                    <div class="top-car-stats">
+                        <div class="top-car-count">${c.rentalCount}x</div>
+                        <div class="top-car-revenue">${formatCurrency(c.totalRevenue)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ─── Şube doluluk ───
+        function renderLocationOccupancy(locations) {
+            const list = document.getElementById('locationOccupancyList');
+            if (!locations || locations.length === 0) {
+                list.innerHTML = '<div class="text-center text-muted p-3">Şube bulunamadı</div>';
+                return;
+            }
+
+            list.innerHTML = locations.map(l => {
+                let cls = 'low';
+                if (l.occupancyRate >= 70) cls = 'high';
+                else if (l.occupancyRate >= 40) cls = 'medium';
+
+                return `
+                    <div class="occupancy-item">
+                        <div class="occupancy-header">
+                            <span class="occupancy-name">${escapeHtml(l.locationName)}</span>
+                            <span class="occupancy-rate">%${l.occupancyRate.toFixed(1)}</span>
+                        </div>
+                        <div class="occupancy-bar">
+                            <div class="occupancy-fill ${cls}" style="width:${l.occupancyRate}%"></div>
+                        </div>
+                        <div class="occupancy-detail">
+                            ${l.rentedCars} / ${l.totalCars} araç kirada — ${escapeHtml(l.city)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ─── Helpers ───
+        function formatCurrency(value, compact = false) {
+            const num = Number(value) || 0;
+            if (compact && num >= 1000) {
+                return `₺${(num / 1000).toFixed(1)}k`;
+            }
+            return new Intl.NumberFormat('tr-TR', {
+                style: 'currency',
+                currency: 'TRY',
+                maximumFractionDigits: 0
+            }).format(num);
+        }
+
+        function formatDate(d) {
+            if (!d) return '—';
+            return new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+        }
+
+        function statusBadge(status) {
+            const map = {
+                'Pending': { cls: 'badge-pending', text: 'Bekliyor' },
+                'Approved': { cls: 'badge-approved', text: 'Onaylı' },
+                'Completed': { cls: 'badge-completed', text: 'Tamamlandı' },
+                'Cancelled': { cls: 'badge-cancelled', text: 'İptal' }
+            };
+            const m = map[status] || { cls: 'badge-pending', text: status };
+            return `<span class="badge-status ${m.cls}">${m.text}</span>`;
+        }
+
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ─── Yenile butonu ───
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            loadDashboard();
+        });
+
+        // ─── İlk yükleme ───
+        loadDashboard();
+
+        // ─── Otomatik yenileme (60sn) ───
+        setInterval(loadDashboard, 60000);
+    </script>
+}

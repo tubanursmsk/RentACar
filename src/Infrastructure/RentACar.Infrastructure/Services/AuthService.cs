@@ -13,12 +13,17 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IJwtTokenHelper _jwtTokenHelper;
+    private readonly IIdentityValidationService _identityService;
+    private readonly IFindeksService _findeksService;
 
-    public AuthService(IUnitOfWork unitOfWork, IMapper mapper, IJwtTokenHelper jwtTokenHelper)
+    public AuthService(IUnitOfWork unitOfWork, IMapper mapper, IJwtTokenHelper jwtTokenHelper, 
+                       IIdentityValidationService identityService, IFindeksService findeksService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _jwtTokenHelper = jwtTokenHelper;
+        _identityService = identityService;
+        _findeksService = findeksService;
     }
 
     public async Task<ApiResponse<string>> LoginAsync(LoginDto dto)
@@ -74,44 +79,54 @@ public class AuthService : IAuthService
         return ApiResponse<int>.SuccessResult(user.Id, "Şirket ve yönetici kaydı başarılı.");
     }
 
-    public async Task<ApiResponse<int>> RegisterCustomerAsync(RegisterDto dto)
+    public async Task<ApiResponse<int>> RegisterCustomerAsync(RegisterCustomerDto dto)
     {
         // 1. Email kontrolü
         if (await _unitOfWork.Repository<User>().AnyAsync(u => u.Email == dto.Email))
-            return ApiResponse<int>.ErrorResult("Email zaten kayıtlı.");
+            return ApiResponse<int>.ErrorResult("Bu e-posta adresi sistemde zaten kayıtlı.");
 
-        // 2. User nesnesini oluştur (Burada Phone alanını entity'e aktarmayı unutma)
+        // 2. GERÇEK MERNİS TC KİMLİK DOĞRULAMA (Devlet Sunucusuna Bağlanıyor)
+        bool isIdentityValid = await _identityService.ValidateTcKimlikNoAsync(dto.IdentityNumber, dto.FirstName, dto.LastName, dto.DateOfBirth.Year);
+        
+        if (!isIdentityValid)
+            return ApiResponse<int>.ErrorResult("MERNİS doğrulaması başarısız! Lütfen TC Kimlik No, Ad, Soyad ve Doğum Yılı bilgilerinizi kimliğinizdeki gibi eksiksiz giriniz.");
+
+        // 3. User nesnesini oluştur
         var user = new User
         {
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             Email = dto.Email,
-            Phone = dto.Phone, // DTO'da Phone alanı olduğundan emin ol
+            Phone = dto.Phone, 
             PasswordHash = PasswordHasher.HashPassword(dto.Password),
             Role = "Customer",
             CompanyId = null,
-            FullAddress = "" // Varsa DTO'dan al, yoksa boş geç
+            FullAddress = "" 
         };
 
         await _unitOfWork.Repository<User>().AddAsync(user);
-        await _unitOfWork.SaveChangesAsync(); // User ID'sinin oluşması için kaydediyoruz
+        await _unitOfWork.SaveChangesAsync(); 
 
-        // 3. KRİTİK ADIM: Customer tablosuna kayıt oluştur
+        // 4. KKB FINDEKS SORGULAMA SİMÜLASYONU
+        // Müşterinin TC numarasını KKB'ye (Fake Servisimize) gönderip puanını çekiyoruz!
+        int findeksScore = await _findeksService.GetFindeksScoreAsync(dto.IdentityNumber);
+
+        // 5. Customer tablosuna kayıt oluştur
         var customer = new Customer
         {
             UserId = user.Id,
-            IdentityNumber = "",
+            IdentityNumber = dto.IdentityNumber,
             Phone = dto.Phone,
-            DateOfBirth = DateTime.Now.AddYears(-18),
-            FindeksScore = 0 // Başlangıç puanı
+            DateOfBirth = dto.DateOfBirth,
+            FindeksScore = findeksScore // Zeki algoritmamızdan gelen puan buraya yazılıyor!
         };
-
 
         await _unitOfWork.Repository<Customer>().AddAsync(customer);
         await _unitOfWork.SaveChangesAsync();
 
-        return ApiResponse<int>.SuccessResult(user.Id, "Müşteri kaydı başarıyla oluşturuldu.");
+        return ApiResponse<int>.SuccessResult(user.Id, "Müşteri kaydı başarıyla oluşturuldu ve Findeks puanı hesaplandı.");
     }
+
     public async Task<ApiResponse<bool>> ChangePasswordAsync(ChangePasswordDto dto)
     {
         var user = await _unitOfWork.Repository<User>().GetByIdAsync(dto.UserId);

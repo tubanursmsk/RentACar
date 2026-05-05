@@ -21,7 +21,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IJwtTokenHelper, JwtTokenHelper>();
-        
+
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IBrandService, BrandService>();
@@ -31,6 +31,8 @@ public static class DependencyInjection
         services.AddScoped<IAdditionalServiceService, AdditionalServiceService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IIdentityValidationService, MernisIdentityValidationService>();
+        services.AddScoped<IFindeksService, FakeFindeksService>();
 
         return services;
     }

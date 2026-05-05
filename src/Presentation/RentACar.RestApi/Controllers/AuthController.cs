@@ -29,7 +29,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("RegisterCustomer")]
     [AllowAnonymous]
-    public async Task<IActionResult> RegisterCustomer(RegisterDto dto)
+    public async Task<IActionResult> RegisterCustomer(RegisterCustomerDto dto)
     {
         var result = await _authService.RegisterCustomerAsync(dto);
         return Ok(result);

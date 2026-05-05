@@ -337,10 +337,10 @@ erDiagram
 
 ## 👩‍💻 Geliştirici
 
-**[Tuba Şimşek]** — Software Developer
+**Tuba Şimşek** — Software Developer
 
 ```bash
-🔗 GitHub: https://github.com/<tubanursmsk>
+🔗 GitHub: https://github.com/tubanursmsk
 ```
 
 ---

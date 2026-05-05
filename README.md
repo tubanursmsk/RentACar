@@ -250,7 +250,7 @@ Ek filtreler: aracın istenen şubede olması, `Bakımda` veya `Pasif` durumunda
 
 ### 1️⃣ REST API
 ```bash
-git clone https://github.com/<kullanici>/RentACar.git
+git clone https://github.com/<tubanursmsk>/RentACar.git
 cd RentACar/src/Presentation/RentACar.RestApi
 
 dotnet restore
@@ -313,28 +313,31 @@ erDiagram
 ## 📸 Ekran Görüntüleri
 
 > ### Swagger — REST API Dokümantasyonu
-*(Buraya Swagger ekran görüntülerinizi ekleyin)*
+<img width="1365" height="768" alt="image" src="https://github.com/user-attachments/assets/651dec9b-068f-45a5-b826-616581434373" />
+
+<img width="1365" height="768" alt="image" src="https://github.com/user-attachments/assets/b297c767-cc7d-4353-abc4-ed3c0ff27599" /><img width="682" height="308" alt="image" src="https://github.com/user-attachments/assets/c0ea0408-3022-4aab-9ec8-afbcf1a94b7b" />
 
 > ### Admin Panel — Dashboard
-*(Buraya dashboard ekran görüntüsünü ekleyin)*
+*(Buraya dashboard ekran görüntüsünü ekleyeceğim)*
 
 > ### Admin Panel — Araç Yönetimi (Listeleme, Ekleme, Resim Upload)
-*(Buraya araç ekran görüntülerinizi ekleyin)*
+<img width="682" height="308" alt="image" src="https://github.com/user-attachments/assets/26cc5751-213c-42f7-a6d1-748aedba8cce" />
+
 
 > ### Admin Panel — Kiralama Yönetimi
-*(Buraya kiralama ekran görüntüsünü ekleyin)*
+<img width="683" height="384" alt="image" src="https://github.com/user-attachments/assets/be298f31-a4c9-4238-9dae-12439684ae14" />
 
 > ### Angular Client — Storefront
-*(Buraya Angular ekran görüntülerinizi ekleyin)*
+*(Buraya Angular ekran görüntülerini ekleyeceğim)*
 
 ---
 
 ## 👩‍💻 Geliştirici
 
-**[Adınız]** — Software Developer
+**[Tuba Şimşek]** — Software Developer
 
 ```bash
-🔗 GitHub: https://github.com/<kullanici>
+🔗 GitHub: https://github.com/<tubanursmsk>
 ```
 
 ---

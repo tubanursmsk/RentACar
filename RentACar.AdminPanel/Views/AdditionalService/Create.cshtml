@@ -1,0 +1,63 @@
+@model RentACar.AdminPanel.Models.AdditionalServiceCreateViewModel
+@{
+    ViewData["Title"] = "Yeni Ek Hizmet";
+    ViewData["Breadcrumb"] = "Yeni Hizmet";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Yeni Ek Hizmet</h1>
+        <p>Araçlara eklenebilecek yeni bir donanım veya servis tanımlayın.</p>
+    </div>
+</div>
+
+<div style="max-width: 600px;">
+    <form asp-action="Create" method="post" class="card">
+        @Html.AntiForgeryToken()
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display:none;"></div>
+
+            <div class="form-group" style="margin-bottom: 18px;">
+                <label asp-for="Name" class="form-label">Hizmet Adı <span style="color: var(--danger);">*</span></label>
+                <input asp-for="Name" class="form-control"
+                       placeholder="Örn: Bebek Koltuğu, Navigasyon, VIP Karşılama" />
+                <span asp-validation-for="Name" class="invalid-feedback"></span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 18px;">
+                <label asp-for="SelectedSegments" class="form-label">Geçerli Olduğu Araç Segmentleri <span
+                    style="color: var(--danger);">*</span></label>
+                    <!-- multiple özelliği ile çoklu seçimi aktifleştirdik -->
+                    <select asp-for="SelectedSegments" class="form-control" multiple style="height: 140px;">
+                        <option value="All">Tüm Araçlar (Diğerlerini seçmenize gerek kalmaz)</option>
+                        <option value="Economy">Ekonomi Sınıfı</option>
+                        <option value="Comfort">Konfor Sınıfı</option>
+                        <option value="Luxury">Lüks / Premium Araçlar</option>
+                        <option value="UltraLuxury">Ultra Lüks (VIP) Araçlar</option>
+                    </select>
+                    <small class="text-muted" style="display:block; margin-top:6px;">
+                        <i class="fa-solid fa-circle-info"></i> Birden fazla seçim yapmak için <b>CTRL</b> (Mac için
+                        <b>CMD</b>) tuşuna basılı tutarak tıklayın.
+                    </small>
+                    <span asp-validation-for="SelectedSegments" class="invalid-feedback"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="DailyPrice" class="form-label">Günlük Ücret (₺) <span
+                        style="color: var(--danger);">*</span></label>
+                        <input asp-for="DailyPrice" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+                        <span asp-validation-for="DailyPrice" class="invalid-feedback"></span>
+                    </div>
+                </div>
+
+                <div
+                    style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; justify-content: flex-end;">
+                    <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Kaydet</button>
+                </div>
+            </form>
+        </div>
+
+        @section Scripts {
+            <partial name="_ValidationScriptsPartial" />
+        }

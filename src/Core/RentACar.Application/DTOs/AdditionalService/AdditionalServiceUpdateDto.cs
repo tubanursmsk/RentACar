@@ -10,4 +10,7 @@ public class AdditionalServiceUpdateDto
 
     [Range(0, double.MaxValue, ErrorMessage = "Fiyat 0'dan küçük olamaz.")]
     public decimal DailyPrice { get; set; }
+
+    [Required(ErrorMessage = "Araç segmenti seçimi zorunludur.")]
+    public string CarSegment { get; set; } = "All";
 }

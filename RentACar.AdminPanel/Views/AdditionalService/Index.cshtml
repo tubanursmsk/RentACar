@@ -1,0 +1,102 @@
+@model RentACar.AdminPanel.Models.AdditionalServiceListViewModel
+@{
+    ViewData["Title"] = "Ek Hizmetler";
+    ViewData["Breadcrumb"] = "Ek Hizmetler";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Ek Hizmet Yönetimi</h1>
+        <p>Müşterilere kiralama sırasında sunulacak ek donanım ve hizmetleri yönetin.</p>
+    </div>
+    <div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Yeni Hizmet Ekle
+        </a>
+    </div>
+</div>
+
+@functions {
+    string GetSegmentBadge(string segment) => segment switch
+    {
+        "All" => "badge-success",
+        "Economy" => "badge-info",
+        "Luxury" => "badge-warning",
+        "UltraLuxury" => "badge-danger",
+        _ => "badge-neutral"
+    };
+
+    string GetSegmentName(string segment) => segment switch
+    {
+        "All" => "Tüm Araçlar",
+        "Economy" => "Ekonomi & Konfor",
+        "Luxury" => "Lüks (Premium)",
+        "UltraLuxury" => "Ultra Lüks & VIP",
+        _ => segment
+    };
+}
+
+<div class="card">
+    <div class="table-wrapper">
+        @if (Model.Services.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Hizmet Adı</th>
+                        <th>Geçerli Segment</th>
+                        <th>Günlük Fiyat (₺)</th>
+                        <th style="width: 120px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Services)
+                    {
+                        <tr>
+                            <td class="fw-600">@item.Name</td>
+                            <td>
+                                @if (item.CarSegment == "All" || string.IsNullOrEmpty(item.CarSegment))
+                                {
+                                    <span class="badge badge-success">Tüm Araçlar</span>
+                                }
+                                else
+                                {
+                                    <!-- Virgüllü veriyi parçalayıp her birine ayrı renkli badge basıyoruz -->
+                                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                        @foreach (var seg in item.CarSegment.Split(','))
+                                        {
+                                            <span class="badge @GetSegmentBadge(seg)">@GetSegmentName(seg)</span>
+                                        }
+                                    </div>
+                                }
+                            </td>
+                            <td style="color: var(--success); font-weight: 600;">@item.DailyPrice.ToString("N2") ₺</td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-icon btn-secondary"
+                                           title="Düzenle">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display: inline;">
+                                        <button type="submit" class="btn btn-icon btn-danger"
+                                                onclick="return confirm('Bu hizmeti silmek istediğinize emin misiniz?');"
+                                                title="Sil">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div style="padding: 40px; text-align: center;">
+                <i class="fa-solid fa-boxes-stacked" style="font-size: 32px; color: var(--text-muted); opacity: 0.5;"></i>
+                <p style="margin-top: 12px; color: var(--text-muted);">Henüz tanımlanmış bir ek hizmet bulunmuyor.</p>
+            </div>
+        }
+    </div>
+</div>

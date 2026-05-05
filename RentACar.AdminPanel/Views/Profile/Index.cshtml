@@ -1,0 +1,93 @@
+@model RentACar.AdminPanel.Models.ProfileInfoViewModel
+@{
+    ViewData["Title"] = "Profilim";
+    ViewData["Breadcrumb"] = "Profilim";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h1>Hesap Ayarları</h1>
+        <p>Kişisel bilgilerinizi ve şifrenizi bu alandan güncelleyebilirsiniz.</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1200px;">
+    
+    <!-- SOL TARAF: KİŞİSEL BİLGİLER -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="fa-solid fa-user-pen"></i> Kişisel Bilgiler</span>
+        </div>
+        <div class="card-body">
+            <form asp-action="UpdateInfo" method="post">
+                @Html.AntiForgeryToken()
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Sistem Yetkisi</label>
+                    <input type="text" class="form-control" value="@Model.Role" disabled style="background-color: var(--bg-body); font-weight: bold; color: var(--primary);" />
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label asp-for="FirstName" class="form-label">Ad <span style="color: var(--danger);">*</span></label>
+                        <input asp-for="FirstName" class="form-control" />
+                        <span asp-validation-for="FirstName" class="invalid-feedback"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="LastName" class="form-label">Soyad <span style="color: var(--danger);">*</span></label>
+                        <input asp-for="LastName" class="form-control" />
+                        <span asp-validation-for="LastName" class="invalid-feedback"></span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label asp-for="Email" class="form-label">E-Posta Adresi <span style="color: var(--danger);">*</span></label>
+                    <input asp-for="Email" type="email" class="form-control" />
+                    <span asp-validation-for="Email" class="invalid-feedback"></span>
+                </div>
+
+                <div style="text-align: right;">
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Bilgileri Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SAĞ TARAF: ŞİFRE DEĞİŞTİRME -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="fa-solid fa-lock"></i> Şifre Değiştir</span>
+        </div>
+        <div class="card-body">
+            <form asp-action="ChangePassword" method="post">
+                @Html.AntiForgeryToken()
+                
+                <div class="alert alert-info" style="margin-bottom: 16px;">
+                    Şifreniz en az 6 karakter uzunluğunda olmalı, bir büyük harf, bir küçük harf ve rakam içermelidir.
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Mevcut Şifreniz <span style="color: var(--danger);">*</span></label>
+                    <input type="password" name="CurrentPassword" class="form-control" required />
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Yeni Şifre <span style="color: var(--danger);">*</span></label>
+                    <input type="password" name="NewPassword" class="form-control" required />
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label class="form-label">Yeni Şifre (Tekrar) <span style="color: var(--danger);">*</span></label>
+                    <input type="password" name="ConfirmPassword" class="form-control" required />
+                </div>
+
+                <div style="text-align: right;">
+                    <button type="submit" class="btn btn-danger"><i class="fa-solid fa-key"></i> Şifreyi Değiştir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

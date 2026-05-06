@@ -319,7 +319,7 @@ erDiagram
 
 
 > ### Admin Panel — Dashboard
-*(Buraya dashboard ekran görüntüsünü ekleyeceğim)*
+<img width="683" height="384" alt="image" src="https://github.com/user-attachments/assets/bf8e3536-a966-4253-82c6-ab7b95266633" />
 
 
 > ### Admin Panel — Araç Yönetimi (Listeleme, Ekleme, Resim Upload)

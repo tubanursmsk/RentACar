@@ -16,7 +16,7 @@
 </div>
 
 @* ── Zenginleştirilmiş Stat Kartları ── *@
-<div class="stat-grid">
+<div class="stat-grid" style="margin-bottom: 16px;">
     <div class="stat-card stat-card-rich">
         <div class="stat-card-header">
             <div class="stat-icon blue">
@@ -82,6 +82,33 @@
     </div>
 </div>
 
+@* ── Hızlı Erişim (YUKARI TAŞINDI!) ── *@
+<div class="card" style="margin-bottom: 16px;">
+    <div class="card-header">
+        <span class="card-title">Hızlı Erişim</span>
+    </div>
+    <div class="card-body">
+        <div class="quick-access-grid">
+            <a asp-controller="Car" asp-action="Create" class="btn btn-secondary quick-btn">
+                <i class="fa-solid fa-car" style="font-size: 20px; color: var(--accent);"></i>
+                <span>Araç Ekle</span>
+            </a>
+            <a asp-controller="Brand" asp-action="Create" class="btn btn-secondary quick-btn">
+                <i class="fa-solid fa-tag" style="font-size: 20px; color: var(--success);"></i>
+                <span>Marka Ekle</span>
+            </a>
+            <a asp-controller="Location" asp-action="Create" class="btn btn-secondary quick-btn">
+                <i class="fa-solid fa-location-dot" style="font-size: 20px; color: var(--warning);"></i>
+                <span>Şube Ekle</span>
+            </a>
+            <a asp-controller="Rental" asp-action="Index" class="btn btn-secondary quick-btn">
+                <i class="fa-solid fa-file-contract" style="font-size: 20px; color: var(--danger);"></i>
+                <span>Kiralamalar</span>
+            </a>
+        </div>
+    </div>
+</div>
+
 @* ── Grafikler Satırı ── *@
 <div class="dashboard-row">
     <div class="card chart-card chart-card-wide">
@@ -92,7 +119,9 @@
             </div>
         </div>
         <div class="card-body">
-            <canvas id="revenueChart" height="100"></canvas>
+            <div style="position: relative; height: 280px; width: 100%;">
+                <canvas id="revenueChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -101,7 +130,9 @@
             <span class="card-title">Araç Durumu</span>
         </div>
         <div class="card-body">
-            <canvas id="statusChart" height="200"></canvas>
+            <div style="position: relative; height: 220px; width: 100%;">
+                <canvas id="statusChart"></canvas>
+            </div>
             <div class="status-legend" id="statusLegend"></div>
         </div>
     </div>
@@ -181,32 +212,6 @@
     </div>
 </div>
 
-@* ── Hızlı Erişim ── *@
-<div class="card">
-    <div class="card-header">
-        <span class="card-title">Hızlı Erişim</span>
-    </div>
-    <div class="card-body">
-        <div class="quick-access-grid">
-            <a asp-controller="Car" asp-action="Create" class="btn btn-secondary quick-btn">
-                <i class="fa-solid fa-car" style="font-size: 20px; color: var(--accent);"></i>
-                <span>Araç Ekle</span>
-            </a>
-            <a asp-controller="Brand" asp-action="Create" class="btn btn-secondary quick-btn">
-                <i class="fa-solid fa-tag" style="font-size: 20px; color: var(--success);"></i>
-                <span>Marka Ekle</span>
-            </a>
-            <a asp-controller="Location" asp-action="Create" class="btn btn-secondary quick-btn">
-                <i class="fa-solid fa-location-dot" style="font-size: 20px; color: var(--warning);"></i>
-                <span>Şube Ekle</span>
-            </a>
-            <a asp-controller="Rental" asp-action="Index" class="btn btn-secondary quick-btn">
-                <i class="fa-solid fa-file-contract" style="font-size: 20px; color: var(--danger);"></i>
-                <span>Kiralamalar</span>
-            </a>
-        </div>
-    </div>
-</div>
 
 @section Styles {
     <style>
@@ -465,7 +470,7 @@
         // ─── Dashboard verilerini tek seferde çek ───
         async function loadDashboard() {
             try {
-                const r = await fetch('/api/Dashboard/Overview', {
+                const r = await fetch('/Dashboard/GetData', {
                     headers: { 'Accept': 'application/json' }
                 });
                 if (!r.ok) {
@@ -682,7 +687,7 @@
             list.innerHTML = cars.map((c, i) => `
                 <div class="top-car-item">
                     <div class="top-car-rank ${ranks[i] || ''}">${i + 1}</div>
-                    ${c.imageUrl
+                    ${c.imageUrl && c.imageUrl !== 'string' 
                         ? `<img src="${c.imageUrl}" class="top-car-image" alt="" onerror="this.style.display='none'">`
                         : `<div class="top-car-image" style="display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-car" style="color:var(--text-muted);"></i></div>`
                     }

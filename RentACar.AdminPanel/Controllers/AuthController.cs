@@ -24,7 +24,7 @@ public class AuthController : Controller
     {
         // Zaten giriş yapılmışsa dashboard'a yönlendir
         if (User.Identity?.IsAuthenticated == true)
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Dashboard");
 
         return View();
     }
@@ -73,7 +73,7 @@ public class AuthController : Controller
             authProperties
         );
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Index", "Dashboard");
     }
 
     // GET /Auth/Logout

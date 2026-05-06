@@ -325,22 +325,13 @@ public class DashboardService : IDashboardService
     // ── TÜM DASHBOARD VERİSİ TEK SEFERDE ──
     public async Task<ApiResponse<DashboardOverviewDto>> GetOverviewAsync()
     {
-        var statsTask = GetStatsAsync();
-        var revenueTask = GetRevenueTrendAsync(30);
-        var statusTask = GetCarStatusBreakdownAsync();
-        var recentTask = GetRecentRentalsAsync(5);
-        var topCarsTask = GetTopCarsAsync(5);
-        var occupancyTask = GetLocationOccupancyAsync();
-        var notificationsTask = GetNotificationsAsync(10);
-
-        // Sıralı çağrı (UnitOfWork DbContext concurrency'i önlemek için)
-        var stats = await statsTask;
-        var revenue = await revenueTask;
-        var status = await statusTask;
-        var recent = await recentTask;
-        var topCars = await topCarsTask;
-        var occupancy = await occupancyTask;
-        var notifications = await notificationsTask;
+        var stats = await GetStatsAsync();
+        var revenue = await GetRevenueTrendAsync(30);
+        var status = await GetCarStatusBreakdownAsync();
+        var recent = await GetRecentRentalsAsync(5);
+        var topCars = await GetTopCarsAsync(5);
+        var occupancy = await GetLocationOccupancyAsync();
+        var notifications = await GetNotificationsAsync(10);
 
         var overview = new DashboardOverviewDto
         {

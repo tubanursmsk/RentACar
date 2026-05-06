@@ -41,8 +41,8 @@
             <ul class="nav-list">
 
                 <li
-                    class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
-                    <a asp-controller="Home" asp-action="Index" class="nav-link" data-tooltip="Dashboard">
+                    class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
+                    <a asp-controller="Dashboard" asp-action="Index" class="nav-link" data-tooltip="Dashboard">
                         <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
                         <span class="nav-label">Dashboard</span>
                     </a>
@@ -142,7 +142,7 @@
                 <nav aria-label="breadcrumb" class="breadcrumb-nav">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a asp-controller="Home" asp-action="Index">
+                            <a asp-controller="Dashboard" asp-action="Index">
                                 <i class="fa-solid fa-house"></i>
                             </a>
                         </li>

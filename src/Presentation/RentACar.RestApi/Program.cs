@@ -58,6 +58,8 @@ builder.Services.AddAuthentication(opt =>
 })
 .AddJwtBearer(options =>
 {
+    options.RequireHttpsMetadata = false; // Dev ortamı için false, Canlıda true yapılmalı
+    options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -66,7 +68,22 @@ builder.Services.AddAuthentication(opt =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(secretKey)
+        IssuerSigningKey = new SymmetricSecurityKey(secretKey), // HATA BURADAN DÜZELTİLDİ
+        ClockSkew = TimeSpan.Zero
+    };
+
+    // ⭐ Token'ı önce cookie'den al (Angular için), yoksa Authorization header'a düş (Admin Panel vs. için)
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            if (context.Request.Cookies.TryGetValue("RentACarAuth", out var cookieToken)
+                && !string.IsNullOrEmpty(cookieToken))
+            {
+                context.Token = cookieToken;
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 

@@ -5,8 +5,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CarService } from '../../../core/services/car.service';
 import { BrandService } from '../../../core/services/brand.service';
 import { LocationService } from '../../../core/services/location.service';
-import { environment } from '../../../core/environments/environment';
 import { Car, CarFilter, FuelType, TransmissionType } from '../../../core/models/car.model';
+import { environment } from '../../../../environments/environment';
 
 
 

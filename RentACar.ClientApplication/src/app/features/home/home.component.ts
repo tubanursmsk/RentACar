@@ -5,6 +5,9 @@ import { CarService } from '../../core/services/car.service';
 import { Car } from '../../core/models/car.model';
 import { BookingCardComponent } from './components/booking-card/booking-card.component';
 import { HeroSliderComponent } from './components/hero/hero-slider.component';
+import { environment } from '../../../environments/environment';
+
+
 
 @Component({
   selector: 'app-home',
@@ -139,7 +142,7 @@ export class HomeComponent implements OnInit {
 
   protected featuredCars = signal<Car[]>([]);
   protected loading = signal(true);
-  protected apiBaseUrl = ''; // environment'tan alınacak
+  protected apiBaseUrl = environment.apiBaseUrl;
 
   ngOnInit(): void {
     // İlk 4 araç (basit)
@@ -151,11 +154,6 @@ export class HomeComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
-    });
-
-    // environment'ı dinamik import etmek yerine sabit
-    import('../environments/environment').then(env => {
-      this.apiBaseUrl = env.environment.apiBaseUrl;
     });
   }
 

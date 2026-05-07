@@ -1,8 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
-import { HeaderComponent } from '../shared/components/header.component';
-import { FooterComponent } from '../shared/components/footer.component';
+import { HeaderComponent } from './shared/components/header.component';
+import { FooterComponent } from './shared/components/footer.component';
+
 
 @Component({
   selector: 'app-root',

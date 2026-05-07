@@ -4,8 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CarService } from '../../../core/services/car.service';
 import { BookingStateService } from '../../../core/services/booking-state.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { environment } from '../../../core/environments/environment';
 import { Car } from '../../../core/models/car.model';
+import { environment } from '../../../../environments/environment';
 
 
 

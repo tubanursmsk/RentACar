@@ -6,6 +6,7 @@ interface Slide {
   subtitle: string;
   ctaText: string;
   carEmoji: string;
+  imageUrl?: string;
 }
 
 @Component({
@@ -20,29 +21,56 @@ interface Slide {
            preserveAspectRatio="none"
            viewBox="0 0 1440 640"
            xmlns="http://www.w3.org/2000/svg">
-        <!-- Açık katman (sol-alt) -->
         <polygon points="0,640 580,0 0,0" fill="#e64560" opacity="0.25"/>
-        <!-- Orta katman (sağ-üst) -->
         <polygon points="1440,0 700,640 1440,640" fill="#94143a" opacity="0.4"/>
-        <!-- Koyu katman -->
         <polygon points="900,0 1440,0 1440,300 1100,640 750,640" fill="#7e1437" opacity="0.35"/>
-        <!-- İnce diagonal şerit -->
         <polygon points="200,640 1100,0 1140,0 240,640" fill="#fff" opacity="0.04"/>
       </svg>
 
-      <!-- ═══ Ana içerik ═══ -->
+      <!-- ═══ ARAÇ GÖRSELİ — booking card'ın arkasında, sağ-merkez ═══ -->
+      <!-- ÖNEMLİ: Bu div absolute, slide'lardan ayrı, sağda ortada ama booking card'ın altında (z-0) -->
+      <div class="hidden lg:block absolute top-1/2 -translate-y-1/2 z-0 pointer-events-none"
+           style="left: 38%; right: 38%;">
+        @for (slide of slides; track $index; let i = $index) {
+          <div class="absolute inset-0 transition-all duration-700 flex items-center justify-center"
+               [class.opacity-100]="currentIndex() === i"
+               [class.opacity-0]="currentIndex() !== i">
+            @if (slide.imageUrl && !imageErrors().includes(i)) {
+              <img [src]="slide.imageUrl"
+                   [alt]="slide.title"
+                   (error)="onImageError(i)"
+                   class="w-[480px] h-auto max-h-[420px] object-contain drop-shadow-2xl">
+            } @else {
+              <span class="text-[220px] leading-none drop-shadow-2xl">
+                {{ slide.carEmoji }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- ═══ Ana içerik (sol metin alanı) ═══ -->
       <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="relative min-h-[640px] flex items-center">
 
-          <!-- ─── Sol: Slide içerikleri ─── -->
-          <div class="relative w-full lg:w-1/2 py-12 lg:py-0">
+          <!-- Sol: Slide metinleri — tek bir relatif konteyner içinde absolute slide'lar -->
+          <div class="relative w-full lg:max-w-[45%] py-12 lg:py-0">
+            <!-- Görünmez "boyut tutucu" — en uzun slide'a göre alan ayır -->
+            <div class="invisible" aria-hidden="true">
+              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight">
+                Kurumsal müşterilerimize özel filo yönetim çözümleri
+              </h1>
+              <p class="mt-5 text-lg lg:text-xl max-w-lg">
+                İşletmenizin ulaşım ihtiyaçlarına en uygun paketi keşfedin.
+              </p>
+              <div class="mt-8 px-8 py-4">.</div>
+            </div>
+
+            <!-- Asıl slide'lar (her biri absolute, üst üste konumlanmış) -->
             @for (slide of slides; track $index; let i = $index) {
-              <div class="transition-all duration-700"
+              <div class="absolute inset-0 transition-opacity duration-700"
                    [class.opacity-100]="currentIndex() === i"
                    [class.opacity-0]="currentIndex() !== i"
-                   [class.relative]="currentIndex() === i"
-                   [class.absolute]="currentIndex() !== i"
-                   [class.inset-0]="currentIndex() !== i"
                    [class.pointer-events-none]="currentIndex() !== i">
                 <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
                   {{ slide.title }}
@@ -59,30 +87,11 @@ interface Slide {
               </div>
             }
           </div>
-
-          <!-- ─── Sağ: Büyük Araç Görseli (sadece desktop) ─── -->
-          <div class="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-[55%] pointer-events-none">
-            @for (slide of slides; track $index; let i = $index) {
-              <div class="absolute inset-0 transition-all duration-700"
-                   [class.opacity-100]="currentIndex() === i"
-                   [class.opacity-0]="currentIndex() !== i"
-                   [class.translate-x-0]="currentIndex() === i"
-                   [class.translate-x-12]="currentIndex() !== i">
-                <div class="flex items-center justify-center h-[500px]">
-                  <!-- Eğer assets/cars/hero-car-X.png varsa onu göster, yoksa emoji -->
-                  <span class="text-[280px] leading-none drop-shadow-2xl">
-                    {{ slide.carEmoji }}
-                  </span>
-                </div>
-              </div>
-            }
-          </div>
         </div>
       </div>
 
-      <!-- ═══ Slider Kontrolleri (alt sol, büyük) ═══ -->
+      <!-- ═══ Slider Kontrolleri (alt sol) ═══ -->
       <div class="absolute bottom-8 left-4 sm:left-6 lg:left-8 z-20 flex items-center gap-4">
-        <!-- Sol Ok -->
         <button (click)="prev()"
                 aria-label="Önceki slayt"
                 class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md
@@ -93,7 +102,6 @@ interface Slide {
           </svg>
         </button>
 
-        <!-- Noktalar -->
         <div class="flex items-center gap-2.5 px-3">
           @for (slide of slides; track $index; let i = $index) {
             <button (click)="goTo(i)"
@@ -108,7 +116,6 @@ interface Slide {
           }
         </div>
 
-        <!-- Sağ Ok -->
         <button (click)="next()"
                 aria-label="Sonraki slayt"
                 class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md
@@ -128,23 +135,28 @@ export class HeroSliderComponent implements OnInit, OnDestroy {
       title: "RentACar'dan araç kiralarken ödemenizi online yapın, %30 indirim kazanın!",
       subtitle: 'Avantajlı kampanya fırsatlarını kaçırmayın.',
       ctaText: 'REZERVASYON YAP',
-      carEmoji: '🚙'
+      carEmoji: '🚙',
+      imageUrl: 'assets/cars/hero-1.png'
     },
     {
       title: 'Yeni nesil elektrikli araç filomuz hizmetinizde',
       subtitle: 'Çevreyi düşünen ve teknolojiyi seven sürücüler için.',
       ctaText: 'ELEKTRİKLİ ARAÇLAR',
-      carEmoji: '🚗'
+      carEmoji: '🚗',
+      imageUrl: 'assets/cars/hero-2.png'
     },
     {
       title: 'Kurumsal müşterilerimize özel filo yönetim çözümleri',
       subtitle: 'İşletmenizin ulaşım ihtiyaçlarına en uygun paketi keşfedin.',
       ctaText: 'KURUMSAL ÇÖZÜMLER',
-      carEmoji: '🚐'
+      carEmoji: '🚐',
+      imageUrl: 'assets/cars/hero-3.png'
     }
   ];
 
   protected currentIndex = signal(0);
+  protected imageErrors = signal<number[]>([]);
+
   private intervalId: any;
 
   ngOnInit(): void {
@@ -168,6 +180,11 @@ export class HeroSliderComponent implements OnInit, OnDestroy {
   goTo(i: number): void {
     this.currentIndex.set(i);
     this.restartAutoPlay();
+  }
+
+  onImageError(index: number): void {
+    console.warn(`Hero image yüklenemedi: ${this.slides[index].imageUrl}`);
+    this.imageErrors.update(errors => [...errors, index]);
   }
 
   private startAutoPlay(): void {

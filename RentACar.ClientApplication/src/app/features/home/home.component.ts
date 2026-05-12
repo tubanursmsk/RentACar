@@ -7,27 +7,33 @@ import { BookingCardComponent } from './components/booking-card/booking-card.com
 import { HeroSliderComponent } from './components/hero/hero-slider.component';
 import { environment } from '../../../environments/environment';
 
-
-
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [CommonModule, RouterLink, HeroSliderComponent, BookingCardComponent],
   template: `
-    <!-- Hero + Booking Card overlap -->
+    <!-- ═══ Hero + Booking Card (üst üste) ═══ -->
     <section class="relative">
       <app-hero-slider />
 
-      <!-- Booking Card — masaüstünde sağ üstte, mobilde alt -->
-      <div class="lg:absolute lg:top-1/2 lg:right-8 lg:-translate-y-1/2 lg:z-30
-                  px-4 py-8 lg:p-0 max-w-7xl mx-auto lg:mx-0">
-        <div class="lg:max-w-md">
-          <app-booking-card />
+      <!-- Booking Card — Hero'nun üzerinde absolute pozisyonlu -->
+      <div class="lg:absolute lg:inset-y-0 lg:right-0 lg:left-0 lg:pointer-events-none">
+        <div class="lg:max-w-7xl lg:mx-auto lg:px-8 lg:h-full lg:flex lg:items-center lg:justify-end">
+          <div class="lg:pointer-events-auto lg:w-[420px]">
+            <!-- Mobil: hero'nun altında normal akış -->
+            <div class="lg:hidden px-4 -mt-8 relative z-20">
+              <app-booking-card />
+            </div>
+            <!-- Desktop: hero'nun sağında ortalanmış -->
+            <div class="hidden lg:block">
+              <app-booking-card />
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Öne çıkan araçlar -->
+    <!-- ═══ Öne çıkan araçlar ═══ -->
     <section class="py-16 bg-ink-100/30">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-end justify-between mb-8">
@@ -35,7 +41,8 @@ import { environment } from '../../../environments/environment';
             <h2 class="text-3xl md:text-4xl font-extrabold text-ink-900">Öne Çıkan Araçlar</h2>
             <p class="text-ink-500 mt-2">En çok tercih edilen araçlarımız</p>
           </div>
-          <a routerLink="/araclar" class="hidden md:inline-flex items-center gap-2 text-avis-600 font-bold hover:underline">
+          <a routerLink="/araclar"
+             class="hidden md:inline-flex items-center gap-2 text-avis-600 font-bold hover:underline">
             Tümünü Gör
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
@@ -98,7 +105,7 @@ import { environment } from '../../../environments/environment';
       </div>
     </section>
 
-    <!-- Avantajlar şeridi -->
+    <!-- ═══ Avantajlar ═══ -->
     <section class="py-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 class="text-3xl md:text-4xl font-extrabold text-ink-900 text-center mb-12">
@@ -117,7 +124,8 @@ import { environment } from '../../../environments/environment';
           <div class="text-center p-6">
             <div class="w-16 h-16 mx-auto bg-avis-50 rounded-full flex items-center justify-center text-avis-600">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
               </svg>
             </div>
             <h3 class="font-bold text-xl mt-4">Güvenli Sürüş</h3>
@@ -126,7 +134,8 @@ import { environment } from '../../../environments/environment';
           <div class="text-center p-6">
             <div class="w-16 h-16 mx-auto bg-avis-50 rounded-full flex items-center justify-center text-avis-600">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
               </svg>
             </div>
             <h3 class="font-bold text-xl mt-4">7/24 Destek</h3>
@@ -145,7 +154,6 @@ export class HomeComponent implements OnInit {
   protected apiBaseUrl = environment.apiBaseUrl;
 
   ngOnInit(): void {
-    // İlk 4 araç (basit)
     this.carService.searchCars({ pageNumber: 1, pageSize: 4 }).subscribe({
       next: res => {
         if (res.success && res.data) {

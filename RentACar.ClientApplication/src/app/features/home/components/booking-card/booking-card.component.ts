@@ -1,232 +1,185 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { LocationService } from '../../../../core/services/location.service';
-import { BookingStateService } from '../../../../core/services/booking-state.service';
+
+interface Slide {
+  title: string;
+  subtitle: string;
+  ctaText: string;
+  carEmoji: string;
+}
 
 @Component({
-  selector: 'app-booking-card',
+  selector: 'app-hero-slider',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   template: `
-    <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full">
-      <h3 class="text-lg md:text-xl font-bold text-ink-900 mb-1">
-        Ayrıcalıklı Araç Kiralama Deneyimi İçin Yola RentACar'le Devam Edin!
-      </h3>
+    <section class="relative bg-avis-600 overflow-hidden min-h-[640px]">
 
-      <!-- Teslimat Konumu -->
-      <div class="mt-6">
-        <label class="label">Teslimat Konumu</label>
-        <div class="relative">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-500"
-               fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      <!-- ═══ Diagonal SVG Arkaplan ═══ -->
+      <svg class="absolute inset-0 w-full h-full pointer-events-none"
+           preserveAspectRatio="none"
+           viewBox="0 0 1440 640"
+           xmlns="http://www.w3.org/2000/svg">
+        <!-- Açık katman (sol-alt) -->
+        <polygon points="0,640 580,0 0,0" fill="#e64560" opacity="0.25"/>
+        <!-- Orta katman (sağ-üst) -->
+        <polygon points="1440,0 700,640 1440,640" fill="#94143a" opacity="0.4"/>
+        <!-- Koyu katman -->
+        <polygon points="900,0 1440,0 1440,300 1100,640 750,640" fill="#7e1437" opacity="0.35"/>
+        <!-- İnce diagonal şerit -->
+        <polygon points="200,640 1100,0 1140,0 240,640" fill="#fff" opacity="0.04"/>
+      </svg>
+
+      <!-- ═══ Ana içerik ═══ -->
+      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="relative min-h-[640px] flex items-center">
+
+          <!-- ─── Sol: Slide içerikleri ─── -->
+          <div class="relative w-full lg:w-1/2 py-12 lg:py-0">
+            @for (slide of slides; track $index; let i = $index) {
+              <div class="transition-all duration-700"
+                   [class.opacity-100]="currentIndex() === i"
+                   [class.opacity-0]="currentIndex() !== i"
+                   [class.relative]="currentIndex() === i"
+                   [class.absolute]="currentIndex() !== i"
+                   [class.inset-0]="currentIndex() !== i"
+                   [class.pointer-events-none]="currentIndex() !== i">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
+                  {{ slide.title }}
+                </h1>
+                <p class="mt-5 text-lg lg:text-xl text-white/90 max-w-lg">
+                  {{ slide.subtitle }}
+                </p>
+                <button class="mt-8 inline-flex items-center gap-3 bg-white hover:bg-ink-100 text-avis-600 font-bold px-8 py-4 rounded-full transition-all hover:gap-4 shadow-lg">
+                  {{ slide.ctaText }}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- ─── Sağ: Büyük Araç Görseli (sadece desktop) ─── -->
+          <div class="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-[55%] pointer-events-none">
+            @for (slide of slides; track $index; let i = $index) {
+              <div class="absolute inset-0 transition-all duration-700"
+                   [class.opacity-100]="currentIndex() === i"
+                   [class.opacity-0]="currentIndex() !== i"
+                   [class.translate-x-0]="currentIndex() === i"
+                   [class.translate-x-12]="currentIndex() !== i">
+                <div class="flex items-center justify-center h-[500px]">
+                  <!-- Eğer assets/cars/hero-car-X.png varsa onu göster, yoksa emoji -->
+                  <span class="text-[280px] leading-none drop-shadow-2xl">
+                    {{ slide.carEmoji }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Slider Kontrolleri (alt sol, büyük) ═══ -->
+      <div class="absolute bottom-8 left-4 sm:left-6 lg:left-8 z-20 flex items-center gap-4">
+        <!-- Sol Ok -->
+        <button (click)="prev()"
+                aria-label="Önceki slayt"
+                class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md
+                       flex items-center justify-center transition-all
+                       border border-white/20 hover:scale-110">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
           </svg>
-          <select [(ngModel)]="pickupLocationId"
-                  class="input-field pl-10 appearance-none cursor-pointer">
-            <option [ngValue]="null">Konum Seçiniz</option>
-            @for (loc of locations(); track loc.id) {
-              <option [ngValue]="loc.id">{{ loc.name }} — {{ loc.city }}</option>
-            }
-          </select>
-        </div>
-      </div>
+        </button>
 
-      <!-- Farklı iade noktası -->
-      <div class="mt-3 flex items-center gap-2">
-        <input type="checkbox"
-               id="differentReturn"
-               [(ngModel)]="differentReturn"
-               class="w-4 h-4 accent-avis-600 cursor-pointer">
-        <label for="differentReturn" class="text-sm text-ink-700 cursor-pointer">
-          Farklı bir noktaya teslim etmek istiyorum.
-        </label>
-      </div>
-
-      @if (differentReturn()) {
-        <div class="mt-3">
-          <select [(ngModel)]="returnLocationId"
-                  class="input-field appearance-none cursor-pointer">
-            <option [ngValue]="null">İade Konumu Seçiniz</option>
-            @for (loc of locations(); track loc.id) {
-              <option [ngValue]="loc.id">{{ loc.name }} — {{ loc.city }}</option>
-            }
-          </select>
-        </div>
-      }
-
-      <!-- Tarih Seçimleri -->
-      <div class="mt-5 grid grid-cols-2 gap-3">
-        <div>
-          <label class="label">Alış Tarihi</label>
-          <input type="date"
-                 [(ngModel)]="pickupDate"
-                 [min]="todayString"
-                 class="input-field cursor-pointer">
-        </div>
-        <div>
-          <label class="label">Saat</label>
-          <select [(ngModel)]="pickupTime"
-                  class="input-field appearance-none cursor-pointer">
-            @for (t of timeOptions; track t) {
-              <option [value]="t">{{ t }}</option>
-            }
-          </select>
-        </div>
-      </div>
-
-      <div class="mt-4 grid grid-cols-2 gap-3">
-        <div>
-          <label class="label">İade Tarihi</label>
-          <input type="date"
-                 [(ngModel)]="returnDate"
-                 [min]="minReturnDate()"
-                 class="input-field cursor-pointer">
-        </div>
-        <div>
-          <label class="label">Saat</label>
-          <select [(ngModel)]="returnTime"
-                  class="input-field appearance-none cursor-pointer">
-            @for (t of timeOptions; track t) {
-              <option [value]="t">{{ t }}</option>
-            }
-          </select>
-        </div>
-      </div>
-
-      <!-- Hata mesajı -->
-      @if (error()) {
-        <p class="mt-3 text-sm text-avis-600 font-semibold">{{ error() }}</p>
-      }
-
-      <!-- Alt butonlar -->
-      <div class="mt-6 flex items-center justify-between">
-        <a href="#indirim" class="text-xs font-bold text-ink-700 hover:text-avis-600 flex items-center gap-1">
-          AVANTAJLI KAMPANYALAR
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
-          </svg>
-        </a>
-
-        <button (click)="search()"
-                [disabled]="!canSearch()"
-                class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
-          @if (rentalDays() > 0) {
-            {{ rentalDays() }} GÜN KİRALA
-          } @else {
-            ARAÇ ARA
+        <!-- Noktalar -->
+        <div class="flex items-center gap-2.5 px-3">
+          @for (slide of slides; track $index; let i = $index) {
+            <button (click)="goTo(i)"
+                    [attr.aria-label]="'Slayt ' + (i+1)"
+                    class="h-2 rounded-full transition-all duration-300"
+                    [class.bg-white]="currentIndex() === i"
+                    [class.w-8]="currentIndex() === i"
+                    [class.bg-white\\/40]="currentIndex() !== i"
+                    [class.w-2]="currentIndex() !== i"
+                    [class.hover:bg-white\\/70]="currentIndex() !== i">
+            </button>
           }
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
+        </div>
+
+        <!-- Sağ Ok -->
+        <button (click)="next()"
+                aria-label="Sonraki slayt"
+                class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md
+                       flex items-center justify-center transition-all
+                       border border-white/20 hover:scale-110">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
           </svg>
         </button>
       </div>
-    </div>
+    </section>
   `
 })
-export class BookingCardComponent implements OnInit {
-  private locationService = inject(LocationService);
-  private bookingState = inject(BookingStateService);
-  private router = inject(Router);
+export class HeroSliderComponent implements OnInit, OnDestroy {
+  protected slides: Slide[] = [
+    {
+      title: "RentACar'dan araç kiralarken ödemenizi online yapın, %30 indirim kazanın!",
+      subtitle: 'Avantajlı kampanya fırsatlarını kaçırmayın.',
+      ctaText: 'REZERVASYON YAP',
+      carEmoji: '🚙'
+    },
+    {
+      title: 'Yeni nesil elektrikli araç filomuz hizmetinizde',
+      subtitle: 'Çevreyi düşünen ve teknolojiyi seven sürücüler için.',
+      ctaText: 'ELEKTRİKLİ ARAÇLAR',
+      carEmoji: '🚗'
+    },
+    {
+      title: 'Kurumsal müşterilerimize özel filo yönetim çözümleri',
+      subtitle: 'İşletmenizin ulaşım ihtiyaçlarına en uygun paketi keşfedin.',
+      ctaText: 'KURUMSAL ÇÖZÜMLER',
+      carEmoji: '🚐'
+    }
+  ];
 
-  protected locations = this.locationService.locations;
-
-  protected pickupLocationId = signal<number | null>(null);
-  protected returnLocationId = signal<number | null>(null);
-  protected differentReturn = signal(false);
-  protected pickupDate = signal<string>('');
-  protected returnDate = signal<string>('');
-  protected pickupTime = signal('09:00');
-  protected returnTime = signal('09:00');
-  protected error = signal<string | null>(null);
-
-  protected timeOptions = this.generateTimeOptions();
-
-  protected todayString = new Date().toISOString().split('T')[0];
-
-  protected minReturnDate = computed(() => {
-    const pd = this.pickupDate();
-    if (!pd) return this.todayString;
-    const d = new Date(pd);
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split('T')[0];
-  });
-
-  protected rentalDays = computed(() => {
-    if (!this.pickupDate() || !this.returnDate()) return 0;
-    const start = new Date(this.pickupDate());
-    const end = new Date(this.returnDate());
-    const diff = end.getTime() - start.getTime();
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-  });
-
-  protected canSearch = computed(() =>
-    !!this.pickupLocationId() && !!this.pickupDate() && !!this.returnDate() && this.rentalDays() > 0
-  );
+  protected currentIndex = signal(0);
+  private intervalId: any;
 
   ngOnInit(): void {
-    // Lokasyonları yükle
-    if (this.locations().length === 0) {
-      this.locationService.getAll().subscribe();
-    }
-
-    // Önceki seçimi geri yükle
-    const prev = this.bookingState.selection();
-    if (prev.pickupLocationId) this.pickupLocationId.set(prev.pickupLocationId);
-    if (prev.returnLocationId) {
-      this.returnLocationId.set(prev.returnLocationId);
-      this.differentReturn.set(prev.returnLocationId !== prev.pickupLocationId);
-    }
-    if (prev.pickupDate) this.pickupDate.set(this.formatDate(prev.pickupDate));
-    if (prev.returnDate) this.returnDate.set(this.formatDate(prev.returnDate));
-    if (prev.pickupTime) this.pickupTime.set(prev.pickupTime);
-    if (prev.returnTime) this.returnTime.set(prev.returnTime);
+    this.startAutoPlay();
   }
 
-  search(): void {
-    if (!this.canSearch()) {
-      this.error.set('Lütfen konum ve tarih seçin.');
-      return;
-    }
-
-    const pickupLoc = this.locations().find(l => l.id === this.pickupLocationId());
-    const returnLocId = this.differentReturn() && this.returnLocationId()
-      ? this.returnLocationId()
-      : this.pickupLocationId();
-    const returnLoc = this.locations().find(l => l.id === returnLocId);
-
-    this.bookingState.setSelection({
-      pickupLocationId: this.pickupLocationId(),
-      pickupLocationName: pickupLoc?.name ?? null,
-      returnLocationId: returnLocId,
-      returnLocationName: returnLoc?.name ?? null,
-      pickupDate: new Date(this.pickupDate()),
-      pickupTime: this.pickupTime(),
-      returnDate: new Date(this.returnDate()),
-      returnTime: this.returnTime()
-    });
-
-    this.error.set(null);
-    this.router.navigate(['/araclar'], {
-      queryParams: { locationId: this.pickupLocationId() }
-    });
+  ngOnDestroy(): void {
+    this.stopAutoPlay();
   }
 
-  private formatDate(d: Date): string {
-    return d.toISOString().split('T')[0];
+  next(): void {
+    this.currentIndex.update(i => (i + 1) % this.slides.length);
+    this.restartAutoPlay();
   }
 
-  private generateTimeOptions(): string[] {
-    const times: string[] = [];
-    for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const hh = h.toString().padStart(2, '0');
-        const mm = m.toString().padStart(2, '0');
-        times.push(`${hh}:${mm}`);
-      }
-    }
-    return times;
+  prev(): void {
+    this.currentIndex.update(i => (i - 1 + this.slides.length) % this.slides.length);
+    this.restartAutoPlay();
+  }
+
+  goTo(i: number): void {
+    this.currentIndex.set(i);
+    this.restartAutoPlay();
+  }
+
+  private startAutoPlay(): void {
+    this.intervalId = setInterval(() => this.next(), 6000);
+  }
+
+  private stopAutoPlay(): void {
+    if (this.intervalId) clearInterval(this.intervalId);
+  }
+
+  private restartAutoPlay(): void {
+    this.stopAutoPlay();
+    this.startAutoPlay();
   }
 }

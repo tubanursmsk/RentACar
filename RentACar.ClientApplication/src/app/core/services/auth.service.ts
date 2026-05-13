@@ -1,9 +1,9 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, of, switchMap, map } from 'rxjs';
 import { ApiResponse } from '../models/api-response.model';
-import { User, LoginRequest, RegisterRequest, AuthResponse } from '../models/user.model';
+import { User, LoginRequest, RegisterRequest } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -43,18 +43,28 @@ export class AuthService {
   }
 
   // ── Login ──
-  login(credentials: LoginRequest): Observable<ApiResponse<AuthResponse>> {
+  login(credentials: LoginRequest): Observable<ApiResponse<string>> {
     this._isLoading.set(true);
-    return this.http.post<ApiResponse<AuthResponse>>(
+    return this.http.post<ApiResponse<string>>(
       `${environment.apiUrl}/Auth/Login`,
       credentials
     ).pipe(
-      tap(res => {
-        if (res.success && res.data?.user) {
-          this._user.set(res.data.user);
+      switchMap(res => {
+        if (res.success) {
+          // Cookie set edildi, /Me ile user bilgisini çek
+          return this.http.get<ApiResponse<User>>(`${environment.apiUrl}/Auth/Me`).pipe(
+            tap(meRes => {
+              if (meRes.success && meRes.data) {
+                this._user.set(meRes.data);
+              }
+            }),
+            map(() => res),
+            catchError(() => of(res))
+          );
         }
-        this._isLoading.set(false);
+        return of(res);
       }),
+      tap(() => this._isLoading.set(false)),
       catchError(err => {
         this._isLoading.set(false);
         throw err;

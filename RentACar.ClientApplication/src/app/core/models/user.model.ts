@@ -23,8 +23,3 @@ export interface RegisterRequest {
   dateOfBirth: string;
 }
 
-export interface AuthResponse {
-  token: string;
-  user: User;
-  expiresAt: string;
-}

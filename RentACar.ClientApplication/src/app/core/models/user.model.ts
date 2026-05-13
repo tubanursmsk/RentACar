@@ -20,7 +20,7 @@ export interface RegisterRequest {
   lastName: string;
   phone: string;
   identityNumber: string; // TC Kimlik
-  birthDate: string;
+  dateOfBirth: string;
 }
 
 export interface AuthResponse {

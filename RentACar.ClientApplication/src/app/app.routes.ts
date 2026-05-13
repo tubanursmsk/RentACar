@@ -26,6 +26,12 @@ export const routes: Routes = [
     title: 'Giriş Yap — RentACar'
   },
   {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/register/register.component').then(m => m.RegisterComponent),
+    title: 'Üye Ol — RentACar'
+  },
+  {
     path: '**',
     redirectTo: ''
   }

@@ -13,13 +13,16 @@ public class LocationController : ControllerBase
     public LocationController(ILocationService LocationService) => _LocationService = LocationService;
 
     [HttpGet("Paged")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10) 
         => Ok(await _LocationService.GetPagedLocationsAsync(pageNumber, pageSize));
 
     [HttpGet("All")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll() => Ok(await _LocationService.GetAllLocationsAsync());
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(int id) => Ok(await _LocationService.GetLocationByIdAsync(id));
 
     [HttpPost]

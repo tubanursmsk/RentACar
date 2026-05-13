@@ -72,4 +72,15 @@ public class AuthController : ControllerBase
         var result = await _authService.ChangePasswordAsync(dto);
         return Ok(result);
     }
+
+    [Authorize]
+    [HttpGet("Me")]
+    public async Task<IActionResult> GetMe([FromServices] IUserService userService)
+    {
+        var currentUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(currentUserIdStr)) return Unauthorized();
+
+        var result = await userService.GetUserByIdAsync(int.Parse(currentUserIdStr));
+        return Ok(result);
+    }
 }

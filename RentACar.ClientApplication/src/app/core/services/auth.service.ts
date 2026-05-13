@@ -63,18 +63,13 @@ export class AuthService {
   }
 
   // ── Register ──
-  register(data: RegisterRequest): Observable<ApiResponse<AuthResponse>> {
+  register(data: RegisterRequest): Observable<ApiResponse<number>> {
     this._isLoading.set(true);
-    return this.http.post<ApiResponse<AuthResponse>>(
-      `${environment.apiUrl}/Auth/Register`,
+    return this.http.post<ApiResponse<number>>(
+      `${environment.apiUrl}/Auth/RegisterCustomer`,
       data
     ).pipe(
-      tap(res => {
-        if (res.success && res.data?.user) {
-          this._user.set(res.data.user);
-        }
-        this._isLoading.set(false);
-      }),
+      tap(() => this._isLoading.set(false)),
       catchError(err => {
         this._isLoading.set(false);
         throw err;

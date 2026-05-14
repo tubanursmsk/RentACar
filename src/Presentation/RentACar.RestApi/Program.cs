@@ -11,6 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 using RentACar.Application.DTOs.Responses;
 using Microsoft.AspNetCore.Authorization;
 using RentACar.RestApi.Authorization;
+using RentACar.Domain.Entities;
+using RentACar.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -126,5 +130,45 @@ app.UseCors("DefaultCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+
+// Veritabanı Migration ve SeedData
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate(); // Pending migration'ları çalıştır
+
+    // Seed InsurancePackages
+    if (!db.InsurancePackages.Any())
+    {
+        db.InsurancePackages.AddRange(
+            new InsurancePackage {
+                Name = "Mini Güvence Paketi", Code = "MINI", DailyPrice = 200,
+                Description = "Temel güvence ile kiralayın", DisplayOrder = 1,
+                FeaturesJson = """[{"Name":"Lastik, Cam, Far, Ayna Güvencesi","IsIncluded":true},{"Name":"Süper Mini Hasar Güvencesi","IsIncluded":true},{"Name":"İhtiyari Mali Mesuliyet Güvencesi","IsIncluded":false},{"Name":"Ferdi Kaza Güvencesi","IsIncluded":false},{"Name":"Mini Hasar Güvencesi","IsIncluded":false}]"""
+            },
+            new InsurancePackage {
+                Name = "Orta Güvence Paketi", Code = "ORTA", DailyPrice = 300,
+                Description = "Dengeli koruma", DisplayOrder = 2, IsRecommended = true,
+                FeaturesJson = """[{"Name":"Lastik, Cam, Far, Ayna Güvencesi","IsIncluded":true},{"Name":"Mini Hasar Güvencesi","IsIncluded":true},{"Name":"İhtiyari Mali Mesuliyet Güvencesi","IsIncluded":true},{"Name":"Ferdi Kaza Güvencesi","IsIncluded":true},{"Name":"Süper Mini Hasar Güvencesi","IsIncluded":false}]"""
+            },
+            new InsurancePackage {
+                Name = "Full Güvence Paketi", Code = "FULL", DailyPrice = 450,
+                Description = "Tam koruma — gönül rahatlığı", DisplayOrder = 3,
+                FeaturesJson = """[{"Name":"Lastik, Cam, Far, Ayna Güvencesi","IsIncluded":true},{"Name":"Süper Mini Hasar Güvencesi","IsIncluded":true},{"Name":"İhtiyari Mali Mesuliyet Güvencesi","IsIncluded":true},{"Name":"Ferdi Kaza Güvencesi","IsIncluded":true},{"Name":"Mini Hasar Güvencesi","IsIncluded":false}]"""
+            }
+        );
+
+        db.AdditionalProducts.AddRange(
+            new AdditionalProduct { Name = "Ek Sürücü", Code = "EXTRA_DRIVER", Description = "Aracın, kiralayan şahıs dışındaki kişi ve/veya kişilerce kullanılabilmesini sağlamaktadır.", DailyPrice = 144, IconName = "fa-user-plus", IsQuantityBased = true, MaxQuantity = 3, DisplayOrder = 1 },
+            new AdditionalProduct { Name = "Çocuk Koltuğu", Code = "CHILD_SEAT", Description = "Belirli yaş ve kilo altındaki bebekler için zorunludur.", DailyPrice = 270, IconName = "fa-baby", IsQuantityBased = true, MaxQuantity = 3, DisplayOrder = 2 },
+            new AdditionalProduct { Name = "Genç Sürücü", Code = "YOUNG_DRIVER", Description = "Yaş sınırı uygun değilse genç sürücü paketi.", DailyPrice = 672, IconName = "fa-user-clock", IsQuantityBased = false, MaxQuantity = 1, DisplayOrder = 3 },
+            new AdditionalProduct { Name = "Ek 250 Kilometre Paketi", Code = "EXTRA_KM", Description = "Kiralama süresi boyunca 250 km ilave eder.", DailyPrice = 567, IconName = "fa-road", IsQuantityBased = true, MaxQuantity = 5, DisplayOrder = 4 }
+        );
+
+        await db.SaveChangesAsync();
+    }
+}
+
 
 app.Run();

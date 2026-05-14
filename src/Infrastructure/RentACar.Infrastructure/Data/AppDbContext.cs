@@ -7,14 +7,16 @@ namespace RentACar.Infrastructure.Context;
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
     public DbSet<Car> Cars { get; set; }
     public DbSet<Brand> Brands { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Rental> Rentals { get; set; }
     public DbSet<Location> Locations { get; set; }
-    public DbSet<AdditionalService> AdditionalServices { get; set; }
+    public DbSet<InsurancePackage> InsurancePackages { get; set; } = null!;
+    public DbSet<AdditionalProduct> AdditionalProducts { get; set; } = null!;
+    public DbSet<RentalAdditionalProduct> RentalAdditionalProducts { get; set; } = null!;
+    public DbSet<Payment> Payments { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,7 +73,45 @@ public class AppDbContext : DbContext
                     .HasDefaultValueSql("DATEADD(HOUR, 3, GETUTCDATE())");
             }
         }
-    }
 
+        // ── Rental - InsurancePackage ilişkisi (One-to-Many, opsiyonel) ──
+        modelBuilder.Entity<Rental>()
+            .HasOne(r => r.InsurancePackage)
+            .WithMany(p => p.Rentals)
+            .HasForeignKey(r => r.InsurancePackageId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ── Rental - RentalAdditionalProduct (One-to-Many) ──
+        modelBuilder.Entity<RentalAdditionalProduct>()
+            .HasOne(rap => rap.Rental)
+            .WithMany(r => r.AdditionalProducts)
+            .HasForeignKey(rap => rap.RentalId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ── AdditionalProduct - RentalAdditionalProduct (One-to-Many) ──
+        modelBuilder.Entity<RentalAdditionalProduct>()
+            .HasOne(rap => rap.AdditionalProduct)
+            .WithMany(p => p.RentalProducts)
+            .HasForeignKey(rap => rap.AdditionalProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ── Rental - Payment (One-to-Many) ──
+        modelBuilder.Entity<Payment>()
+            .HasOne(p => p.Rental)
+            .WithMany(r => r.Payments)
+            .HasForeignKey(p => p.RentalId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ── Decimal precision ──
+        modelBuilder.Entity<Rental>().Property(r => r.SubTotal).HasPrecision(18, 2);
+        modelBuilder.Entity<Rental>().Property(r => r.InsuranceTotal).HasPrecision(18, 2);
+        modelBuilder.Entity<Rental>().Property(r => r.AdditionalProductsTotal).HasPrecision(18, 2);
+        modelBuilder.Entity<InsurancePackage>().Property(p => p.DailyPrice).HasPrecision(18, 2);
+        modelBuilder.Entity<AdditionalProduct>().Property(p => p.DailyPrice).HasPrecision(18, 2);
+        modelBuilder.Entity<RentalAdditionalProduct>().Property(p => p.UnitPrice).HasPrecision(18, 2);
+        modelBuilder.Entity<RentalAdditionalProduct>().Property(p => p.TotalPrice).HasPrecision(18, 2);
+        modelBuilder.Entity<Payment>().Property(p => p.Amount).HasPrecision(18, 2);
+
+    }
 
 }

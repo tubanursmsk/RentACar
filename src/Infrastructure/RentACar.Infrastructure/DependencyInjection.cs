@@ -33,8 +33,10 @@ public static class DependencyInjection
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IIdentityValidationService, MernisIdentityValidationService>();
         services.AddScoped<IFindeksService, FakeFindeksService>();
+        services.AddScoped<IInsurancePackageService, InsurancePackageService>();
+        services.AddScoped<IAdditionalProductService, AdditionalProductService>();
+        services.AddScoped<IReservationService, ReservationService>();
         
-
         return services;
     }
 }

@@ -40,7 +40,7 @@ public class Rental : BaseEntity
     public InsurancePackage? InsurancePackage { get; set; }
 
     // ── YENİ: Ek ürünler ──
-    public ICollection<AdditionalProduct> AdditionalProducts { get; set; } = new List<AdditionalProduct>();
+    public ICollection<RentalAdditionalProduct> AdditionalProducts { get; set; } = new List<RentalAdditionalProduct>();
 
     // ── YENİ: Sürücü bilgileri (KVKK uyumlu — gerekirse encrypt edilebilir) ──
     public string? DriverIdentityNumber { get; set; }             // TC Kimlik

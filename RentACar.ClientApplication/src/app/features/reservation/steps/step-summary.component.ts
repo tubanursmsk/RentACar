@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReservationWizardService } from '../../../../core/services/reservation-wizard.service';
-import { environment } from '../../../../../environments/environment';
+import { ReservationWizardService } from '../../../core/services/reservation-wizard.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-step-summary',

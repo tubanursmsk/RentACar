@@ -27,7 +27,10 @@ module.exports = {
           500: '#6b6b6b',
           300: '#a8a8a8',
           100: '#e5e5e5',
-        }
+        },
+        success: '#22c55e',   // Yeşil
+        danger: '#ef4444',    // Kırmızı
+        
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

@@ -12,8 +12,8 @@ using RentACar.Infrastructure.Context;
 namespace RentACar.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260514100924_AddReservationModule")]
-    partial class AddReservationModule
+    [Migration("20260514193859_InitialMigration10")]
+    partial class InitialMigration10
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -114,7 +114,7 @@ namespace RentACar.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AdditionalServices");
+                    b.ToTable("AdditionalService");
                 });
 
             modelBuilder.Entity("RentACar.Domain.Entities.Brand", b =>

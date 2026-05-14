@@ -1,9 +1,9 @@
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
-import { ReservationWizardService } from '../../../core/services/reservation-wizard.service';
-import { CarService } from '../../../core/services/car.service';
-import { BookingStateService } from '../../../core/services/booking-state.service';
+import { ReservationWizardService } from '../../core/services/reservation-wizard.service';
+import { CarService } from '../../core/services/car.service';
+import { BookingStateService } from '../../core/services/booking-state.service';
 
 interface Step {
   number: number;

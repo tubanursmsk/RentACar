@@ -2,12 +2,10 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CarService } from '../../../core/services/car.service';
+import { Car } from '../../../core/models/car.model';
 import { BookingStateService } from '../../../core/services/booking-state.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Car } from '../../../core/models/car.model';
 import { environment } from '../../../../environments/environment';
-
-
 
 @Component({
   selector: 'app-car-detail',
@@ -38,7 +36,7 @@ import { environment } from '../../../../environments/environment';
         } @else if (car(); as c) {
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-            <!-- ─── SOL: Fotoğraf galerisi ─── -->
+            <!-- SOL: Fotoğraf galerisi -->
             <div>
               <div class="bg-white rounded-2xl shadow-card overflow-hidden aspect-video flex items-center justify-center">
                 @if (selectedImage(); as img) {
@@ -62,7 +60,7 @@ import { environment } from '../../../../environments/environment';
               }
             </div>
 
-            <!-- ─── SAĞ: Bilgi & Rezervasyon ─── -->
+            <!-- SAĞ: Bilgi & Rezervasyon -->
             <div>
               <div class="bg-white rounded-2xl shadow-card p-6 lg:p-8">
                 <div class="flex items-start justify-between">
@@ -109,7 +107,6 @@ import { environment } from '../../../../environments/environment';
                   </div>
                 </div>
 
-                <!-- Açıklama -->
                 @if (c.description) {
                   <div class="mt-6">
                     <h3 class="font-bold text-ink-900 mb-2">Açıklama</h3>
@@ -117,7 +114,6 @@ import { environment } from '../../../../environments/environment';
                   </div>
                 }
 
-                <!-- Konum -->
                 @if (c.locationName) {
                   <div class="mt-6 p-4 bg-avis-50 rounded-lg flex items-start gap-3">
                     <svg class="w-5 h-5 text-avis-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,7 +172,7 @@ import { environment } from '../../../../environments/environment';
                   } @else if (!booking.hasSelection()) {
                     TARİH SEÇMEK İÇİN ANA SAYFA
                   } @else {
-                    REZERVASYON YAP
+                    REZERVASYON YAP ›
                   }
                 </button>
 
@@ -261,20 +257,22 @@ export class CarDetailComponent implements OnInit {
   }
 
   bookNow(): void {
+    // 1) Booking state yoksa anasayfaya yönlendir
     if (!this.booking.hasSelection()) {
       this.router.navigate(['/']);
       return;
     }
 
+    // 2) Login değilse → login sayfasına (sonra dönüş için returnUrl)
     if (!this.auth.isAuthenticated()) {
       this.router.navigate(['/login'], {
-        queryParams: { returnUrl: this.router.url }
+        queryParams: { returnUrl: `/rezervasyon/ozet?carId=${this.car()?.id}` }
       });
       return;
     }
 
-    // Rezervasyon sayfasına yönlendir (henüz oluşturulmadı)
-    this.router.navigate(['/rezervasyon'], {
+    // 3) Wizard'a yönlendir
+    this.router.navigate(['/rezervasyon/ozet'], {
       queryParams: { carId: this.car()?.id }
     });
   }

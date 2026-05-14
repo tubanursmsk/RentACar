@@ -12,5 +12,5 @@ public class AdditionalProduct : BaseEntity
     public int MaxQuantity { get; set; } = 1;                 // Maks adet (varsa)
     public int DisplayOrder { get; set; }
 
-    public ICollection<AdditionalProduct> RentalProducts { get; set; } = new List<AdditionalProduct>();
+    public ICollection<RentalAdditionalProduct> RentalProducts { get; set; } = new List<RentalAdditionalProduct>();
 }

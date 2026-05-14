@@ -111,7 +111,7 @@ namespace RentACar.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AdditionalServices");
+                    b.ToTable("AdditionalService");
                 });
 
             modelBuilder.Entity("RentACar.Domain.Entities.Brand", b =>

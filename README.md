@@ -331,7 +331,14 @@ erDiagram
 
 
 > ### Angular Client — Storefront
-*(Buraya Angular ekran görüntülerini ekleyeceğim)*
+
+<img width="953" height="408" alt="image" src="https://github.com/user-attachments/assets/b81ffb8c-ca55-44ee-aff0-ba5f98df1396" />
+
+[Macbook-Air-localhost-z4vhzexz0nl3h_.webm](https://github.com/user-attachments/assets/a418306a-5455-4b47-bb3e-de957e29da3c)
+
+[Macbook-Air-localhost-h0smbfn2gkr2op.webm](https://github.com/user-attachments/assets/34b791e1-948b-4fe2-b9aa-3c2c9b137753)
+
+[Macbook-Air-localhost-dadlxgq4za0lp4.webm](https://github.com/user-attachments/assets/417541da-7a65-4ac8-b47c-a69657b63251)
 
 ---
 

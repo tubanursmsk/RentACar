@@ -1,5 +1,8 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subject, EMPTY } from 'rxjs';
+import { debounceTime, switchMap, catchError } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReservationWizardService } from '../../../core/services/reservation-wizard.service';
 import { AdditionalProductService } from '../../../core/services/additional-product.service';
 import { ReservationService } from '../../../core/services/reservation.service';
@@ -124,10 +127,38 @@ export class StepExtrasComponent implements OnInit {
   protected wizard = inject(ReservationWizardService);
   private productService = inject(AdditionalProductService);
   private reservationService = inject(ReservationService);
+  private destroyRef = inject(DestroyRef);
 
   protected products = this.productService.products;
   protected loading = signal(true);
   protected priceLoading = signal(false);
+
+  private priceSubject = new Subject<void>();
+
+  constructor() {
+    // +/- butonlarına hızlı tıklamada her seferinde API çağrısı yapma
+    this.priceSubject.pipe(
+      debounceTime(350),
+      switchMap(() => {
+        const s = this.wizard.state();
+        if (!s.car || !s.rentStartDate || !s.rentEndDate) return EMPTY;
+        this.priceLoading.set(true);
+        return this.reservationService.calculatePrice({
+          carId: s.car.id,
+          rentStartDate: this.toIsoDate(s.rentStartDate),
+          rentEndDate: this.toIsoDate(s.rentEndDate),
+          insurancePackageId: s.selectedInsurance?.id ?? null,
+          additionalProducts: this.wizard.getSelectedProducts()
+        }).pipe(
+          catchError(() => { this.priceLoading.set(false); return EMPTY; })
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(res => {
+      if (res.success && res.data) this.wizard.setPricePreview(res.data);
+      this.priceLoading.set(false);
+    });
+  }
 
   ngOnInit(): void {
     this.wizard.goToStep(3);
@@ -167,25 +198,7 @@ export class StepExtrasComponent implements OnInit {
   }
 
   private recalculatePrice(): void {
-    const s = this.wizard.state();
-    if (!s.car || !s.rentStartDate || !s.rentEndDate) return;
-
-    this.priceLoading.set(true);
-    this.reservationService.calculatePrice({
-      carId: s.car.id,
-      rentStartDate: this.toIsoDate(s.rentStartDate),
-      rentEndDate: this.toIsoDate(s.rentEndDate),
-      insurancePackageId: s.selectedInsurance?.id ?? null,
-      additionalProducts: this.wizard.getSelectedProducts()
-    }).subscribe({
-      next: (res) => {
-        if (res.success && res.data) {
-          this.wizard.setPricePreview(res.data);
-        }
-        this.priceLoading.set(false);
-      },
-      error: () => this.priceLoading.set(false)
-    });
+    this.priceSubject.next();
   }
 
   private toIsoDate(d: Date): string {

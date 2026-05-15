@@ -21,6 +21,11 @@ export const routes: Routes = [
     title: 'Araç Detayı — RentACar'
   },
   {
+    path: 'ofisler',
+    loadComponent: () => import('./features/offices/offices.component').then(m => m.OfficesComponent),
+    title: 'Araç Kiralama Ofisleri — RentACar'
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login.component').then(m => m.LoginComponent),
@@ -31,7 +36,15 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () =>
       import('./features/auth/register/register.component').then(m => m.RegisterComponent),
-    title: 'Kayıt Ol — RentACar'    
+    title: 'Kayıt Ol — RentACar'
+  },
+
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/profile/profile.component').then(m => m.ProfileComponent),
+    title: 'Profilim — RentACar'
   },
 
   // ─── REZERVASYON WIZARD ───
@@ -87,5 +100,10 @@ export const routes: Routes = [
   {
     path: '**',
     redirectTo: ''
-  }
+  },
+
+ 
+
+
+
 ];

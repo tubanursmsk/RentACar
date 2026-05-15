@@ -1,6 +1,7 @@
-import { Component, OnInit, computed, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReservationWizardService } from '../../core/services/reservation-wizard.service';
 import { CarService } from '../../core/services/car.service';
 import { BookingStateService } from '../../core/services/booking-state.service';
@@ -110,6 +111,7 @@ export class ReservationLayoutComponent implements OnInit {
   private router = inject(Router);
   private carService = inject(CarService);
   private bookingState = inject(BookingStateService);
+  private destroyRef = inject(DestroyRef);
 
   protected steps: Step[] = [
     { number: 1, title: 'Alış & İade Ofisi' },
@@ -119,39 +121,47 @@ export class ReservationLayoutComponent implements OnInit {
     { number: 5, title: 'Ödeme Bilgileri' }
   ];
 
-  ngOnInit(): void {
-    // sessionStorage'tan adımı geri yükle
+  constructor() {
+    // Adımı erken restore et — effect'in ilk çalışması doğru adımı görsün
     this.wizard.restoreStep();
 
-    // URL'den ?carId varsa, araç bilgisini ve booking bilgilerini wizard'a yükle
-    this.route.queryParams.subscribe(params => {
-      const carId = +params['carId'];
-      if (carId && !this.wizard.state().car) {
-        this.initializeFromQueryParams(carId);
+    // Wizard currentStep her değiştiğinde route'u güncelle
+    effect(() => {
+      const step = this.wizard.currentStep();
+      const target = `/rezervasyon/${this.routeForStep(step)}`;
+      const currentBase = this.router.url.split('?')[0];
+      if (currentBase !== target) {
+        this.router.navigate(['/rezervasyon', this.routeForStep(step)], {
+          queryParamsHandling: 'preserve'
+        });
       }
     });
+  }
 
-    // Wizard step ile route'u senkronize et
-    this.syncRouteWithStep();
+  ngOnInit(): void {
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const carId = +params['carId'];
+        if (carId && !this.wizard.state().car) {
+          this.initializeFromQueryParams(carId);
+        }
+      });
   }
 
   goToStep(step: number): void {
     if (this.canGoToStep(step)) {
       this.wizard.goToStep(step);
-      this.syncRouteWithStep();
+      // effect() route sync'i halleder
     }
   }
 
   canGoToStep(stepNumber: number): boolean {
-    const current = this.wizard.currentStep();
-    // Geri gitmek serbest, ileri gitmek için mevcut adımı tamamlamış olman lazım
-    return stepNumber <= current;
+    return stepNumber <= this.wizard.currentStep();
   }
 
   private initializeFromQueryParams(carId: number): void {
-    // BookingState'ten alınan bilgileri al
     const booking = this.bookingState.selection();
-
     this.carService.getById(carId).subscribe(res => {
       if (res.success && res.data && booking.pickupLocationId && booking.pickupDate && booking.returnDate) {
         this.wizard.setCarAndDates(
@@ -162,17 +172,8 @@ export class ReservationLayoutComponent implements OnInit {
           booking.returnDate
         );
       } else {
-        // Booking state eksikse → anasayfaya yönlendir
         this.router.navigate(['/']);
       }
-    });
-  }
-
-  private syncRouteWithStep(): void {
-    const step = this.wizard.currentStep();
-    this.router.navigate(['/rezervasyon', this.routeForStep(step)], {
-      relativeTo: null,
-      queryParamsHandling: 'preserve'
     });
   }
 

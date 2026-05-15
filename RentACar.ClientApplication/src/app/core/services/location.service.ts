@@ -9,19 +9,10 @@ import { environment } from '../../../environments/environment';
 export class LocationService {
   private http = inject(HttpClient);
 
-  // Cache (bir kez çekilir, tekrar tekrar istek atılmaz)
   private readonly _locations = signal<Location[]>([]);
   readonly locations = this._locations.asReadonly();
 
-  
-  getLocations(): Observable<ApiResponse<any>> {
-    // API bizden POST isteği ve bir PaginationModel bekliyor
-    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/Location/GetAll`, {
-      pageNumber: 1,
-      pageSize: 100 // Şube dropdown'ını doldurmak için yeterince büyük bir sayfa boyutu veriyoruz
-    });
-  }
-
+  // Backend'deki [HttpGet("All")] metoduna doğrudan istek atıyoruz
   getAll(): Observable<ApiResponse<Location[]>> {
     return this.http.get<ApiResponse<Location[]>>(`${environment.apiUrl}/Location/All`).pipe(
       tap(res => {
@@ -35,5 +26,4 @@ export class LocationService {
   getById(id: number): Observable<ApiResponse<Location>> {
     return this.http.get<ApiResponse<Location>>(`${environment.apiUrl}/Location/${id}`);
   }
-
 }

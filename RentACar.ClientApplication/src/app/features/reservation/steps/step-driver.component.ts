@@ -182,6 +182,9 @@ export class StepDriverComponent implements OnInit {
   protected ageError = signal<string | null>(null);
   protected validationError = signal<string | null>(null);
 
+  // plain object — blur'da syncToWizard() tetiklenince _formVersion artar ve computed yeniden hesaplanır
+  private _formVersion = signal(0);
+
   protected formData = {
     firstName: '',
     lastName: '',
@@ -201,6 +204,7 @@ export class StepDriverComponent implements OnInit {
   })();
 
   protected isFormValid = computed(() => {
+    this._formVersion(); // plain object'i izlemek için — blur'da artar
     const d = this.formData;
     return !!(
       d.firstName.trim() &&
@@ -236,6 +240,7 @@ export class StepDriverComponent implements OnInit {
 
   syncToWizard(): void {
     this.wizard.setDriverInfo(this.formData);
+    this._formVersion.update(v => v + 1);
     this.validationError.set(null);
   }
 
@@ -310,11 +315,8 @@ export class StepDriverComponent implements OnInit {
 
     // Genç sürücü paketi seçili değil ve yaş 21'in altındaysa uyar
     if (age < 21) {
-      const hasYoungDriver = this.wizard.getSelectedProducts().some(p => {
-        // YOUNG_DRIVER product code kontrolü için ek alana ihtiyaç var
-        // Şimdilik basitçe yaş uyarısı veriyoruz
-        return false;
-      });
+      // YOUNG_DRIVER product code kontrolü için ileride productCode alanı eklenecek
+      const hasYoungDriver = false;
 
       if (!hasYoungDriver) {
         this.ageError.set('21 yaş altı sürücüler için "Genç Sürücü Paketi" eklenmelidir. (Adım 3\'e dön)');

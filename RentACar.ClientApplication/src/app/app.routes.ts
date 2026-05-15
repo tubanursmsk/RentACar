@@ -32,6 +32,11 @@ export const routes: Routes = [
     title: 'Hizmetler — RentACar'
   },
   {
+    path: 'kampanyalar',
+    loadComponent: () => import('./features/campaigns/campaigns.component').then(m => m.CampaignsComponent),
+    title: 'Kampanyalar — RentACar'
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login.component').then(m => m.LoginComponent),
@@ -108,7 +113,7 @@ export const routes: Routes = [
     redirectTo: ''
   },
 
- 
+
 
 
 

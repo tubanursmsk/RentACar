@@ -10,11 +10,9 @@ export class CarService {
   private http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/Car`;
 
-  // ── Cache'lenebilir signal'lar ──
   private readonly _lastSearchResults = signal<PagedResult<Car> | null>(null);
   readonly lastSearchResults = this._lastSearchResults.asReadonly();
 
-  // ── Liste + filtre ──
   searchCars(filter: CarFilter): Observable<ApiResponse<PagedResult<Car>>> {
     let params = new HttpParams();
 
@@ -23,12 +21,14 @@ export class CarService {
         params = params.append('brandIds', id.toString());
       });
     }
-    if (filter.locationId) params = params.set('locationId', filter.locationId.toString());
-    if (filter.fuelType) params = params.set('fuelType', filter.fuelType.toString());
-    if (filter.transmissionType) params = params.set('transmissionType', filter.transmissionType.toString());
+    
+    // GÜVENLİK DÜZELTMESİ: ID'si "0" olanları yutmaması için != null kullanıyoruz
+    if (filter.locationId != null) params = params.set('locationId', filter.locationId.toString());
+    if (filter.fuelType != null) params = params.set('fuelType', filter.fuelType.toString());
+    if (filter.transmissionType != null) params = params.set('transmissionType', filter.transmissionType.toString());
     if (filter.minPrice != null) params = params.set('minPrice', filter.minPrice.toString());
     if (filter.maxPrice != null) params = params.set('maxPrice', filter.maxPrice.toString());
-    if (filter.minSeatCount) params = params.set('minSeatCount', filter.minSeatCount.toString());
+    if (filter.minSeatCount != null) params = params.set('minSeatCount', filter.minSeatCount.toString());
     if (filter.searchTerm) params = params.set('searchTerm', filter.searchTerm);
 
     params = params.set('pageNumber', (filter.pageNumber ?? 1).toString());
@@ -43,12 +43,10 @@ export class CarService {
     );
   }
 
-  // ── Detay ──
   getById(id: number): Observable<ApiResponse<Car>> {
     return this.http.get<ApiResponse<Car>>(`${this.baseUrl}/${id}`);
   }
 
-  // ── Tüm araçlar (basit liste, anasayfa için) ──
   getAll(): Observable<ApiResponse<Car[]>> {
     return this.http.get<ApiResponse<Car[]>>(this.baseUrl);
   }

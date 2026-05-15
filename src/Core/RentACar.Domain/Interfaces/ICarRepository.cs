@@ -7,5 +7,15 @@ public interface ICarRepository : IGenericRepository<Car>
 {
     Task<Car?> GetByIdWithImagesAsync(int id);
     Task<IEnumerable<Car>> GetAllWithDetailsAsync();
-    Task<(IEnumerable<Car> Items, int TotalCount)> GetPagedWithDetailsAsync(int pageNumber, int pageSize);
+    
+    // YENİ FİLTRE PARAMETRELERİ EKLENDİ
+    Task<(IEnumerable<Car> Items, int TotalCount)> GetPagedWithDetailsAsync(
+        int pageNumber, int pageSize, 
+        int? locationId = null, 
+        int? fuelType = null, 
+        int? transmissionType = null, 
+        decimal? minPrice = null, 
+        decimal? maxPrice = null, 
+        string? searchTerm = null, 
+        List<int>? brandIds = null);
 }

@@ -34,10 +34,31 @@ public class CarRepository : GenericRepository<Car>, ICarRepository
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public async Task<(IEnumerable<Car> Items, int TotalCount)> GetPagedWithDetailsAsync(int pageNumber, int pageSize)
+    // FİLTRELEME MANTIĞI BURAYA EKLENDİ
+    public async Task<(IEnumerable<Car> Items, int TotalCount)> GetPagedWithDetailsAsync(
+        int pageNumber, int pageSize, 
+        int? locationId = null, int? fuelType = null, int? transmissionType = null, 
+        decimal? minPrice = null, decimal? maxPrice = null, string? searchTerm = null, List<int>? brandIds = null)
     {
-        var query = _context.Set<Car>()
-            .Where(c => !c.IsDeleted)
+        var query = _context.Set<Car>().Where(c => !c.IsDeleted);
+
+        // Dinamik Sorgu (Sadece dolu olan filtreler Where şartına eklenir)
+        if (locationId.HasValue) query = query.Where(c => c.CurrentLocationId == locationId.Value);
+        if (fuelType.HasValue) query = query.Where(c => (int)c.FuelType == fuelType.Value);
+        if (transmissionType.HasValue) query = query.Where(c => (int)c.TransmissionType == transmissionType.Value);
+        if (minPrice.HasValue) query = query.Where(c => c.DailyPrice >= minPrice.Value);
+        if (maxPrice.HasValue) query = query.Where(c => c.DailyPrice <= maxPrice.Value);
+        
+        if (brandIds != null && brandIds.Any()) 
+            query = query.Where(c => brandIds.Contains(c.BrandId));
+            
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.ToLower();
+            query = query.Where(c => c.Brand.Name.ToLower().Contains(term) || c.Model.ToLower().Contains(term));
+        }
+
+        query = query
             .Include(c => c.Brand)
             .Include(c => c.CurrentLocation)
             .Include(c => c.CarImages)

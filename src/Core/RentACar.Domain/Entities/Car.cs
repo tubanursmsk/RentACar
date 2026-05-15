@@ -18,6 +18,8 @@ namespace RentACar.Domain.Entities
         public string? ImageUrl { get; set; }
 
         public ICollection<CarImage> CarImages { get; set; } = new List<CarImage>();
+        public int FuelType { get; set; }
+        public int TransmissionType { get; set; }
     }
 
     public enum CarStatus

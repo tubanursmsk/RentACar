@@ -26,6 +26,12 @@ export const routes: Routes = [
     title: 'Araç Kiralama Ofisleri — RentACar'
   },
   {
+    path: 'hizmetler',
+    loadComponent: () =>
+      import('./features/services/services.component').then(m => m.ServicesComponent),
+    title: 'Hizmetler — RentACar'
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login.component').then(m => m.LoginComponent),

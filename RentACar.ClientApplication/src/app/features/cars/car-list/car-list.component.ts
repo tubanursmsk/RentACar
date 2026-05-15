@@ -8,15 +8,12 @@ import { LocationService } from '../../../core/services/location.service';
 import { Car, CarFilter, FuelType, TransmissionType } from '../../../core/models/car.model';
 import { environment } from '../../../../environments/environment';
 
-
-
 @Component({
   selector: 'app-car-list',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="bg-ink-100/30 min-h-screen">
-      <!-- Üst banner -->
       <div class="bg-avis-600 py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 class="text-2xl md:text-3xl font-extrabold text-white">Araçlarımız</h1>
@@ -27,51 +24,33 @@ import { environment } from '../../../../environments/environment';
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
 
-          <!-- ─── SOL: FİLTRELER ─── -->
           <aside class="lg:sticky lg:top-32 lg:self-start">
             <div class="bg-white rounded-2xl shadow-card p-6">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-lg">Filtrele</h3>
-                <button (click)="clearFilters()"
-                        class="text-xs font-bold text-avis-600 hover:underline">
-                  Temizle
-                </button>
+                <button (click)="clearFilters()" class="text-xs font-bold text-avis-600 hover:underline">Temizle</button>
               </div>
 
-              <!-- Arama -->
               <div class="mb-5">
                 <label class="text-xs font-bold text-ink-700 uppercase">Marka/Model Ara</label>
-                <input type="text"
-                       [(ngModel)]="searchTerm"
-                       (input)="onFilterChange()"
-                       placeholder="Toyota, Audi..."
-                       class="input-field mt-2 text-sm">
+                <input type="text" [(ngModel)]="searchTerm" (input)="onFilterChange()" placeholder="Toyota, Audi..." class="input-field mt-2 text-sm">
               </div>
 
-              <!-- Markalar -->
               <div class="mb-5">
                 <label class="text-xs font-bold text-ink-700 uppercase">Markalar</label>
                 <div class="mt-2 space-y-2 max-h-48 overflow-y-auto pr-2">
                   @for (brand of brands(); track brand.id) {
                     <label class="flex items-center gap-2 cursor-pointer hover:bg-ink-100/50 px-2 py-1 rounded">
-                      <input type="checkbox"
-                             [checked]="selectedBrandIds().includes(brand.id)"
-                             (change)="toggleBrand(brand.id)"
-                             class="w-4 h-4 accent-avis-600">
+                      <input type="checkbox" [checked]="selectedBrandIds().includes(brand.id)" (change)="toggleBrand(brand.id)" class="w-4 h-4 accent-avis-600">
                       <span class="text-sm">{{ brand.name }}</span>
                     </label>
-                  } @empty {
-                    <p class="text-xs text-ink-500">Marka yükleniyor...</p>
                   }
                 </div>
               </div>
 
-              <!-- Şube -->
               <div class="mb-5">
                 <label class="text-xs font-bold text-ink-700 uppercase">Şube</label>
-                <select [(ngModel)]="selectedLocationId"
-                        (change)="onFilterChange()"
-                        class="input-field mt-2 text-sm">
+                <select [(ngModel)]="selectedLocationId" (change)="onFilterChange()" class="input-field mt-2 text-sm">
                   <option [ngValue]="null">Tüm şubeler</option>
                   @for (loc of locations(); track loc.id) {
                     <option [ngValue]="loc.id">{{ loc.name }} — {{ loc.city }}</option>
@@ -79,12 +58,9 @@ import { environment } from '../../../../environments/environment';
                 </select>
               </div>
 
-              <!-- Yakıt -->
               <div class="mb-5">
                 <label class="text-xs font-bold text-ink-700 uppercase">Yakıt Tipi</label>
-                <select [(ngModel)]="selectedFuel"
-                        (change)="onFilterChange()"
-                        class="input-field mt-2 text-sm">
+                <select [(ngModel)]="selectedFuel" (change)="onFilterChange()" class="input-field mt-2 text-sm">
                   <option [ngValue]="null">Tümü</option>
                   <option [ngValue]="1">Benzin</option>
                   <option [ngValue]="2">Dizel</option>
@@ -94,12 +70,9 @@ import { environment } from '../../../../environments/environment';
                 </select>
               </div>
 
-              <!-- Vites -->
               <div class="mb-5">
                 <label class="text-xs font-bold text-ink-700 uppercase">Vites</label>
-                <select [(ngModel)]="selectedTransmission"
-                        (change)="onFilterChange()"
-                        class="input-field mt-2 text-sm">
+                <select [(ngModel)]="selectedTransmission" (change)="onFilterChange()" class="input-field mt-2 text-sm">
                   <option [ngValue]="null">Tümü</option>
                   <option [ngValue]="1">Manuel</option>
                   <option [ngValue]="2">Otomatik</option>
@@ -107,35 +80,20 @@ import { environment } from '../../../../environments/environment';
                 </select>
               </div>
 
-              <!-- Fiyat aralığı -->
               <div class="mb-2">
                 <label class="text-xs font-bold text-ink-700 uppercase">Günlük Fiyat (₺)</label>
                 <div class="grid grid-cols-2 gap-2 mt-2">
-                  <input type="number"
-                         [(ngModel)]="minPrice"
-                         (change)="onFilterChange()"
-                         placeholder="Min"
-                         class="input-field text-sm">
-                  <input type="number"
-                         [(ngModel)]="maxPrice"
-                         (change)="onFilterChange()"
-                         placeholder="Max"
-                         class="input-field text-sm">
+                  <input type="number" [(ngModel)]="minPrice" (change)="onFilterChange()" placeholder="Min" class="input-field text-sm">
+                  <input type="number" [(ngModel)]="maxPrice" (change)="onFilterChange()" placeholder="Max" class="input-field text-sm">
                 </div>
               </div>
             </div>
           </aside>
 
-          <!-- ─── SAĞ: SONUÇLAR ─── -->
           <main>
-            <!-- Sonuç sayısı + sıralama -->
             <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-              <p class="text-sm text-ink-700">
-                <b class="text-avis-600">{{ totalCount() }}</b> araç bulundu
-              </p>
-              <select [(ngModel)]="sortBy"
-                      (change)="applySort()"
-                      class="input-field text-sm w-auto">
+              <p class="text-sm text-ink-700"><b class="text-avis-600">{{ totalCount() }}</b> araç bulundu</p>
+              <select [(ngModel)]="sortBy" (change)="applySort()" class="input-field text-sm w-auto">
                 <option value="default">Varsayılan</option>
                 <option value="price-asc">Fiyat (düşükten yükseğe)</option>
                 <option value="price-desc">Fiyat (yüksekten düşüğe)</option>
@@ -166,72 +124,40 @@ import { environment } from '../../../../environments/environment';
                   <a [routerLink]="['/araclar', car.id]" class="card p-4 group cursor-pointer animate-fade-in">
                     <div class="aspect-video bg-ink-100 rounded-lg overflow-hidden flex items-center justify-center">
                       @if (car.imageUrl) {
-                        <img [src]="apiBaseUrl + car.imageUrl"
-                             [alt]="car.brandName + ' ' + car.model"
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <img [src]="apiBaseUrl + car.imageUrl" [alt]="car.brandName + ' ' + car.model" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                       } @else {
                         <span class="text-5xl">🚗</span>
                       }
                     </div>
                     <div class="mt-4">
-                      <h3 class="font-bold text-ink-900 text-lg leading-tight">
-                        {{ car.brandName }} {{ car.model }}
-                      </h3>
+                      <h3 class="font-bold text-ink-900 text-lg leading-tight">{{ car.brandName }} {{ car.model }}</h3>
                       <p class="text-sm text-ink-500 mt-1">{{ car.modelYear }}</p>
 
                       <div class="flex flex-wrap gap-2 mt-3">
-                        <span class="inline-flex items-center gap-1 text-xs bg-ink-100 text-ink-700 px-2 py-1 rounded-full">
-                          ⛽ {{ getFuelLabel(car.fuelType) }}
-                        </span>
-                        <span class="inline-flex items-center gap-1 text-xs bg-ink-100 text-ink-700 px-2 py-1 rounded-full">
-                          ⚙️ {{ getTransLabel(car.transmissionType) }}
-                        </span>
-                        <span class="inline-flex items-center gap-1 text-xs bg-ink-100 text-ink-700 px-2 py-1 rounded-full">
-                          👥 {{ car.seatCount }} kişi
-                        </span>
+                        <span class="inline-flex items-center gap-1 text-xs bg-ink-100 text-ink-700 px-2 py-1 rounded-full">⛽ {{ getFuelLabel(car.fuelType) }}</span>
+                        <span class="inline-flex items-center gap-1 text-xs bg-ink-100 text-ink-700 px-2 py-1 rounded-full">⚙️ {{ getTransLabel(car.transmissionType) }}</span>
+                        <span class="inline-flex items-center gap-1 text-xs bg-ink-100 text-ink-700 px-2 py-1 rounded-full">👥 {{ car.seatCount }} kişi</span>
                       </div>
 
                       <div class="mt-4 pt-4 border-t border-ink-100 flex items-end justify-between">
                         <div>
                           <div class="text-xs text-ink-500">Günlük</div>
-                          <div class="text-xl font-extrabold text-avis-600">
-                            ₺{{ car.dailyPrice | number:'1.0-0' }}
-                          </div>
+                          <div class="text-xl font-extrabold text-avis-600">₺{{ car.dailyPrice | number:'1.0-0' }}</div>
                         </div>
-                        <button class="btn-primary !py-2 !px-4 text-xs">
-                          REZERVE ET
-                        </button>
+                        <button class="btn-primary !py-2 !px-4 text-xs">REZERVE ET</button>
                       </div>
                     </div>
                   </a>
                 }
               </div>
 
-              <!-- Sayfalama -->
               @if (totalPages() > 1) {
                 <div class="mt-10 flex items-center justify-center gap-2">
-                  <button (click)="goToPage(currentPage() - 1)"
-                          [disabled]="currentPage() === 1"
-                          class="px-4 py-2 rounded-lg bg-white border border-ink-100 hover:bg-ink-100 disabled:opacity-40 disabled:cursor-not-allowed transition text-sm font-semibold">
-                    ‹ Önceki
-                  </button>
+                  <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1" class="px-4 py-2 rounded-lg bg-white border border-ink-100 hover:bg-ink-100 disabled:opacity-40 disabled:cursor-not-allowed transition text-sm font-semibold">‹ Önceki</button>
                   @for (p of pageNumbers(); track p) {
-                    <button (click)="goToPage(p)"
-                            class="px-4 py-2 rounded-lg text-sm font-semibold transition"
-                            [class.bg-avis-600]="p === currentPage()"
-                            [class.text-white]="p === currentPage()"
-                            [class.bg-white]="p !== currentPage()"
-                            [class.border]="p !== currentPage()"
-                            [class.border-ink-100]="p !== currentPage()"
-                            [class.hover:bg-ink-100]="p !== currentPage()">
-                      {{ p }}
-                    </button>
+                    <button (click)="goToPage(p)" class="px-4 py-2 rounded-lg text-sm font-semibold transition" [class.bg-avis-600]="p === currentPage()" [class.text-white]="p === currentPage()" [class.bg-white]="p !== currentPage()" [class.border]="p !== currentPage()" [class.border-ink-100]="p !== currentPage()" [class.hover:bg-ink-100]="p !== currentPage()">{{ p }}</button>
                   }
-                  <button (click)="goToPage(currentPage() + 1)"
-                          [disabled]="currentPage() === totalPages()"
-                          class="px-4 py-2 rounded-lg bg-white border border-ink-100 hover:bg-ink-100 disabled:opacity-40 disabled:cursor-not-allowed transition text-sm font-semibold">
-                    Sonraki ›
-                  </button>
+                  <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" class="px-4 py-2 rounded-lg bg-white border border-ink-100 hover:bg-ink-100 disabled:opacity-40 disabled:cursor-not-allowed transition text-sm font-semibold">Sonraki ›</button>
                 </div>
               }
             }
@@ -265,14 +191,11 @@ export class CarListComponent implements OnInit {
     const maxVisible = 5;
     let start = Math.max(1, current - 2);
     let end = Math.min(total, start + maxVisible - 1);
-    if (end - start < maxVisible - 1) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
   });
 
-  // Filtre state'i
   protected searchTerm = '';
   protected selectedBrandIds = signal<number[]>([]);
   protected selectedLocationId: number | null = null;
@@ -286,15 +209,14 @@ export class CarListComponent implements OnInit {
   private readonly pageSize = 12;
 
   ngOnInit(): void {
-    // Marka ve lokasyon yükle
     if (this.brands().length === 0) this.brandService.getAll().subscribe();
     if (this.locations().length === 0) this.locationService.getAll().subscribe();
 
-    // Query param'dan locationId al (anasayfadan gelmiş olabilir)
     this.route.queryParams.subscribe(params => {
-      if (params['locationId']) {
-        this.selectedLocationId = +params['locationId'];
-      }
+      // YENİ: Başka sayfadan filtre gelirse (Örn: Arama çubuğu veya Ofisler sayfası)
+      if (params['locationId']) this.selectedLocationId = +params['locationId'];
+      if (params['q']) this.searchTerm = params['q'];
+      
       this.loadCars();
     });
   }
@@ -310,10 +232,17 @@ export class CarListComponent implements OnInit {
   }
 
   onFilterChange(): void {
-    // Debounce ile API'yi dövmesini engelle
     clearTimeout(this.debounceTimer);
     this.debounceTimer = setTimeout(() => {
       this.currentPage.set(1);
+      
+      // YENİ DETAY: URL'i de güncelliyoruz ki müşteri linki kopyaladığında ofis seçili kalsın
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { locationId: this.selectedLocationId || null },
+        queryParamsHandling: 'merge'
+      });
+
       this.loadCars();
     }, 350);
   }
@@ -328,6 +257,8 @@ export class CarListComponent implements OnInit {
     this.maxPrice = null;
     this.sortBy = 'default';
     this.currentPage.set(1);
+    
+    this.router.navigate([], { relativeTo: this.route, queryParams: {} });
     this.loadCars();
   }
 

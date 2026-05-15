@@ -58,6 +58,8 @@ DependencyInjection.cs
 Migrations/
  20260514193859_InitialMigration10.cs
  20260514193859_InitialMigration10.Designer.cs
+ 20260515195747_InitialMigration11.cs
+ 20260515195747_InitialMigration11.Designer.cs
  AppDbContextModelSnapshot.cs
 obj/Debug/net9.0/
  .NETCoreApp,Version=v9.0.AssemblyAttributes.cs

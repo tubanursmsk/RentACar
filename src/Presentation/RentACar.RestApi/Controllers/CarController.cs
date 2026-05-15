@@ -17,16 +17,24 @@ public class CarController : ControllerBase
         _carService = carService;
     }
 
-    // GET api/Car/Paged?pageNumber=1&pageSize=10  ← Sayfalanmış liste
+    // YENİ EKLENEN FİLTRE PARAMETRELERİ
     [HttpGet("Paged")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetPaged(
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 10,
+        [FromQuery] int? locationId = null,
+        [FromQuery] int? fuelType = null,
+        [FromQuery] int? transmissionType = null,
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] List<int>? brandIds = null)
     {
-        var result = await _carService.GetPagedAsync(pageNumber, pageSize);
+        var result = await _carService.GetPagedAsync(pageNumber, pageSize, locationId, fuelType, transmissionType, minPrice, maxPrice, searchTerm, brandIds);
         return Ok(result);
     }
 
-    // GET api/Car/All  ← Tümünü çek (dropdown vs.)
     [HttpGet("All")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll()
@@ -35,7 +43,6 @@ public class CarController : ControllerBase
         return Ok(result);
     }
 
-    // GET api/Car/{id}
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
@@ -44,7 +51,6 @@ public class CarController : ControllerBase
         return result.Success ? Ok(result) : NotFound(result);
     }
 
-    // POST api/Car  ← Multipart form-data ile alır
     [HttpPost]
     [Authorize(Roles = "Admin,CompanyManager,Staff")]
     [Consumes("multipart/form-data")]
@@ -54,7 +60,6 @@ public class CarController : ControllerBase
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
-    // PUT api/Car/{id}  ← Multipart form-data ile alır
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,CompanyManager,Staff")]
     [Consumes("multipart/form-data")]
@@ -67,7 +72,6 @@ public class CarController : ControllerBase
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
-    // DELETE api/Car/{id}
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin,CompanyManager,Staff")]
     public async Task<IActionResult> Delete(int id)

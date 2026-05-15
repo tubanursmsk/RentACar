@@ -27,6 +27,13 @@ export const routes: Routes = [
     title: 'Giriş Yap — RentACar'
   },
 
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/register/register.component').then(m => m.RegisterComponent),
+    title: 'Kayıt Ol — RentACar'    
+  },
+
   // ─── REZERVASYON WIZARD ───
   {
     path: 'rezervasyon',

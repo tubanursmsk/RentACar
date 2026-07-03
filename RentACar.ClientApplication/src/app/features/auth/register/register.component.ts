@@ -139,7 +139,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
           <div class="mt-6 text-center text-sm text-ink-500">
             Zaten hesabınız var mı?
-            <a routerLink="/login" class="text-avis-600 font-bold hover:underline ml-1">
+            <a routerLink="/login" class="text-brand-600 font-bold hover:underline ml-1">
               Giriş yapın
             </a>
           </div>

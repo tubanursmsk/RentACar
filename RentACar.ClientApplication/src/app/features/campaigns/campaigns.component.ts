@@ -17,7 +17,7 @@ interface Campaign {
   imports: [CommonModule],
   template: `
     <div class="bg-[#F3F4F6] py-16 border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="page-container mx-auto px-4 sm:px-6 lg:px-8">
         <nav class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
           Ana Sayfa / Kampanyalar
         </nav>
@@ -28,7 +28,7 @@ interface Campaign {
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-[500px]">
+    <div class="page-container mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-[500px]">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         @for (campaign of campaigns(); track campaign.id) {
           <div class="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full cursor-pointer">
@@ -37,11 +37,11 @@ interface Campaign {
                <div class="text-7xl group-hover:scale-110 transition-transform duration-500 shadow-sm">
                   {{ campaign.imageIcon }}
                </div>
-               <div class="absolute bottom-0 left-0 w-full h-1.5 bg-avis-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+               <div class="absolute bottom-0 left-0 w-full h-1.5 bg-brand-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
             </div>
 
             <div class="p-6 flex flex-col flex-1">
-              <h3 class="text-xl font-extrabold text-gray-900 mb-3 group-hover:text-avis-600 transition-colors leading-tight">
+              <h3 class="text-xl font-extrabold text-gray-900 mb-3 group-hover:text-brand-600 transition-colors leading-tight">
                 {{ campaign.title }}
               </h3>
               <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1 line-clamp-2">
@@ -50,13 +50,13 @@ interface Campaign {
 
               <div class="pt-4 border-t border-gray-100 flex flex-col gap-4">
                 <div class="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
-                  <svg class="w-4 h-4 text-avis-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                   </svg>
                   Son Geçerlilik: {{ campaign.validUntil }}
                 </div>
                 
-                <div class="flex items-center text-avis-600 font-extrabold text-sm tracking-wider group-hover:text-avis-700 transition-colors">
+                <div class="flex items-center text-brand-600 font-extrabold text-sm tracking-wider group-hover:text-avis-700 transition-colors">
                   DETAYLI BİLGİ
                   <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>

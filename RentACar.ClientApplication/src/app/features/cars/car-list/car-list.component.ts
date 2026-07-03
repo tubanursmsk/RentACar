@@ -13,22 +13,36 @@ import { environment } from '../../../../environments/environment';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div class="bg-ink-100/30 min-h-screen">
-      <div class="bg-avis-600 py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 class="text-2xl md:text-3xl font-extrabold text-white">Araçlarımız</h1>
-          <p class="text-white/80 mt-1">Filomuzdaki tüm araçları keşfedin</p>
+    <div class="bg-ink-100/30">
+
+  <section class="bg-white border-b border-ink-200">
+    <div class="page-container py-5">
+
+      <div class="flex items-center justify-between">
+
+        <div>
+          <h1 class="text-3xl font-bold text-ink-900">
+            Araçlarımız
+          </h1>
+
+          <p class="text-ink-500 mt-1">
+            {{ totalCount() }} araç arasından seçim yapın
+          </p>
         </div>
+
       </div>
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    </div>
+  </section>
+
+  <div class="page-container pt-5 pb-8">
         <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
 
           <aside class="lg:sticky lg:top-32 lg:self-start">
             <div class="bg-white rounded-2xl shadow-card p-6">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-lg">Filtrele</h3>
-                <button (click)="clearFilters()" class="text-xs font-bold text-avis-600 hover:underline">Temizle</button>
+                <button (click)="clearFilters()" class="text-xs font-bold text-brand-600 hover:underline">Temizle</button>
               </div>
 
               <div class="mb-5">
@@ -41,7 +55,7 @@ import { environment } from '../../../../environments/environment';
                 <div class="mt-2 space-y-2 max-h-48 overflow-y-auto pr-2">
                   @for (brand of brands(); track brand.id) {
                     <label class="flex items-center gap-2 cursor-pointer hover:bg-ink-100/50 px-2 py-1 rounded">
-                      <input type="checkbox" [checked]="selectedBrandIds().includes(brand.id)" (change)="toggleBrand(brand.id)" class="w-4 h-4 accent-avis-600">
+                      <input type="checkbox" [checked]="selectedBrandIds().includes(brand.id)" (change)="toggleBrand(brand.id)" class="w-4 h-4 accent-brand-600">
                       <span class="text-sm">{{ brand.name }}</span>
                     </label>
                   }
@@ -92,7 +106,7 @@ import { environment } from '../../../../environments/environment';
 
           <main>
             <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-              <p class="text-sm text-ink-700"><b class="text-avis-600">{{ totalCount() }}</b> araç bulundu</p>
+              <p class="text-sm text-ink-700"><b class="text-brand-600">{{ totalCount() }}</b> araç bulundu</p>
               <select [(ngModel)]="sortBy" (change)="applySort()" class="input-field text-sm w-auto">
                 <option value="default">Varsayılan</option>
                 <option value="price-asc">Fiyat (düşükten yükseğe)</option>
@@ -142,7 +156,7 @@ import { environment } from '../../../../environments/environment';
                       <div class="mt-4 pt-4 border-t border-ink-100 flex items-end justify-between">
                         <div>
                           <div class="text-xs text-ink-500">Günlük</div>
-                          <div class="text-xl font-extrabold text-avis-600">₺{{ car.dailyPrice | number:'1.0-0' }}</div>
+                          <div class="text-xl font-extrabold text-brand-600">₺{{ car.dailyPrice | number:'1.0-0' }}</div>
                         </div>
                         <button class="btn-primary !py-2 !px-4 text-xs">REZERVE ET</button>
                       </div>
@@ -155,7 +169,7 @@ import { environment } from '../../../../environments/environment';
                 <div class="mt-10 flex items-center justify-center gap-2">
                   <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1" class="px-4 py-2 rounded-lg bg-white border border-ink-100 hover:bg-ink-100 disabled:opacity-40 disabled:cursor-not-allowed transition text-sm font-semibold">‹ Önceki</button>
                   @for (p of pageNumbers(); track p) {
-                    <button (click)="goToPage(p)" class="px-4 py-2 rounded-lg text-sm font-semibold transition" [class.bg-avis-600]="p === currentPage()" [class.text-white]="p === currentPage()" [class.bg-white]="p !== currentPage()" [class.border]="p !== currentPage()" [class.border-ink-100]="p !== currentPage()" [class.hover:bg-ink-100]="p !== currentPage()">{{ p }}</button>
+                    <button (click)="goToPage(p)" class="px-4 py-2 rounded-lg text-sm font-semibold transition" [class.bg-brand-600]="p === currentPage()" [class.text-white]="p === currentPage()" [class.bg-white]="p !== currentPage()" [class.border]="p !== currentPage()" [class.border-ink-100]="p !== currentPage()" [class.hover:bg-ink-100]="p !== currentPage()">{{ p }}</button>
                   }
                   <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" class="px-4 py-2 rounded-lg bg-white border border-ink-100 hover:bg-ink-100 disabled:opacity-40 disabled:cursor-not-allowed transition text-sm font-semibold">Sonraki ›</button>
                 </div>

@@ -9,8 +9,8 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
     <header class="sticky top-0 z-50 bg-white border-b border-ink-200">
-      <!-- Geniş layout: max-w-[1400px], daha az kenar boşluğu -->
-      <div class="max-w-[1400px] mx-auto px-4 sm:px-6">
+      <!-- Geniş layout: max-w-[1600px], daha az kenar boşluğu -->
+      <div class="max-w-[1600px] mx-auto px-6 lg:px-8">
         <div class="flex items-center h-16">
 
 

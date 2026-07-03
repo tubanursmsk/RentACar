@@ -29,7 +29,7 @@ import { environment } from '../../../environments/environment';
               Rezervasyonunuz Alındı!
             </h1>
             <p class="text-ink-700">
-              Rezervasyon numaranız: <b class="text-avis-600">#{{ r.id }}</b>
+              Rezervasyon numaranız: <b class="text-brand-600">#{{ r.id }}</b>
             </p>
             <p class="text-sm text-ink-500 mt-2">
               E-posta adresinize onay maili gönderilecektir.
@@ -98,7 +98,7 @@ import { environment } from '../../../environments/environment';
 
             <div class="flex items-baseline justify-between pt-3">
               <span class="font-bold text-lg">Toplam</span>
-              <span class="text-3xl font-extrabold text-avis-600">
+              <span class="text-3xl font-extrabold text-brand-600">
                 ₺{{ r.totalAmount | number:'1.2-2' }}
               </span>
             </div>

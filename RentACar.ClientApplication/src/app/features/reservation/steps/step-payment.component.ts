@@ -22,13 +22,13 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
                   [class.ring-2]="paymentMethod() === 'online'"
                   [class.ring-avis-600]="paymentMethod() === 'online'">
             <div class="flex items-center gap-3 mb-2">
-              <svg class="w-8 h-8 text-avis-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-8 h-8 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
               </svg>
               <h3 class="font-bold text-lg">Online Ödeme</h3>
             </div>
-            <div class="text-2xl font-extrabold text-avis-600 mb-1">
+            <div class="text-2xl font-extrabold text-brand-600 mb-1">
               ₺{{ getOnlinePrice() | number:'1.2-2' }}
             </div>
             <div class="text-xs text-success font-semibold">
@@ -175,7 +175,7 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
 
             <div class="pt-3 border-t border-ink-100 flex items-baseline justify-between">
               <span class="font-bold">Toplam</span>
-              <span class="text-2xl font-extrabold text-avis-600">
+              <span class="text-2xl font-extrabold text-brand-600">
                 ₺{{ price.grandTotal | number:'1.2-2' }}
               </span>
             </div>

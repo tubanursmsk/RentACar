@@ -14,7 +14,7 @@ import { Location } from '../../core/models/brand-location.model';
       <div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('assets/cars/hero-1.png');"></div>
       <div class="absolute inset-0 bg-gradient-to-r from-ink-900 to-transparent"></div>
       
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24 z-10">
+      <div class="relative page-container mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24 z-10">
         <div class="text-sm font-bold text-avis-500 tracking-widest uppercase mb-2">Ana Sayfa > RentACar Ofisleri</div>
         <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-4">Araç Kiralama Ofisleri</h1>
         <p class="text-lg text-ink-300 max-w-2xl">
@@ -38,7 +38,7 @@ import { Location } from '../../core/models/brand-location.model';
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="page-container mx-auto px-4 sm:px-6 lg:px-8 py-16">
       @if (loading()) {
         <div class="flex justify-center py-20">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-avis-600"></div>
@@ -53,7 +53,7 @@ import { Location } from '../../core/models/brand-location.model';
             <section class="animate-fade-in">
               <div class="flex items-center gap-3 mb-6">
                 <h2 class="text-3xl font-extrabold text-ink-900">{{ group.city }} Ofisleri</h2>
-                <span class="px-3 py-1 bg-avis-50 text-avis-600 text-sm font-bold rounded-full">{{ group.offices.length }} Ofis</span>
+                <span class="px-3 py-1 bg-avis-50 text-brand-600 text-sm font-bold rounded-full">{{ group.offices.length }} Ofis</span>
                 <div class="flex-1 h-px bg-ink-200 ml-4 hidden sm:block"></div>
               </div>
 
@@ -63,13 +63,13 @@ import { Location } from '../../core/models/brand-location.model';
                     
                     <div class="flex items-start justify-between mb-4">
                       <div>
-                        <h3 class="font-bold text-lg text-ink-900 group-hover:text-avis-600 transition-colors">{{ office.name }}</h3>
+                        <h3 class="font-bold text-lg text-ink-900 group-hover:text-brand-600 transition-colors">{{ office.name }}</h3>
                         <p class="text-sm text-ink-500 flex items-center gap-1 mt-1">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                           {{ office.city }}
                         </p>
                       </div>
-                      <div class="w-12 h-12 bg-avis-50 rounded-full flex items-center justify-center text-avis-600 flex-shrink-0">
+                      <div class="w-12 h-12 bg-avis-50 rounded-full flex items-center justify-center text-brand-600 flex-shrink-0">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
@@ -84,7 +84,7 @@ import { Location } from '../../core/models/brand-location.model';
                     </div>
 
                     <a [routerLink]="['/araclar']" [queryParams]="{ locationId: office.id }" 
-                       class="w-full block text-center bg-ink-100 hover:bg-avis-600 text-ink-900 hover:text-white font-bold py-3 px-4 rounded-xl transition-colors">
+                       class="w-full block text-center bg-ink-100 hover:bg-brand-600 text-ink-900 hover:text-white font-bold py-3 px-4 rounded-xl transition-colors">
                       Bu Ofisten Araç Kirala
                     </a>
                   </div>

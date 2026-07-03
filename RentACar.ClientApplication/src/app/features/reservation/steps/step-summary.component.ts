@@ -29,7 +29,7 @@ import { environment } from '../../../../environments/environment';
               <p class="text-ink-500">{{ car.modelYear }} • {{ car.color }}</p>
               <div class="mt-3 space-y-1 text-sm">
                 <div><span class="text-ink-500">Plaka:</span> <b>{{ car.plate }}</b></div>
-                <div><span class="text-ink-500">Günlük:</span> <b class="text-avis-600">₺{{ car.dailyPrice | number:'1.0-0' }}</b></div>
+                <div><span class="text-ink-500">Günlük:</span> <b class="text-brand-600">₺{{ car.dailyPrice | number:'1.0-0' }}</b></div>
               </div>
             </div>
           </div>
@@ -49,7 +49,7 @@ import { environment } from '../../../../environments/environment';
 
           <div class="mt-6 p-4 bg-avis-50 border border-avis-100 rounded-lg flex items-center justify-between">
             <span class="text-sm">{{ wizard.totalDays() }} gün × ₺{{ car.dailyPrice | number:'1.0-0' }}</span>
-            <span class="text-xl font-extrabold text-avis-600">
+            <span class="text-xl font-extrabold text-brand-600">
               ₺{{ (wizard.totalDays() * car.dailyPrice) | number:'1.2-2' }}
             </span>
           </div>

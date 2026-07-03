@@ -12,7 +12,7 @@ import { AuthService } from '../../../core/services/auth.service';
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
       <!-- ═══ Sol: Form ═══ -->
       <div class="card p-6 lg:p-8">
-        <h2 class="text-2xl font-bold text-avis-600 mb-2">Sürücü Bilgileri</h2>
+        <h2 class="text-2xl font-bold text-brand-600 mb-2">Sürücü Bilgileri</h2>
         <p class="text-sm text-ink-700 mb-6 leading-relaxed">
           Yeni Çipli Kimlik uygulamasında ehliyetiniz tanımlı olsa dahi, kiralama işleminde
           ehliyetinizi yanınızda bulundurmanız veya e-Devlet sisteminden 5 Yıl Sorgulaması yaparak
@@ -119,9 +119,9 @@ import { AuthService } from '../../../core/services/auth.service';
           <label class="flex items-start gap-2 cursor-pointer">
             <input type="checkbox"
                    [(ngModel)]="acceptTerms"
-                   class="w-4 h-4 mt-1 accent-avis-600">
+                   class="w-4 h-4 mt-1 accent-brand-600">
             <span class="text-sm text-ink-700">
-              <a href="#" class="text-avis-600 underline font-semibold">Kiralama Şartlarını</a>
+              <a href="#" class="text-brand-600 underline font-semibold">Kiralama Şartlarını</a>
               okudum kabul ediyorum. *
             </span>
           </label>
@@ -150,7 +150,7 @@ import { AuthService } from '../../../core/services/auth.service';
       <aside class="space-y-4">
         <div class="card p-5">
           <h3 class="font-bold mb-3 flex items-center gap-2">
-            <svg class="w-5 h-5 text-avis-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>

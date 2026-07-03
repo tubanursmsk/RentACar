@@ -12,7 +12,7 @@ import { Location } from '../../../../core/models/brand-location.model';
   imports: [CommonModule, FormsModule],
   template: `
     <section id="hero-search" class="relative bg-white">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <div class="max-w-[1600px] mx-auto px-6 lg:px-8 py-8 lg:py-12">
 
         <!-- ═══ Hero Bilgi Bar (Turo tarzı — üstte tek satır) ═══ -->
         <div class="bg-ink-900 text-white text-center py-3 rounded-t-card">

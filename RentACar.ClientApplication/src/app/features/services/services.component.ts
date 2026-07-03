@@ -9,7 +9,7 @@ import { ApiResponse } from '../../core/models/api-response.model';
   imports: [CommonModule],
   template: `
     <div class="bg-[#F3F4F6] py-16 border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="page-container mx-auto px-4 sm:px-6 lg:px-8">
         <nav class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
           Ana Sayfa / Ek Hizmetler ve Güvenceler
         </nav>
@@ -21,23 +21,23 @@ import { ApiResponse } from '../../core/models/api-response.model';
     </div>
 
     <div class="sticky top-[72px] z-30 bg-white border-b border-gray-200 shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="page-container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex gap-8 overflow-x-auto no-scrollbar">
           <button (click)="activeCategory.set('products')"
                   [class.border-avis-600]="activeCategory() === 'products'"
-                  [class.text-avis-600]="activeCategory() === 'products'"
+                  [class.text-brand-600]="activeCategory() === 'products'"
                   class="py-5 px-1 border-b-4 border-transparent font-bold text-sm uppercase tracking-wider transition-all whitespace-nowrap">
             Ek Ürünler
           </button>
           <button (click)="activeCategory.set('protections')"
                   [class.border-avis-600]="activeCategory() === 'protections'"
-                  [class.text-avis-600]="activeCategory() === 'protections'"
+                  [class.text-brand-600]="activeCategory() === 'protections'"
                   class="py-5 px-1 border-b-4 border-transparent font-bold text-sm uppercase tracking-wider transition-all whitespace-nowrap">
             Güvenceler
           </button>
           <button (click)="activeCategory.set('corporate')"
                   [class.border-avis-600]="activeCategory() === 'corporate'"
-                  [class.text-avis-600]="activeCategory() === 'corporate'"
+                  [class.text-brand-600]="activeCategory() === 'corporate'"
                   class="py-5 px-1 border-b-4 border-transparent font-bold text-sm uppercase tracking-wider transition-all whitespace-nowrap">
             Kurumsal Hizmetler
           </button>
@@ -45,7 +45,7 @@ import { ApiResponse } from '../../core/models/api-response.model';
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-[500px]">
+    <div class="page-container mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-[500px]">
       @if (loading()) {
         <div class="flex justify-center py-20">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-avis-600"></div>
@@ -59,11 +59,11 @@ import { ApiResponse } from '../../core/models/api-response.model';
                  <div class="text-6xl group-hover:scale-110 transition-transform duration-500">
                     {{ getServiceIcon(service.name) }}
                  </div>
-                 <div class="absolute bottom-0 left-0 w-full h-1 bg-avis-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+                 <div class="absolute bottom-0 left-0 w-full h-1 bg-brand-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
               </div>
 
               <div class="p-8 flex flex-col flex-1">
-                <h3 class="text-xl font-extrabold text-gray-900 mb-3 group-hover:text-avis-600 transition-colors">
+                <h3 class="text-xl font-extrabold text-gray-900 mb-3 group-hover:text-brand-600 transition-colors">
                   {{ service.name }}
                 </h3>
                 <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
@@ -75,7 +75,7 @@ import { ApiResponse } from '../../core/models/api-response.model';
                     <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Günlük Başlayan</span>
                     <span class="text-2xl font-black text-gray-900">₺{{ service.price | number:'1.0-0' }}</span>
                   </div>
-                  <button class="bg-gray-100 hover:bg-avis-600 hover:text-white text-gray-900 font-bold py-3 px-6 rounded-lg transition-all text-xs uppercase tracking-widest">
+                  <button class="bg-gray-100 hover:bg-brand-600 hover:text-white text-gray-900 font-bold py-3 px-6 rounded-lg transition-all text-xs uppercase tracking-widest">
                     DETAYLI BİLGİ
                   </button>
                 </div>

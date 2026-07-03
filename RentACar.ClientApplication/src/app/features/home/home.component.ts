@@ -22,7 +22,7 @@ import { environment } from '../../../environments/environment';
 
     <!-- ═══ Öne Çıkan Araçlar (GENİŞ layout) ═══ -->
     <section class="py-10 lg:py-12">
-      <div class="max-w-[1400px] mx-auto px-4 sm:px-6">
+      <div class="max-w-[1600px] mx-auto px-6 sm:px-8">
 
         <div class="flex items-end justify-between mb-6">
           <div>
@@ -118,7 +118,7 @@ import { environment } from '../../../environments/environment';
 
     <!-- ═══ Neden Biz? ═══ -->
     <section class="py-14 bg-ink-50">
-      <div class="max-w-[1400px] mx-auto px-4 sm:px-6">
+      <div class="max-w-[1600px] mx-auto px-6 sm:px-8">
         <div class="text-center max-w-2xl mx-auto mb-10">
           <h2 class="text-2xl font-bold text-ink-900 mb-2">Neden RentACar?</h2>
           <p class="text-ink-600">Türkiye'nin en güvenilir araç kiralama deneyimi</p>

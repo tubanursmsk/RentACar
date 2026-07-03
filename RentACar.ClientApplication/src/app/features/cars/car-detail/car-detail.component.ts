@@ -13,13 +13,13 @@ import { environment } from '../../../../environments/environment';
   imports: [CommonModule, RouterLink],
   template: `
     <div class="bg-ink-100/30 min-h-screen py-8">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+     <div class="page-container">
 
         <!-- Breadcrumb -->
         <nav class="text-sm text-ink-500 mb-4">
-          <a routerLink="/" class="hover:text-avis-600">Ana Sayfa</a>
+          <a routerLink="/" class="hover:text-brand-600">Ana Sayfa</a>
           <span class="mx-2">/</span>
-          <a routerLink="/araclar" class="hover:text-avis-600">Araçlar</a>
+          <a routerLink="/araclar" class="hover:text-brand-600">Araçlar</a>
           <span class="mx-2">/</span>
           <span class="text-ink-700 font-semibold">{{ car()?.brandName }} {{ car()?.model }}</span>
         </nav>
@@ -70,7 +70,7 @@ import { environment } from '../../../../environments/environment';
                     </h1>
                     <p class="text-ink-500 mt-1">{{ c.modelYear }} • {{ c.color }} • {{ c.plate }}</p>
                   </div>
-                  <span class="inline-flex items-center px-3 py-1 bg-avis-50 text-avis-600 text-xs font-bold rounded-full">
+                  <span class="inline-flex items-center px-3 py-1 bg-avis-50 text-brand-600 text-xs font-bold rounded-full">
                     {{ getStatusLabel(c.status) }}
                   </span>
                 </div>
@@ -116,12 +116,12 @@ import { environment } from '../../../../environments/environment';
 
                 @if (c.locationName) {
                   <div class="mt-6 p-4 bg-avis-50 rounded-lg flex items-start gap-3">
-                    <svg class="w-5 h-5 text-avis-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-brand-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
                     <div>
-                      <div class="text-xs text-avis-600 font-bold uppercase">Şube</div>
+                      <div class="text-xs text-brand-600 font-bold uppercase">Şube</div>
                       <div class="text-sm text-ink-900 font-semibold">{{ c.locationName }}</div>
                     </div>
                   </div>
@@ -133,7 +133,7 @@ import { environment } from '../../../../environments/environment';
                 <div class="flex items-end justify-between mb-4">
                   <div>
                     <div class="text-xs text-ink-500">Günlük fiyat</div>
-                    <div class="text-3xl font-extrabold text-avis-600">
+                    <div class="text-3xl font-extrabold text-brand-600">
                       ₺{{ c.dailyPrice | number:'1.0-0' }}
                     </div>
                   </div>

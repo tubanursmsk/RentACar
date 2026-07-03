@@ -16,7 +16,7 @@ import { AdditionalProduct } from '../../../core/models/reservation.model';
     <div>
       <!-- Başlık -->
       <div class="mb-6">
-        <h2 class="text-2xl font-bold text-avis-600 mb-2">Ek Ürünler</h2>
+        <h2 class="text-2xl font-bold text-brand-600 mb-2">Ek Ürünler</h2>
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3 text-sm">
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -45,10 +45,10 @@ import { AdditionalProduct } from '../../../core/models/reservation.model';
               <!-- Başlık -->
               <div class="flex items-start justify-between mb-2">
                 <div class="flex items-center gap-2">
-                  <i class="fa-solid {{ product.iconName }} text-avis-600"></i>
-                  <h3 class="text-lg font-bold text-avis-600">{{ product.name }}</h3>
+                  <i class="fa-solid {{ product.iconName }} text-brand-600"></i>
+                  <h3 class="text-lg font-bold text-brand-600">{{ product.name }}</h3>
                 </div>
-                <button class="text-xs font-bold text-ink-700 hover:text-avis-600 flex items-center gap-1">
+                <button class="text-xs font-bold text-ink-700 hover:text-brand-600 flex items-center gap-1">
                   DETAYLI BİLGİ
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -67,7 +67,7 @@ import { AdditionalProduct } from '../../../core/models/reservation.model';
                 <div class="flex items-center gap-3">
                   <button (click)="decrease(product)"
                           [disabled]="getQuantity(product.id) === 0"
-                          class="w-10 h-10 rounded-full bg-white border-2 border-avis-600 text-avis-600
+                          class="w-10 h-10 rounded-full bg-white border-2 border-avis-600 text-brand-600
                                  flex items-center justify-center font-bold text-xl
                                  hover:bg-avis-50 transition disabled:opacity-30 disabled:cursor-not-allowed">
                     −
@@ -79,7 +79,7 @@ import { AdditionalProduct } from '../../../core/models/reservation.model';
 
                   <button (click)="increase(product)"
                           [disabled]="getQuantity(product.id) >= product.maxQuantity"
-                          class="w-10 h-10 rounded-full bg-avis-600 text-white
+                          class="w-10 h-10 rounded-full bg-brand-600 text-white
                                  flex items-center justify-center font-bold text-xl
                                  hover:bg-avis-700 transition disabled:opacity-30 disabled:cursor-not-allowed">
                     +

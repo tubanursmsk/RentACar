@@ -18,7 +18,7 @@ interface Step {
   template: `
     <div class="min-h-screen bg-ink-100/30">
       <!-- ═══ ÜST: AVIS Banner ═══ -->
-      <div class="bg-avis-600 py-4">
+      <div class="bg-brand-600 py-4">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <h1 class="text-white text-xl font-bold">
             Rezervasyonunuz
@@ -37,7 +37,7 @@ interface Step {
               <div class="flex-1 relative">
                 <!-- Progress bar -->
                 <div class="absolute top-0 left-0 right-0 h-1"
-                     [class.bg-avis-600]="step.number <= wizard.currentStep()"
+                     [class.bg-brand-600]="step.number <= wizard.currentStep()"
                      [class.bg-ink-100]="step.number > wizard.currentStep()">
                 </div>
 
@@ -56,7 +56,7 @@ interface Step {
                       </svg>
                     } @else if (step.number === wizard.currentStep()) {
                       <!-- Aktif -->
-                      <div class="w-5 h-5 rounded-full bg-avis-600 text-white flex items-center justify-center text-xs font-bold">
+                      <div class="w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold">
                         {{ step.number }}
                       </div>
                     } @else {
@@ -66,7 +66,7 @@ interface Step {
                       </div>
                     }
                     <span class="text-sm font-bold hidden md:inline"
-                          [class.text-avis-600]="step.number === wizard.currentStep()"
+                          [class.text-brand-600]="step.number === wizard.currentStep()"
                           [class.text-ink-700]="step.number < wizard.currentStep()"
                           [class.text-ink-500]="step.number > wizard.currentStep()">
                       {{ step.number }} - {{ step.title }}
@@ -75,7 +75,7 @@ interface Step {
 
                   <!-- Mevcut adım için "DÜZENLE" linki -->
                   @if (step.number < wizard.currentStep()) {
-                    <span class="text-[10px] font-bold text-avis-600 hidden md:inline-block mt-1">
+                    <span class="text-[10px] font-bold text-brand-600 hidden md:inline-block mt-1">
                       DÜZENLE
                     </span>
                   }

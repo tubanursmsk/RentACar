@@ -13,7 +13,7 @@ import { RentalService } from '../../core/services/rental.service';
         
         <aside class="w-full md:w-64 flex-shrink-0">
           <div class="bg-white rounded-2xl shadow-sm border border-ink-100 overflow-hidden">
-            <div class="p-6 bg-avis-600 text-white text-center">
+            <div class="p-6 bg-brand-600 text-white text-center">
               <div class="w-20 h-20 mx-auto bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold mb-3">
                 {{ user()?.firstName?.charAt(0) }}
               </div>
@@ -24,28 +24,28 @@ import { RentalService } from '../../core/services/rental.service';
             <nav class="p-2 flex flex-col gap-1">
               <button (click)="activeTab.set('rentals')" 
                       [class.bg-avis-50]="activeTab() === 'rentals'"
-                      [class.text-avis-600]="activeTab() === 'rentals'"
+                      [class.text-brand-600]="activeTab() === 'rentals'"
                       class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition hover:bg-ink-50">
                 <span>🚗</span> Rezervasyonlarım
               </button>
               
               <button (click)="activeTab.set('history')" 
                       [class.bg-avis-50]="activeTab() === 'history'"
-                      [class.text-avis-600]="activeTab() === 'history'"
+                      [class.text-brand-600]="activeTab() === 'history'"
                       class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition hover:bg-ink-50 text-ink-600">
                 <span>🕒</span> Kiralama Geçmişi
               </button>
               
               <button (click)="activeTab.set('billing')" 
                       [class.bg-avis-50]="activeTab() === 'billing'"
-                      [class.text-avis-600]="activeTab() === 'billing'"
+                      [class.text-brand-600]="activeTab() === 'billing'"
                       class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition hover:bg-ink-50 text-ink-600">
                 <span>📄</span> Harcamalarım
               </button>
               
               <div class="h-px bg-ink-100 my-2"></div> <button (click)="activeTab.set('password')" 
                       [class.bg-avis-50]="activeTab() === 'password'"
-                      [class.text-avis-600]="activeTab() === 'password'"
+                      [class.text-brand-600]="activeTab() === 'password'"
                       class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition hover:bg-ink-50 text-ink-600">
                 <span>🔑</span> Parola İşlemleri
               </button>
@@ -82,8 +82,8 @@ import { RentalService } from '../../core/services/rental.service';
                         </div>
                       </div>
                       <div class="text-right">
-                        <div class="text-lg font-black text-avis-600 mb-2">₺{{ rental.totalPrice }}</div>
-                        <button (click)="cancel(rental.id)" class="text-xs font-bold text-ink-400 hover:text-avis-600 transition">İPTAL ET</button>
+                        <div class="text-lg font-black text-brand-600 mb-2">₺{{ rental.totalPrice }}</div>
+                        <button (click)="cancel(rental.id)" class="text-xs font-bold text-ink-400 hover:text-brand-600 transition">İPTAL ET</button>
                       </div>
                     </div>
                   }
@@ -104,7 +104,7 @@ import { RentalService } from '../../core/services/rental.service';
           @if (activeTab() === 'billing') {
             <section class="animate-fade-in bg-white p-8 rounded-2xl shadow-sm border border-ink-100">
               <h3 class="text-xl font-bold mb-4 text-ink-900">Toplam Harcama Özeti</h3>
-              <div class="text-4xl font-black text-avis-600">₺{{ totalSpent() | number }}</div>
+              <div class="text-4xl font-black text-brand-600">₺{{ totalSpent() | number }}</div>
               <p class="text-sm text-ink-500 mt-2">Bugüne kadar toplam {{ rentals().length }} kiralama yaptınız.</p>
             </section>
           }
@@ -125,7 +125,7 @@ import { RentalService } from '../../core/services/rental.service';
                   <label class="block text-sm font-bold text-ink-700 mb-1">Yeni Parola (Tekrar)</label>
                   <input type="password" class="w-full px-4 py-2 border border-ink-200 rounded-lg focus:border-avis-600 outline-none transition">
                 </div>
-                <button type="button" class="bg-avis-600 hover:bg-avis-700 text-white font-bold py-2.5 px-6 rounded-lg transition w-full mt-4">
+                <button type="button" class="bg-brand-600 hover:bg-avis-700 text-white font-bold py-2.5 px-6 rounded-lg transition w-full mt-4">
                   Parolayı Güncelle
                 </button>
               </form>

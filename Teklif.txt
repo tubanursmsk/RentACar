@@ -1,0 +1,155 @@
+Konu: Rent-a-Car Web Projesi Teklifi — Tuba Nur Şimşek
+
+Sayın [Müşteri Adı],
+
+Geniş Araç Filosu İçin Kapsamlı Rent-a-Car Web Projesi ilanınıza
+ilişkin görüşmemizden sonra, paylaştığınız detaylar doğrultusunda
+projeniz için kapsamlı teklifimi sunuyorum.
+
+═══════════════════════════════════════════════════
+PROJE KAPSAMI
+═══════════════════════════════════════════════════
+
+Çoklu şube (İzmir, Ankara, İstanbul) yapınıza uygun, 10-100+ araçlık
+filo yönetimi yapabilen, kullanıcıların online rezervasyon ve ödeme
+gerçekleştirebileceği, kurumsal düzeyde bir rent-a-car platformu.
+
+────────────────────────────────────────────────
+A. KULLANICI (MÜŞTERİ) TARAFI
+────────────────────────────────────────────────
+
+• Modern, mobil uyumlu, hızlı web arayüzü (Avis benzeri profesyonel
+  görünüm, ancak firmanıza özgü tasarım)
+• Türkçe + İngilizce çoklu dil desteği
+• Anasayfa: Hero alanı + öne çıkan araçlar + arama kartı (tarih + lokasyon)
+• Araç listeleme: Marka, fiyat, yakıt, vites, lokasyon filtreleri
+• Araç detay: Galeri + özellikler + fiyat hesaplama
+• 5 adımlı rezervasyon akışı:
+    1. Alış/iade lokasyonu ve tarih
+    2. Güvence (sigorta) paketi seçimi
+    3. Ek ürünler (çocuk koltuğu, ek sürücü, vs.)
+    4. Sürücü bilgileri + TC kimlik doğrulama
+    5. Online ödeme (Iyzico Sanal POS) veya ofiste ödeme
+• Üyelik sistemi: Kayıt + giriş + şifremi unuttum
+• Müşteri paneli: Rezervasyonlarım, iptal, profil bilgileri
+• Otomatik e-posta bildirimleri (rezervasyon onay, hatırlatma)
+• SEO uyumlu: Google'da bulunabilirlik için optimize
+
+────────────────────────────────────────────────
+B. ADMİN PANELİ (FİRMA TARAFI)
+────────────────────────────────────────────────
+
+• Dashboard: Günlük gelir, aktif kiralamalar, müşteri sayısı, grafikler
+• Araç yönetimi: CRUD, fotoğraf yükleme, durum takibi
+  (müsait/kirada/bakımda)
+• Şube yönetimi: Multi-lokasyon
+• Filo takibi: Hangi araç hangi şubede, doluluk oranı
+• Marka yönetimi
+• Müşteri yönetimi
+• Rezervasyon yönetimi: Onay, iptal, tamamlama
+• Dinamik fiyatlandırma modülü:
+    - Sezonluk fiyat (yaz/kış/bayram)
+    - Kampanya/indirim kuponları
+    - Erken rezervasyon indirimi
+    - Hafta sonu farklı fiyat
+• Raporlama: En çok kiralanan araç, gelir grafiği, Excel export
+• Rol bazlı yetkilendirme: Admin, Şube Müdürü, Personel
+
+────────────────────────────────────────────────
+C. TEKNİK ALTYAPI
+────────────────────────────────────────────────
+
+• Backend: ASP.NET Core 9 (REST API)
+• Frontend: Angular 20 (modern, performanslı SPA)
+• Veritabanı: MS SQL Server (migration süreçleri dahil)
+• Mimari: Clean / Layered Architecture
+• Güvenlik: JWT + HttpOnly Cookie, BCrypt şifreleme
+• Logging: Serilog (hata ve aktivite takibi)
+• API dokümantasyonu: Swagger
+• Performans: Hız optimizasyonları (lazy loading, image CDN)
+• Yedekleme: Günlük otomatik DB yedek
+• SSL/HTTPS: Hazır kurulum
+• Iyzico Sanal POS entegrasyonu (3D Secure dahil)
+
+═══════════════════════════════════════════════════
+TESLİMAT
+═══════════════════════════════════════════════════
+
+• Kaynak kodlar (Git repository)
+• API dokümantasyonu (Swagger + Postman koleksiyonu)
+• Kullanım kılavuzu (Admin paneli için adım adım)
+• Veritabanı şeması ve migration scriptleri
+• Sunucu kurulum dokümantasyonu
+
+═══════════════════════════════════════════════════
+SÜRE VE BÜTÇE
+═══════════════════════════════════════════════════
+
+Toplam Proje Bedeli: 140.000 TL (KDV Hariç)
+Tahmini Süre:        8 hafta (sözleşme imzasından itibaren)
+
+────────────────────────────────────────────────
+Ödeme Planı:
+────────────────────────────────────────────────
+• %30 — Sözleşme imzası           = 42.000 TL
+• %40 — Demo teslimi (4. hafta)   = 56.000 TL
+• %30 — Final teslim + onay        = 42.000 TL
+
+═══════════════════════════════════════════════════
+TEKLİF DIŞINDA KALAN HİZMETLER
+═══════════════════════════════════════════════════
+
+Aşağıdaki kalemler firmanız tarafından temin edilecektir:
+
+• Domain ve hosting (yıllık ~25.000 TL)
+• SSL sertifikası
+• Iyzico Sanal POS üyeliği ve komisyonu
+• E-posta gönderim servisi (SendGrid/Postmark)
+• Domain DNS yapılandırması
+
+Bu kalemlerin kurulumunu ücretsiz olarak ben gerçekleştireceğim,
+sadece servis ücretleri firmanıza aittir.
+
+═══════════════════════════════════════════════════
+İLERLEYEN DÖNEMDE EKLENEBİLECEK MODÜLLER
+═══════════════════════════════════════════════════
+
+İhtiyaç duyduğunuzda ek ücret karşılığında geliştirilebilir:
+
+• ERP / Muhasebe entegrasyonu          : 25.000 - 60.000 TL
+• Şoförlü kiralama modülü              : 20.000 TL
+• Uzun dönem kiralama modülü           : 15.000 TL
+• Mobil uygulama (iOS + Android)        : 60.000 TL
+• Aylık bakım & destek paketi           : 8.000 TL/ay
+    (5 saat geliştirme + bug fix + yedek kontrolü)
+
+═══════════════════════════════════════════════════
+HİZMET GARANTİSİ
+═══════════════════════════════════════════════════
+
+• Teslim sonrası 1 ay ücretsiz bug fix garantisi
+• Haftalık ilerleme raporu ve demo sunumu
+• Esnek revizyon hakkı (her aşamada 2 revizyon)
+• Gizlilik ve veri güvenliği taahhüdü (KVKK uyumlu)
+
+═══════════════════════════════════════════════════
+REFERANSLAR
+═══════════════════════════════════════════════════
+
+GitHub: https://github.com/tubanursmsk/RentACar
+Önceki freelance projem: https://evdesaglikhizmetleri.tubanursimsek.com.tr
+
+═══════════════════════════════════════════════════
+
+Teklifimi olumlu değerlendireceğinizi ümit ederim. Görüşmek üzere
+müsait olduğunuz bir tarihte detaylı bir teknik sunum yapabilirim.
+
+Saygılarımla,
+
+Tuba Nur Şimşek
+Full Stack Developer
+[E-posta]
+[Telefon]
+
+────────────────────────────────────────────────
+Bu teklif gönderim tarihinden itibaren 14 gün geçerlidir.

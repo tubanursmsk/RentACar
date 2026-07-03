@@ -3,58 +3,58 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CarService } from '../../core/services/car.service';
 import { Car } from '../../core/models/car.model';
-import { BookingCardComponent } from './components/booking-card/booking-card.component';
-import { HeroSliderComponent } from './components/hero/hero-slider.component';
+import { HeroSearchComponent } from './components/hero-search/hero-search.component';
 import { environment } from '../../../environments/environment';
+import { CategoryChipsComponent } from './components/category-chips/category-chips.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, HeroSliderComponent, BookingCardComponent],
+  imports: [CommonModule, RouterLink, HeroSearchComponent, CategoryChipsComponent],
   template: `
-    <!-- ═══ Hero + Booking Card (üst üste) ═══ -->
-    <section class="relative">
-      <app-hero-slider />
+    <!-- ═══ Hero + Arama Kartı ═══ -->
+    <app-hero-search />
 
-      <!-- Booking Card — Hero'nun üzerinde absolute pozisyonlu -->
-      <div class="lg:absolute lg:inset-y-0 lg:right-0 lg:left-0 lg:pointer-events-none">
-        <div class="lg:max-w-7xl lg:mx-auto lg:px-8 lg:h-full lg:flex lg:items-center lg:justify-end">
-          <div class="lg:pointer-events-auto lg:w-[420px]">
-            <!-- Mobil: hero'nun altında normal akış -->
-            <div class="lg:hidden px-4 -mt-8 relative z-20">
-              <app-booking-card />
-            </div>
-            <!-- Desktop: hero'nun sağında ortalanmış -->
-            <div class="hidden lg:block">
-              <app-booking-card />
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <!-- ═══ Kategori Chip'leri ═══ -->
+    <div class="border-b border-ink-100">
+      <app-category-chips (categoryChanged)="onCategoryChanged($event)" />
+    </div>
 
-    <!-- ═══ Öne çıkan araçlar ═══ -->
-    <section class="py-16 bg-ink-100/30">
+    <!-- ═══ Öne Çıkan Araçlar ═══ -->
+    <section class="py-12 lg:py-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-end justify-between mb-8">
+
+        <!-- Başlık + "Tümünü Gör" -->
+        <div class="flex items-end justify-between mb-6">
           <div>
-            <h2 class="text-3xl md:text-4xl font-extrabold text-ink-900">Öne Çıkan Araçlar</h2>
-            <p class="text-ink-500 mt-2">En çok tercih edilen araçlarımız</p>
+            <h2 class="text-title-lg text-ink-900">
+              @if (activeCategory() === 'all') {
+                Öne Çıkan Araçlar
+              } @else if (activeCategory() === 'airport') {
+                Havalimanlarında Müsait Araçlar
+              } @else if (activeCategory() === 'monthly') {
+                Aylık Kiralamalar
+              } @else {
+                {{ activeCategory() }}
+              }
+            </h2>
+            <p class="text-ink-500 text-sm mt-1">Türkiye genelinde en çok tercih edilen araçlar</p>
           </div>
           <a routerLink="/araclar"
-             class="hidden md:inline-flex items-center gap-2 text-avis-600 font-bold hover:underline">
+             class="hidden md:inline-flex items-center gap-1 text-sm font-semibold text-ink-900 hover:text-brand-600 transition">
             Tümünü Gör
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
             </svg>
           </a>
         </div>
 
+        <!-- Araç Grid -->
         @if (loading()) {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             @for (i of [1,2,3,4]; track i) {
               <div class="card p-4 animate-pulse">
-                <div class="h-40 bg-ink-100 rounded-lg"></div>
+                <div class="aspect-video bg-ink-100 rounded-xl"></div>
                 <div class="h-4 bg-ink-100 rounded mt-4 w-3/4"></div>
                 <div class="h-4 bg-ink-100 rounded mt-2 w-1/2"></div>
               </div>
@@ -63,33 +63,75 @@ import { environment } from '../../../environments/environment';
         } @else if (featuredCars().length > 0) {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             @for (car of featuredCars(); track car.id) {
-              <a [routerLink]="['/araclar', car.id]" class="card p-4 group cursor-pointer">
-                <div class="aspect-video bg-ink-100 rounded-lg overflow-hidden flex items-center justify-center">
+              <a [routerLink]="['/araclar', car.id]"
+                 class="card overflow-hidden group cursor-pointer">
+                <!-- Görsel -->
+                <div class="aspect-[4/3] bg-ink-100 relative overflow-hidden">
                   @if (car.imageUrl) {
                     <img [src]="apiBaseUrl + car.imageUrl"
                          [alt]="car.brandName + ' ' + car.model"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                   } @else {
-                    <span class="text-5xl">🚗</span>
+                    <div class="w-full h-full flex items-center justify-center text-6xl">🚗</div>
                   }
+
+                  <!-- Favori Butonu -->
+                  <button (click)="$event.preventDefault(); $event.stopPropagation()"
+                          class="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur rounded-full
+                                 flex items-center justify-center hover:bg-white transition shadow-card">
+                    <svg class="w-5 h-5 text-ink-700 hover:text-accent-danger transition"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                  </button>
                 </div>
-                <div class="mt-4">
-                  <h3 class="font-bold text-ink-900 text-lg">
-                    {{ car.brandName }} {{ car.model }}
-                  </h3>
-                  <p class="text-sm text-ink-500 mt-1">
-                    {{ car.modelYear }} • {{ getFuelLabel(car.fuelType) }} • {{ getTransLabel(car.transmissionType) }}
-                  </p>
-                  <div class="mt-3 flex items-end justify-between">
+
+                <!-- İçerik -->
+                <div class="p-4">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                      <h3 class="font-bold text-ink-900 truncate">
+                        {{ car.brandName }} {{ car.model }}
+                      </h3>
+                      <p class="text-sm text-ink-500">{{ car.modelYear }}</p>
+                    </div>
+                    <!-- Rating (mock — sonra API'den) -->
+                    <div class="flex items-center gap-1 text-sm font-semibold text-ink-900 flex-shrink-0">
+                      <svg class="w-4 h-4 text-accent-warning" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      </svg>
+                      4.9
+                    </div>
+                  </div>
+
+                  <!-- Özellikler -->
+                  <div class="flex items-center gap-3 mt-3 text-xs text-ink-500">
+                    <span class="flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                      </svg>
+                      {{ getFuelLabel(car.fuelType) }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                      </svg>
+                      {{ getTransLabel(car.transmissionType) }}
+                    </span>
+                  </div>
+
+                  <!-- Fiyat -->
+                  <div class="mt-4 pt-4 border-t border-ink-100 flex items-baseline justify-between">
                     <div>
-                      <div class="text-xs text-ink-500">Günlük</div>
-                      <div class="text-xl font-extrabold text-avis-600">
+                      <div class="text-lg font-extrabold text-ink-900">
                         ₺{{ car.dailyPrice | number:'1.0-0' }}
                       </div>
+                      <div class="text-xs text-ink-500">/ gün</div>
                     </div>
-                    <button class="px-3 py-1.5 bg-avis-600 hover:bg-avis-700 text-white text-xs font-bold rounded-full transition">
-                      İNCELE
-                    </button>
+                    <span class="text-xs text-ink-500">Toplam ₺{{ car.dailyPrice | number:'1.0-0' }}</span>
                   </div>
                 </div>
               </a>
@@ -98,48 +140,57 @@ import { environment } from '../../../environments/environment';
         } @else {
           <p class="text-center py-12 text-ink-500">Henüz araç eklenmemiş.</p>
         }
-
-        <div class="mt-8 text-center md:hidden">
-          <a routerLink="/araclar" class="btn-primary">Tüm Araçları Gör</a>
-        </div>
       </div>
     </section>
 
-    <!-- ═══ Avantajlar ═══ -->
-    <section class="py-16">
+    <!-- ═══ Neden Biz? ═══ -->
+    <section class="py-16 bg-ink-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl md:text-4xl font-extrabold text-ink-900 text-center mb-12">
-          Neden RentACar?
-        </h2>
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <h2 class="text-title-lg text-ink-900 mb-3">Neden RentACar?</h2>
+          <p class="text-ink-600">Türkiye'nin en güvenilir araç kiralama deneyimi</p>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Özellik 1 -->
           <div class="text-center p-6">
-            <div class="w-16 h-16 mx-auto bg-avis-50 rounded-full flex items-center justify-center text-avis-600">
+            <div class="w-16 h-16 mx-auto bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
             </div>
-            <h3 class="font-bold text-xl mt-4">Hızlı Rezervasyon</h3>
-            <p class="text-ink-500 mt-2">3 dakikada online rezervasyon, anında onay.</p>
+            <h3 class="font-bold text-lg mt-4">Anında Rezervasyon</h3>
+            <p class="text-ink-600 text-sm mt-2 max-w-xs mx-auto">
+              3 dakikada rezervasyonunu tamamla, anında onay al.
+            </p>
           </div>
+
+          <!-- Özellik 2 -->
           <div class="text-center p-6">
-            <div class="w-16 h-16 mx-auto bg-avis-50 rounded-full flex items-center justify-center text-avis-600">
+            <div class="w-16 h-16 mx-auto bg-accent-success/10 rounded-2xl flex items-center justify-center text-accent-success">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
               </svg>
             </div>
-            <h3 class="font-bold text-xl mt-4">Güvenli Sürüş</h3>
-            <p class="text-ink-500 mt-2">Tüm araçlarımız tam sigortalı ve düzenli bakımlı.</p>
+            <h3 class="font-bold text-lg mt-4">Güvenli Sürüş</h3>
+            <p class="text-ink-600 text-sm mt-2 max-w-xs mx-auto">
+              Tüm araçlarımız tam sigortalı ve düzenli bakımlıdır.
+            </p>
           </div>
+
+          <!-- Özellik 3 -->
           <div class="text-center p-6">
-            <div class="w-16 h-16 mx-auto bg-avis-50 rounded-full flex items-center justify-center text-avis-600">
+            <div class="w-16 h-16 mx-auto bg-accent-warning/10 rounded-2xl flex items-center justify-center text-accent-warning">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                      d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
               </svg>
             </div>
-            <h3 class="font-bold text-xl mt-4">7/24 Destek</h3>
-            <p class="text-ink-500 mt-2">Yol yardım ve müşteri hizmetleri her an yanınızda.</p>
+            <h3 class="font-bold text-lg mt-4">7/24 Destek</h3>
+            <p class="text-ink-600 text-sm mt-2 max-w-xs mx-auto">
+              Yol yardım ve müşteri hizmetleri her an yanında.
+            </p>
           </div>
         </div>
       </div>
@@ -151,9 +202,20 @@ export class HomeComponent implements OnInit {
 
   protected featuredCars = signal<Car[]>([]);
   protected loading = signal(true);
+  protected activeCategory = signal<string>('all');
   protected apiBaseUrl = environment.apiBaseUrl;
 
   ngOnInit(): void {
+    this.loadCars();
+  }
+
+  onCategoryChanged(category: string): void {
+    this.activeCategory.set(category);
+    this.loadCars();
+  }
+
+  private loadCars(): void {
+    this.loading.set(true);
     this.carService.searchCars({ pageNumber: 1, pageSize: 4 }).subscribe({
       next: res => {
         if (res.success && res.data) {

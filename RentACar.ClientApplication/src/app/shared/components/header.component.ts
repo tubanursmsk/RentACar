@@ -1,238 +1,163 @@
-import { Component, inject, signal, ElementRef, HostListener } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, HostListener, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
+  imports: [CommonModule, RouterLink],
   template: `
-    <header class="sticky top-0 z-50 relative">
-      <div class="bg-avis-600 relative z-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <a routerLink="/" class="flex items-center">
-            <span class="text-white text-2xl sm:text-3xl font-extrabold tracking-tight">
-              RentACar<sup class="text-xs">®</sup>
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-ink-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 lg:h-20 gap-4">
+
+          <!-- ═══ Logo ═══ -->
+          <a routerLink="/" class="flex items-center gap-2 flex-shrink-0 group">
+            <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center group-hover:bg-brand-700 transition">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+              </svg>
+            </div>
+            <span class="text-xl lg:text-2xl font-extrabold text-ink-900 tracking-tight">
+              RentACar
             </span>
           </a>
 
-          <div class="hidden md:flex items-center gap-3">
-            @if (auth.isAuthenticated()) {
-              <div class="flex items-center gap-2">
-                <span class="text-white text-sm">
-                  Merhaba, <b>{{ auth.user()?.firstName }}</b>
-                </span>
-                
-                <a routerLink="/profile"
-                   class="px-4 py-2 bg-avis-700 hover:bg-avis-800 text-white text-sm font-bold rounded-full transition shadow-sm border border-avis-500">
-                  Profilim
-                </a>
-
-                <button (click)="logout()"
-                        class="px-4 py-2 bg-white hover:bg-ink-100 text-avis-600 text-sm font-bold rounded-full transition">
-                  Çıkış
-                </button>
+          <!-- ═══ Merkez Arama Kutusu ═══ -->
+          <div class="hidden lg:flex flex-1 max-w-xl mx-8">
+            <button (click)="focusSearch()"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-full border border-ink-200
+                           hover:border-ink-400 hover:shadow-card transition text-left group">
+              <svg class="w-5 h-5 text-ink-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <span class="text-ink-500 group-hover:text-ink-700 transition text-sm flex-1">
+                Şehir, havalimanı, adres veya otel...
+              </span>
+              <div class="w-8 h-8 bg-brand-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M9 5l7 7-7 7"/>
+                </svg>
               </div>
-            } @else {
-              <a routerLink="/login"
-                 class="px-4 py-2 bg-white hover:bg-ink-100 text-avis-600 text-sm font-bold rounded-full transition shadow-sm">
-                KURUMSAL Üye Girişi
-              </a>
-              <a routerLink="/login"
-                 class="px-4 py-2 bg-white hover:bg-ink-100 text-avis-600 text-sm font-bold rounded-full transition shadow-sm">
-                BİREYSEL Üye Girişi
-              </a>
-              <a routerLink="/register"
-                 class="px-4 py-2 bg-white hover:bg-ink-100 text-avis-600 text-sm font-bold rounded-full transition shadow-sm">
-                Üye Olun
-              </a>
-            }
-
-            <button class="ml-2 px-3 py-2 text-white text-sm font-semibold flex items-center gap-1 hover:bg-avis-700 rounded-full transition">
-              <span class="text-base">🇹🇷</span>
             </button>
           </div>
 
-          <button (click)="toggleMobile()"
-                  class="md:hidden text-white p-2">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
-        </div>
-      </div>
+          <!-- ═══ Sağ Menü ═══ -->
+          <div class="flex items-center gap-2 lg:gap-3 flex-shrink-0">
 
-      <nav class="bg-avis-600 border-t border-avis-700 relative z-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ul class="hidden md:flex items-center justify-center gap-1">
-            <li>
-              <a routerLink="/profile" routerLinkActive="bg-avis-700"
-                 class="block px-5 py-3 text-white text-sm font-semibold hover:bg-avis-700 transition">
-                Rezervasyon Yönetimi
-              </a>
-            </li>
-            <li>
-              <a routerLink="/araclar" routerLinkActive="bg-avis-700"
-                 class="block px-5 py-3 text-white text-sm font-semibold hover:bg-avis-700 transition">
-                Araçlar
-              </a>
-            </li>
-            <li>
-              <a routerLink="/kampanyalar"
-                 class="block px-5 py-3 text-white text-sm font-semibold hover:bg-avis-700 transition">
-                Kampanyalar
-              </a>
-            </li>
-            <li>
-              <a routerLink="/ofisler"
-                 class="block px-5 py-3 text-white text-sm font-semibold hover:bg-avis-700 transition">
-                Ofisler
-              </a>
-            </li>
-            <li>
-              <a routerLink="/hizmetler"
-                 class="block px-5 py-3 text-white text-sm font-semibold hover:bg-avis-700 transition">
-                Hizmetler
-              </a>
-            </li>
-            <li>
-              <a routerLink="/yurtdisi"
-                 class="block px-5 py-3 text-white text-sm font-semibold hover:bg-avis-700 transition">
-                Yurt Dışı Araç Kiralama
-              </a>
-            </li>
-            
-            <li class="ml-auto">
-              <button (click)="toggleSearch($event)" 
-                      [class.bg-avis-700]="isSearchOpen()"
-                      class="p-3 text-white hover:bg-avis-700 transition cursor-pointer">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-              </button>
-            </li>
-          </ul>
-        </div>
-      </nav>
+            <a routerLink="/araclar"
+               class="hidden md:inline-flex items-center px-3 lg:px-4 py-2 text-sm font-semibold
+                      text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-button transition">
+              Araçlar
+            </a>
 
-      @if (isSearchOpen()) {
-        <div class="absolute top-full left-0 right-0 bg-white shadow-2xl border-t border-ink-100 z-10 animate-fade-in origin-top" (click)="$event.stopPropagation()">
-          <div class="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-            <div class="relative flex items-center">
-              <svg class="absolute left-5 w-6 h-6 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            <button class="hidden sm:flex items-center gap-1 px-3 py-2 rounded-button
+                           hover:bg-ink-100 transition text-sm font-semibold text-ink-700">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              <input type="text"
-                     [ngModel]="searchQuery()" 
-                     (ngModelChange)="searchQuery.set($event)"
-                     (keyup.enter)="performSearch()"
-                     placeholder="Araç, marka, ofis veya kampanya arayın..."
-                     class="w-full pl-14 pr-24 py-4 rounded-full border-2 border-ink-100 focus:border-avis-600 outline-none text-lg text-ink-700 placeholder:text-ink-400 transition"
-                     autofocus>
-                     
-              <button (click)="performSearch()" class="absolute right-14 text-white bg-avis-600 hover:bg-avis-700 p-2.5 rounded-full transition transform hover:scale-105">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
-                </svg>
-              </button>
-              
-              <button (click)="closeSearch()" class="absolute right-4 text-ink-400 hover:text-avis-600 p-2 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </button>
-            </div>
+              TR
+            </button>
+
+            @if (auth.isAuthenticated()) {
+              <div class="relative">
+                <button (click)="toggleUserMenu()"
+                        class="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-button
+                               border border-ink-200 hover:shadow-card transition">
+                  <svg class="w-4 h-4 text-ink-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 6h16M4 12h16M4 18h16"/>
+                  </svg>
+                  <div class="w-7 h-7 bg-brand-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    {{ getInitials() }}
+                  </div>
+                </button>
+
+                @if (isUserMenuOpen()) {
+                  <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-card shadow-card-hover
+                              border border-ink-100 py-2 animate-fade-in">
+                    <div class="px-4 py-2 border-b border-ink-100">
+                      <p class="font-semibold text-sm">{{ auth.user()?.firstName }} {{ auth.user()?.lastName }}</p>
+                      <p class="text-xs text-ink-500">{{ auth.user()?.email }}</p>
+                    </div>
+                    <a routerLink="/profil" (click)="closeMenu()"
+                       class="block px-4 py-2 text-sm text-ink-700 hover:bg-ink-100">
+                      Profilim
+                    </a>
+                    <a routerLink="/rezervasyonlarim" (click)="closeMenu()"
+                       class="block px-4 py-2 text-sm text-ink-700 hover:bg-ink-100">
+                      Rezervasyonlarım
+                    </a>
+                    <div class="border-t border-ink-100 mt-2 pt-2">
+                      <button (click)="logout()"
+                              class="block w-full text-left px-4 py-2 text-sm text-accent-danger hover:bg-ink-100">
+                        Çıkış Yap
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <a routerLink="/login"
+                 class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-semibold
+                        text-ink-900 hover:bg-ink-100 rounded-button transition">
+                Giriş
+              </a>
+              <a routerLink="/register"
+                 class="inline-flex items-center px-4 py-2 text-sm font-semibold
+                        bg-ink-900 hover:bg-ink-800 text-white rounded-button transition">
+                Kayıt Ol
+              </a>
+            }
           </div>
         </div>
-      }
-
-      @if (isMobileOpen()) {
-        <div class="md:hidden bg-avis-700 animate-fade-in relative z-20">
-          <ul class="px-4 py-3 space-y-1">
-            <li>
-              <div class="relative py-2">
-                <input type="text" 
-                       [ngModel]="searchQuery()" 
-                       (ngModelChange)="searchQuery.set($event)"
-                       (keyup.enter)="performSearch()"
-                       placeholder="Arama yapın..."
-                       class="w-full pl-4 pr-10 py-2 rounded-full text-ink-900 outline-none text-sm">
-                <button (click)="performSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-avis-600">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                  </svg>
-                </button>
-              </div>
-            </li>
-            <li><a routerLink="/profile" (click)="toggleMobile()" class="block py-3 text-white font-semibold border-b border-avis-600">Rezervasyon Yönetimi</a></li>
-            <li><a routerLink="/araclar" (click)="toggleMobile()" class="block py-3 text-white font-semibold border-b border-avis-600">Araçlar</a></li>
-            <li><a routerLink="/kampanyalar" (click)="toggleMobile()" class="block py-3 text-white font-semibold border-b border-avis-600">Kampanyalar</a></li>
-            <li><a routerLink="/ofisler" (click)="toggleMobile()" class="block py-3 text-white font-semibold border-b border-avis-600">Ofisler</a></li>
-            <li><a routerLink="/hizmetler" (click)="toggleMobile()" class="block py-3 text-white font-semibold border-b border-avis-600">Hizmetler</a></li>
-            <li class="pt-3 flex flex-col gap-2">
-              @if (auth.isAuthenticated()) {
-                <a routerLink="/profile" (click)="toggleMobile()" class="block text-center px-4 py-3 bg-avis-800 text-white font-bold rounded-full border border-avis-500">Profilim</a>
-                <button (click)="logout()" class="w-full px-4 py-3 bg-white text-avis-600 font-bold rounded-full">Çıkış Yap</button>
-              } @else {
-                <a routerLink="/login" (click)="toggleMobile()" class="block text-center px-4 py-3 bg-white text-avis-600 font-bold rounded-full shadow-sm">Giriş Yap</a>
-              }
-            </li>
-          </ul>
-        </div>
-      }
+      </div>
     </header>
   `
 })
 export class HeaderComponent {
   protected auth = inject(AuthService);
   private router = inject(Router);
-  private elementRef = inject(ElementRef);
 
-  protected isMobileOpen = signal(false);
-  protected isSearchOpen = signal(false);
-  protected searchQuery = signal('');
+  protected isUserMenuOpen = signal(false);
 
-  toggleMobile(): void {
-    this.isMobileOpen.update(v => !v);
-    if (this.isMobileOpen()) {
-      this.isSearchOpen.set(false);
-    }
+  toggleUserMenu(): void {
+    this.isUserMenuOpen.update(v => !v);
   }
 
-  toggleSearch(event: Event): void {
-    event.stopPropagation();
-    this.isSearchOpen.update(v => !v);
-    if (this.isSearchOpen()) {
-      this.isMobileOpen.set(false);
-      this.searchQuery.set('');
-    }
-  }
-
-  closeSearch(): void {
-    this.isSearchOpen.set(false);
-  }
-
-  performSearch(): void {
-    const query = this.searchQuery().trim();
-    if (query) {
-      this.router.navigate(['/araclar'], { queryParams: { q: query } });
-      this.isSearchOpen.set(false);
-      this.isMobileOpen.set(false);
-      this.searchQuery.set('');
-    }
+  closeMenu(): void {
+    this.isUserMenuOpen.set(false);
   }
 
   logout(): void {
+    this.closeMenu();
     this.auth.logout();
-    this.isMobileOpen.set(false);
+  }
+
+  focusSearch(): void {
+    if (this.router.url === '/') {
+      const el = document.querySelector('#hero-search');
+      el?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      this.router.navigate(['/']);
+    }
+  }
+
+  getInitials(): string {
+    const u = this.auth.user();
+    if (!u) return '?';
+    return `${u.firstName?.[0] || ''}${u.lastName?.[0] || ''}`.toUpperCase();
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (this.isSearchOpen() && !this.elementRef.nativeElement.contains(event.target)) {
-      this.closeSearch();
+    const target = event.target as HTMLElement;
+    if (!target.closest('.relative')) {
+      this.isUserMenuOpen.set(false);
     }
   }
 }

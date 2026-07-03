@@ -12,26 +12,29 @@ import { environment } from '../../../environments/environment';
   standalone: true,
   imports: [CommonModule, RouterLink, HeroSearchComponent, CategoryChipsComponent],
   template: `
-    <!-- ═══ Hero + Arama Kartı ═══ -->
+    <!-- ═══ Hero + YATAY Arama ═══ -->
     <app-hero-search />
 
-    <!-- ═══ Kategori Chip'leri (ortalanmış) ═══ -->
+    <!-- ═══ Kategori Chip'leri (hero'nun ALTINDA, ortada) ═══ -->
     <div class="border-b border-ink-100">
       <app-category-chips (categoryChanged)="onCategoryChanged($event)" />
     </div>
 
-    <!-- ═══ Öne Çıkan Araçlar ═══ -->
-    <section class="py-10 lg:py-14">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- ═══ Öne Çıkan Araçlar (GENİŞ layout) ═══ -->
+    <section class="py-10 lg:py-12">
+      <div class="max-w-[1400px] mx-auto px-4 sm:px-6">
 
         <div class="flex items-end justify-between mb-6">
           <div>
-            <h2 class="text-title-lg text-ink-900">
-              {{ getCategoryTitle() }}
+            <h2 class="text-2xl font-bold text-ink-900">
+              @switch (activeCategory()) {
+                @case ('all') { Öne Çıkan Araçlar }
+                @case ('airport') { Havalimanlarında Müsait Araçlar }
+                @case ('monthly') { Aylık Kiralamalar }
+                @default { Araçlar }
+              }
             </h2>
-            <p class="text-ink-500 text-sm mt-1">
-              7 günlük bir gezi için ortalama günlük fiyatlar
-            </p>
+            <p class="text-ink-500 text-sm mt-1">Bir gezi için ortalama günlük fiyatlar</p>
           </div>
           <a routerLink="/araclar"
              class="hidden md:inline-flex items-center gap-1 text-sm font-semibold text-ink-900 hover:text-brand-600 transition">
@@ -43,7 +46,7 @@ import { environment } from '../../../environments/environment';
         </div>
 
         @if (loading()) {
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             @for (i of [1,2,3,4]; track i) {
               <div class="card p-4 animate-pulse">
                 <div class="aspect-[4/3] bg-ink-100 rounded-xl"></div>
@@ -53,10 +56,9 @@ import { environment } from '../../../environments/environment';
             }
           </div>
         } @else if (featuredCars().length > 0) {
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             @for (car of featuredCars(); track car.id) {
-              <a [routerLink]="['/araclar', car.id]"
-                 class="card overflow-hidden group cursor-pointer">
+              <a [routerLink]="['/araclar', car.id]" class="card overflow-hidden group cursor-pointer">
                 <div class="aspect-[4/3] bg-ink-100 relative overflow-hidden">
                   @if (car.imageUrl) {
                     <img [src]="apiBaseUrl + car.imageUrl"
@@ -79,9 +81,7 @@ import { environment } from '../../../environments/environment';
                 <div class="p-4">
                   <div class="flex items-start justify-between gap-2">
                     <div class="flex-1 min-w-0">
-                      <h3 class="font-bold text-ink-900 truncate">
-                        {{ car.brandName }} {{ car.model }}
-                      </h3>
+                      <h3 class="font-bold text-ink-900 truncate">{{ car.brandName }} {{ car.model }}</h3>
                       <p class="text-sm text-ink-500">{{ car.modelYear }}</p>
                     </div>
                     <div class="flex items-center gap-1 text-sm font-semibold text-ink-900 flex-shrink-0">
@@ -93,30 +93,18 @@ import { environment } from '../../../environments/environment';
                   </div>
 
                   <div class="flex items-center gap-3 mt-3 text-xs text-ink-500">
-                    <span class="flex items-center gap-1">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                      </svg>
-                      {{ getFuelLabel(car.fuelType) }}
-                    </span>
-                    <span class="flex items-center gap-1">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                      </svg>
-                      {{ getTransLabel(car.transmissionType) }}
-                    </span>
+                    <span>{{ getFuelLabel(car.fuelType) }}</span>
+                    <span>•</span>
+                    <span>{{ getTransLabel(car.transmissionType) }}</span>
+                    <span>•</span>
+                    <span>{{ car.seatCount }} kişi</span>
                   </div>
 
                   <div class="mt-4 pt-4 border-t border-ink-100 flex items-baseline justify-between">
-                    <div>
-                      <div class="text-lg font-extrabold text-ink-900">
-                        ₺{{ car.dailyPrice | number:'1.0-0' }}
-                      </div>
-                      <div class="text-xs text-ink-500">/ gün</div>
+                    <div class="text-lg font-extrabold text-ink-900">
+                      ₺{{ car.dailyPrice | number:'1.0-0' }}
+                      <span class="text-xs font-normal text-ink-500">/ gün</span>
                     </div>
-                    <span class="text-xs text-ink-500">Toplam ₺{{ (car.dailyPrice * 7) | number:'1.0-0' }}</span>
                   </div>
                 </div>
               </a>
@@ -129,50 +117,41 @@ import { environment } from '../../../environments/environment';
     </section>
 
     <!-- ═══ Neden Biz? ═══ -->
-    <section class="py-16 bg-ink-50">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl mx-auto mb-12">
-          <h2 class="text-title-lg text-ink-900 mb-3">Neden RentACar?</h2>
+    <section class="py-14 bg-ink-50">
+      <div class="max-w-[1400px] mx-auto px-4 sm:px-6">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+          <h2 class="text-2xl font-bold text-ink-900 mb-2">Neden RentACar?</h2>
           <p class="text-ink-600">Türkiye'nin en güvenilir araç kiralama deneyimi</p>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div class="text-center p-6">
-            <div class="w-16 h-16 mx-auto bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-14 h-14 mx-auto bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
             </div>
             <h3 class="font-bold text-lg mt-4">Anında Rezervasyon</h3>
-            <p class="text-ink-600 text-sm mt-2 max-w-xs mx-auto">
-              3 dakikada rezervasyonunu tamamla, anında onay al.
-            </p>
+            <p class="text-ink-600 text-sm mt-2">3 dakikada rezervasyonunu tamamla, anında onay al.</p>
           </div>
-
           <div class="text-center p-6">
-            <div class="w-16 h-16 mx-auto bg-accent-success/10 rounded-2xl flex items-center justify-center text-accent-success">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-14 h-14 mx-auto bg-accent-success/10 rounded-2xl flex items-center justify-center text-accent-success">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
               </svg>
             </div>
             <h3 class="font-bold text-lg mt-4">Güvenli Sürüş</h3>
-            <p class="text-ink-600 text-sm mt-2 max-w-xs mx-auto">
-              Tüm araçlarımız tam sigortalı ve düzenli bakımlıdır.
-            </p>
+            <p class="text-ink-600 text-sm mt-2">Tüm araçlarımız tam sigortalı ve düzenli bakımlıdır.</p>
           </div>
-
           <div class="text-center p-6">
-            <div class="w-16 h-16 mx-auto bg-accent-warning/10 rounded-2xl flex items-center justify-center text-accent-warning">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-14 h-14 mx-auto bg-accent-warning/10 rounded-2xl flex items-center justify-center text-accent-warning">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
               </svg>
             </div>
             <h3 class="font-bold text-lg mt-4">7/24 Destek</h3>
-            <p class="text-ink-600 text-sm mt-2 max-w-xs mx-auto">
-              Yol yardım ve müşteri hizmetleri her an yanında.
-            </p>
+            <p class="text-ink-600 text-sm mt-2">Yol yardım ve müşteri hizmetleri her an yanında.</p>
           </div>
         </div>
       </div>
@@ -196,28 +175,11 @@ export class HomeComponent implements OnInit {
     this.loadCars();
   }
 
-  getCategoryTitle(): string {
-    const cat = this.activeCategory();
-    const map: Record<string, string> = {
-      'all':       'Öne Çıkan Araçlar',
-      'airport':   'Havalimanlarında Müsait Araçlar',
-      'monthly':   'Aylık Kiralamalar',
-      'nearby':    'Yakınımdaki Araçlar',
-      'delivery':  'Adrese Teslim Araçlar',
-      'istanbul':  'İstanbul\'daki Araçlar',
-      'ankara':    'Ankara\'daki Araçlar',
-      'izmir':     'İzmir\'deki Araçlar',
-    };
-    return map[cat] ?? 'Öne Çıkan Araçlar';
-  }
-
   private loadCars(): void {
     this.loading.set(true);
     this.carService.searchCars({ pageNumber: 1, pageSize: 4 }).subscribe({
       next: res => {
-        if (res.success && res.data) {
-          this.featuredCars.set(res.data.items);
-        }
+        if (res.success && res.data) this.featuredCars.set(res.data.items);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
@@ -227,7 +189,6 @@ export class HomeComponent implements OnInit {
   protected getFuelLabel(fuel: number): string {
     return ({ 1: 'Benzin', 2: 'Dizel', 3: 'Elektrik', 4: 'Hibrit', 5: 'LPG' } as any)[fuel] ?? '—';
   }
-
   protected getTransLabel(trans: number): string {
     return ({ 1: 'Manuel', 2: 'Otomatik', 3: 'Yarı Otomatik' } as any)[trans] ?? '—';
   }

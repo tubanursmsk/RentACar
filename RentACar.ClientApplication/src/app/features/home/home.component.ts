@@ -4,8 +4,8 @@ import { RouterLink } from '@angular/router';
 import { CarService } from '../../core/services/car.service';
 import { Car } from '../../core/models/car.model';
 import { HeroSearchComponent } from './components/hero-search/hero-search.component';
-import { environment } from '../../../environments/environment';
 import { CategoryChipsComponent } from './components/category-chips/category-chips.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -15,30 +15,23 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
     <!-- ═══ Hero + Arama Kartı ═══ -->
     <app-hero-search />
 
-    <!-- ═══ Kategori Chip'leri ═══ -->
+    <!-- ═══ Kategori Chip'leri (ortalanmış) ═══ -->
     <div class="border-b border-ink-100">
       <app-category-chips (categoryChanged)="onCategoryChanged($event)" />
     </div>
 
     <!-- ═══ Öne Çıkan Araçlar ═══ -->
-    <section class="py-12 lg:py-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="py-10 lg:py-14">
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
 
-        <!-- Başlık + "Tümünü Gör" -->
         <div class="flex items-end justify-between mb-6">
           <div>
             <h2 class="text-title-lg text-ink-900">
-              @if (activeCategory() === 'all') {
-                Öne Çıkan Araçlar
-              } @else if (activeCategory() === 'airport') {
-                Havalimanlarında Müsait Araçlar
-              } @else if (activeCategory() === 'monthly') {
-                Aylık Kiralamalar
-              } @else {
-                {{ activeCategory() }}
-              }
+              {{ getCategoryTitle() }}
             </h2>
-            <p class="text-ink-500 text-sm mt-1">Türkiye genelinde en çok tercih edilen araçlar</p>
+            <p class="text-ink-500 text-sm mt-1">
+              7 günlük bir gezi için ortalama günlük fiyatlar
+            </p>
           </div>
           <a routerLink="/araclar"
              class="hidden md:inline-flex items-center gap-1 text-sm font-semibold text-ink-900 hover:text-brand-600 transition">
@@ -49,12 +42,11 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
           </a>
         </div>
 
-        <!-- Araç Grid -->
         @if (loading()) {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             @for (i of [1,2,3,4]; track i) {
               <div class="card p-4 animate-pulse">
-                <div class="aspect-video bg-ink-100 rounded-xl"></div>
+                <div class="aspect-[4/3] bg-ink-100 rounded-xl"></div>
                 <div class="h-4 bg-ink-100 rounded mt-4 w-3/4"></div>
                 <div class="h-4 bg-ink-100 rounded mt-2 w-1/2"></div>
               </div>
@@ -65,7 +57,6 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
             @for (car of featuredCars(); track car.id) {
               <a [routerLink]="['/araclar', car.id]"
                  class="card overflow-hidden group cursor-pointer">
-                <!-- Görsel -->
                 <div class="aspect-[4/3] bg-ink-100 relative overflow-hidden">
                   @if (car.imageUrl) {
                     <img [src]="apiBaseUrl + car.imageUrl"
@@ -74,8 +65,6 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
                   } @else {
                     <div class="w-full h-full flex items-center justify-center text-6xl">🚗</div>
                   }
-
-                  <!-- Favori Butonu -->
                   <button (click)="$event.preventDefault(); $event.stopPropagation()"
                           class="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur rounded-full
                                  flex items-center justify-center hover:bg-white transition shadow-card">
@@ -87,7 +76,6 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
                   </button>
                 </div>
 
-                <!-- İçerik -->
                 <div class="p-4">
                   <div class="flex items-start justify-between gap-2">
                     <div class="flex-1 min-w-0">
@@ -96,7 +84,6 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
                       </h3>
                       <p class="text-sm text-ink-500">{{ car.modelYear }}</p>
                     </div>
-                    <!-- Rating (mock — sonra API'den) -->
                     <div class="flex items-center gap-1 text-sm font-semibold text-ink-900 flex-shrink-0">
                       <svg class="w-4 h-4 text-accent-warning" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
@@ -105,7 +92,6 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
                     </div>
                   </div>
 
-                  <!-- Özellikler -->
                   <div class="flex items-center gap-3 mt-3 text-xs text-ink-500">
                     <span class="flex items-center gap-1">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +109,6 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
                     </span>
                   </div>
 
-                  <!-- Fiyat -->
                   <div class="mt-4 pt-4 border-t border-ink-100 flex items-baseline justify-between">
                     <div>
                       <div class="text-lg font-extrabold text-ink-900">
@@ -131,7 +116,7 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
                       </div>
                       <div class="text-xs text-ink-500">/ gün</div>
                     </div>
-                    <span class="text-xs text-ink-500">Toplam ₺{{ car.dailyPrice | number:'1.0-0' }}</span>
+                    <span class="text-xs text-ink-500">Toplam ₺{{ (car.dailyPrice * 7) | number:'1.0-0' }}</span>
                   </div>
                 </div>
               </a>
@@ -145,14 +130,13 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
 
     <!-- ═══ Neden Biz? ═══ -->
     <section class="py-16 bg-ink-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-12">
           <h2 class="text-title-lg text-ink-900 mb-3">Neden RentACar?</h2>
           <p class="text-ink-600">Türkiye'nin en güvenilir araç kiralama deneyimi</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <!-- Özellik 1 -->
           <div class="text-center p-6">
             <div class="w-16 h-16 mx-auto bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +149,6 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
             </p>
           </div>
 
-          <!-- Özellik 2 -->
           <div class="text-center p-6">
             <div class="w-16 h-16 mx-auto bg-accent-success/10 rounded-2xl flex items-center justify-center text-accent-success">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,12 +162,11 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
             </p>
           </div>
 
-          <!-- Özellik 3 -->
           <div class="text-center p-6">
             <div class="w-16 h-16 mx-auto bg-accent-warning/10 rounded-2xl flex items-center justify-center text-accent-warning">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </div>
             <h3 class="font-bold text-lg mt-4">7/24 Destek</h3>
@@ -212,6 +194,21 @@ export class HomeComponent implements OnInit {
   onCategoryChanged(category: string): void {
     this.activeCategory.set(category);
     this.loadCars();
+  }
+
+  getCategoryTitle(): string {
+    const cat = this.activeCategory();
+    const map: Record<string, string> = {
+      'all':       'Öne Çıkan Araçlar',
+      'airport':   'Havalimanlarında Müsait Araçlar',
+      'monthly':   'Aylık Kiralamalar',
+      'nearby':    'Yakınımdaki Araçlar',
+      'delivery':  'Adrese Teslim Araçlar',
+      'istanbul':  'İstanbul\'daki Araçlar',
+      'ankara':    'Ankara\'daki Araçlar',
+      'izmir':     'İzmir\'deki Araçlar',
+    };
+    return map[cat] ?? 'Öne Çıkan Araçlar';
   }
 
   private loadCars(): void {

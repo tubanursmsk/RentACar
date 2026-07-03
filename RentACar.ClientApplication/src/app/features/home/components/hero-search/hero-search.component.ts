@@ -1,170 +1,251 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, ElementRef, HostListener, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LocationService } from '../../../../core/services/location.service';
 import { BookingStateService } from '../../../../core/services/booking-state.service';
+import { Location } from '../../../../core/models/brand-location.model';
 
 @Component({
   selector: 'app-hero-search',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <section id="hero-search" class="relative bg-gradient-to-b from-brand-50 to-white overflow-hidden">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+    <section id="hero-search" class="relative bg-white">
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
 
-        <!-- ═══ Turo Tarzı: Sol Başlık + Sağ Görsel ═══ -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <!-- ═══ Hero Bilgi Bar (Turo tarzı — üstte tek satır) ═══ -->
+        <div class="bg-ink-900 text-white text-center py-3 rounded-t-card">
+          <p class="text-sm font-medium">
+            🎉 Yeni müşterilere özel! İlk kiralamanızda %20 indirim — Kod: <span class="font-bold">HOSGELDIN</span>
+          </p>
+        </div>
 
-          <!-- SOL: Başlık ve Arama Kartı -->
-          <div class="relative z-10">
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-ink-900 leading-[1.05] tracking-tight">
-              Araç kiralama<br>
-              <span class="text-brand-600">yeniden tanımlandı</span>
+        <!-- ═══ Hero Kart (Turo tarzı — arkaplan araç fotoğrafı + üstte overlay) ═══ -->
+        <div class="relative rounded-b-card overflow-hidden">
+          <!-- Arkaplan görseli -->
+          <div class="absolute inset-0 bg-gradient-to-br from-brand-800 via-brand-700 to-brand-900">
+            <img src="assets/cars/hero-1.png"
+                 alt="Kiralanabilir araç"
+                 class="w-full h-full object-cover opacity-40"
+                 onerror="this.style.display='none'">
+            <!-- Karartma overlay -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-black/40"></div>
+          </div>
+
+          <!-- İçerik -->
+          <div class="relative z-10 px-6 lg:px-16 py-12 lg:py-20 text-center">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
+              Araç kiralama yeniden tanımlandı
             </h1>
-            <p class="mt-4 text-lg text-ink-600 max-w-lg">
-              Türkiye'nin dört bir yanında konforlu ve güvenli araç kiralama deneyimi. Şimdi rezerve et, yolculuk keyfinle başlasın.
+            <p class="mt-3 text-base lg:text-lg text-white/90 max-w-2xl mx-auto">
+              Tam istediğiniz aracı, tam ihtiyacınız olan yerde, günlerce, haftalarca veya aylarca kiralayın.
             </p>
 
-            <!-- ═══ Arama Kartı — Turo Tarzı Beyaz Card ═══ -->
-            <div class="mt-8 bg-white rounded-card shadow-card p-6 border border-ink-100">
-              <!-- Konum -->
-              <div class="mb-4">
-                <label class="label">Nereden</label>
-                <div class="relative">
-                  <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-500 pointer-events-none"
-                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <!-- ═══ Arama Kutusu (Turo tarzı — beyaz card, tek satır) ═══ -->
+            <div class="mt-6 max-w-5xl mx-auto">
+              <div class="bg-white rounded-full shadow-card-hover flex items-center p-1.5">
+
+                <!-- 1. Konum (autocomplete) -->
+                <div class="relative flex-1 min-w-0" #locationContainer>
+                  <button type="button"
+                          (click)="toggleLocationDropdown()"
+                          class="w-full px-5 py-3 rounded-full text-left hover:bg-ink-50 transition group">
+                    <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">Nerede</div>
+                    <div class="mt-0.5 text-sm text-ink-900 truncate"
+                         [class.text-ink-400]="!selectedLocationLabel()">
+                      {{ selectedLocationLabel() || 'Havalimanı, otel, adres, şehir' }}
+                    </div>
+                  </button>
+
+                  <!-- ─── Autocomplete Dropdown ─── -->
+                  @if (isLocationOpen()) {
+                    <div class="absolute left-0 top-full mt-2 w-full min-w-[380px] bg-white
+                                rounded-card shadow-card-hover border border-ink-100
+                                py-2 z-30 animate-fade-in max-h-96 overflow-y-auto">
+                      <!-- Konumumu Kullan -->
+                      <button type="button"
+                              (click)="useCurrentLocation()"
+                              class="w-full px-4 py-3 flex items-center gap-3 hover:bg-ink-50 transition">
+                        <div class="w-10 h-10 flex items-center justify-center text-brand-600">
+                          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+                          </svg>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-semibold text-sm text-brand-600">Mevcut konumum</div>
+                        </div>
+                      </button>
+
+                      <!-- Herhangi Bir Yer -->
+                      <button type="button"
+                              (click)="selectAnywhere()"
+                              class="w-full px-4 py-3 flex items-center gap-3 hover:bg-ink-50 transition">
+                        <div class="w-10 h-10 flex items-center justify-center text-ink-700">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                        </div>
+                        <div class="text-left">
+                          <div class="font-semibold text-sm text-ink-900">Herhangi bir yer</div>
+                          <div class="text-xs text-ink-500">Tüm araçları gör</div>
+                        </div>
+                      </button>
+
+                      <div class="border-t border-ink-100 my-1"></div>
+
+                      <!-- Popüler Lokasyonlar (havalimanları) -->
+                      @for (loc of airportLocations(); track loc.id) {
+                        <button type="button"
+                                (click)="selectLocation(loc)"
+                                class="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-ink-50 transition">
+                          <div class="w-10 h-10 flex items-center justify-center text-ink-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                            </svg>
+                          </div>
+                          <div class="text-left flex-1 min-w-0">
+                            <div class="font-semibold text-sm text-ink-900 truncate">{{ loc.name }}</div>
+                            <div class="text-xs text-ink-500">{{ loc.city }}</div>
+                          </div>
+                        </button>
+                      }
+
+                      <!-- Şehirler -->
+                      @for (city of cityGroups(); track city.name) {
+                        <button type="button"
+                                (click)="selectLocation(city.location)"
+                                class="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-ink-50 transition">
+                          <div class="w-10 h-10 flex items-center justify-center text-ink-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                          </div>
+                          <div class="text-left flex-1 min-w-0">
+                            <div class="font-semibold text-sm text-ink-900 truncate">{{ city.name }}</div>
+                          </div>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <!-- Ayırıcı -->
+                <div class="w-px h-10 bg-ink-200"></div>
+
+                <!-- 2. Alış Tarihi -->
+                <div class="hidden md:block flex-1 min-w-0 relative">
+                  <button type="button"
+                          (click)="openDateInput('pickup')"
+                          class="w-full px-5 py-3 rounded-full text-left hover:bg-ink-50 transition">
+                    <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">İtibaren</div>
+                    <div class="mt-0.5 text-sm text-ink-900 truncate"
+                         [class.text-ink-400]="!pickupDate()">
+                      {{ pickupDate() ? formatShortDate(pickupDate()!) : 'Tarih seçin' }}
+                    </div>
+                  </button>
+                  <input #pickupDateInput
+                         type="date"
+                         [(ngModel)]="pickupDate"
+                         [min]="todayString"
+                         class="absolute inset-0 opacity-0 cursor-pointer">
+                </div>
+
+                <!-- 3. Alış Saati -->
+                <div class="hidden md:block flex-1 min-w-0 relative border-l border-ink-200">
+                  <button type="button"
+                          class="w-full px-5 py-3 rounded-full text-left hover:bg-ink-50 transition">
+                    <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">Saat</div>
+                    <div class="mt-0.5 text-sm text-ink-900 truncate">
+                      {{ pickupTime() }}
+                    </div>
+                  </button>
+                  <select [(ngModel)]="pickupTime"
+                          class="absolute inset-0 opacity-0 cursor-pointer">
+                    @for (t of timeOptions; track t) {
+                      <option [value]="t">{{ t }}</option>
+                    }
+                  </select>
+                </div>
+
+                <!-- Ayırıcı -->
+                <div class="hidden md:block w-px h-10 bg-ink-200"></div>
+
+                <!-- 4. İade Tarihi -->
+                <div class="hidden md:block flex-1 min-w-0 relative">
+                  <button type="button"
+                          (click)="openDateInput('return')"
+                          class="w-full px-5 py-3 rounded-full text-left hover:bg-ink-50 transition">
+                    <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">Değin</div>
+                    <div class="mt-0.5 text-sm text-ink-900 truncate"
+                         [class.text-ink-400]="!returnDate()">
+                      {{ returnDate() ? formatShortDate(returnDate()!) : 'Tarih seçin' }}
+                    </div>
+                  </button>
+                  <input #returnDateInput
+                         type="date"
+                         [(ngModel)]="returnDate"
+                         [min]="minReturnDate()"
+                         class="absolute inset-0 opacity-0 cursor-pointer">
+                </div>
+
+                <!-- 5. İade Saati -->
+                <div class="hidden md:block flex-1 min-w-0 relative border-l border-ink-200">
+                  <button type="button"
+                          class="w-full px-5 py-3 rounded-full text-left hover:bg-ink-50 transition">
+                    <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">Saat</div>
+                    <div class="mt-0.5 text-sm text-ink-900 truncate">
+                      {{ returnTime() }}
+                    </div>
+                  </button>
+                  <select [(ngModel)]="returnTime"
+                          class="absolute inset-0 opacity-0 cursor-pointer">
+                    @for (t of timeOptions; track t) {
+                      <option [value]="t">{{ t }}</option>
+                    }
+                  </select>
+                </div>
+
+                <!-- Ara Butonu (Turo mor daire — bizde brand-600 mavi) -->
+                <button (click)="search()"
+                        [disabled]="!canSearch()"
+                        class="w-12 h-12 lg:w-14 lg:h-14 ml-2 bg-brand-600 hover:bg-brand-700
+                               disabled:opacity-50 disabled:cursor-not-allowed
+                               text-white rounded-full flex items-center justify-center transition
+                               shadow-lg hover:shadow-xl flex-shrink-0">
+                  <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                   </svg>
-                  <select [(ngModel)]="pickupLocationId"
-                          class="input-field pl-11 pr-4 cursor-pointer appearance-none">
-                    <option [ngValue]="null">Şehir veya havalimanı seçin</option>
-                    @for (loc of locations(); track loc.id) {
-                      <option [ngValue]="loc.id">{{ loc.name }} — {{ loc.city }}</option>
-                    }
-                  </select>
-                </div>
+                </button>
               </div>
 
-              <!-- Farklı iade konumu -->
-              <div class="flex items-center gap-2 mb-4">
-                <input type="checkbox"
-                       id="differentReturn"
-                       [(ngModel)]="differentReturn"
-                       class="w-4 h-4 accent-brand-600 cursor-pointer">
-                <label for="differentReturn" class="text-sm text-ink-700 cursor-pointer">
-                  Farklı konumda teslim et
-                </label>
-              </div>
-
-              @if (differentReturn()) {
-                <div class="mb-4 animate-fade-in">
-                  <label class="label">Nereye</label>
-                  <select [(ngModel)]="returnLocationId"
-                          class="input-field cursor-pointer appearance-none">
-                    <option [ngValue]="null">İade konumu seçin</option>
-                    @for (loc of locations(); track loc.id) {
-                      <option [ngValue]="loc.id">{{ loc.name }} — {{ loc.city }}</option>
-                    }
-                  </select>
-                </div>
-              }
-
-              <!-- Alış Tarihi + Saati -->
-              <div class="grid grid-cols-2 gap-3 mb-4">
-                <div>
-                  <label class="label">Alış Tarihi</label>
+              <!-- Mobil için tarih satırı -->
+              <div class="md:hidden mt-3 grid grid-cols-2 gap-2">
+                <div class="bg-white rounded-lg p-3 shadow-card">
+                  <div class="text-[10px] font-bold text-ink-700 uppercase">Alış</div>
                   <input type="date"
                          [(ngModel)]="pickupDate"
                          [min]="todayString"
-                         class="input-field cursor-pointer">
+                         class="mt-1 w-full outline-none text-sm">
                 </div>
-                <div>
-                  <label class="label">Saat</label>
-                  <select [(ngModel)]="pickupTime"
-                          class="input-field cursor-pointer appearance-none">
-                    @for (t of timeOptions; track t) {
-                      <option [value]="t">{{ t }}</option>
-                    }
-                  </select>
-                </div>
-              </div>
-
-              <!-- İade Tarihi + Saati -->
-              <div class="grid grid-cols-2 gap-3 mb-6">
-                <div>
-                  <label class="label">İade Tarihi</label>
+                <div class="bg-white rounded-lg p-3 shadow-card">
+                  <div class="text-[10px] font-bold text-ink-700 uppercase">İade</div>
                   <input type="date"
                          [(ngModel)]="returnDate"
                          [min]="minReturnDate()"
-                         class="input-field cursor-pointer">
-                </div>
-                <div>
-                  <label class="label">Saat</label>
-                  <select [(ngModel)]="returnTime"
-                          class="input-field cursor-pointer appearance-none">
-                    @for (t of timeOptions; track t) {
-                      <option [value]="t">{{ t }}</option>
-                    }
-                  </select>
+                         class="mt-1 w-full outline-none text-sm">
                 </div>
               </div>
 
               @if (error()) {
-                <p class="mb-3 text-sm text-accent-danger font-medium">{{ error() }}</p>
+                <p class="mt-3 text-sm text-white bg-accent-danger/90 rounded-lg py-2 px-4 inline-block font-medium">
+                  {{ error() }}
+                </p>
               }
-
-              <!-- Ara Butonu — Turo tarzı büyük siyah -->
-              <button (click)="search()"
-                      [disabled]="!canSearch()"
-                      class="btn-primary w-full text-base py-4 disabled:opacity-50 disabled:cursor-not-allowed">
-                @if (rentalDays() > 0) {
-                  {{ rentalDays() }} gün için müsait araçları göster
-                } @else {
-                  Araç Ara
-                }
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- SAĞ: Görsel (yerine göre araç PNG) -->
-          <div class="hidden lg:block relative">
-            <!-- Arka plan dekoratif blob -->
-            <div class="absolute inset-0 bg-gradient-to-br from-brand-100 via-brand-50 to-transparent
-                        rounded-card-lg blur-3xl opacity-70"></div>
-
-            <!-- Araç PNG (public/assets/cars/hero-*.png varsa) -->
-            <div class="relative flex items-center justify-center">
-              <img src="assets/cars/hero-2.png"
-                   alt="Kiralanabilir araç"
-                   class="w-full h-auto max-h-[520px] object-contain drop-shadow-2xl"
-                   onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-              <div style="display:none" class="text-[280px]">🚗</div>
-            </div>
-
-            <!-- Rating badge (Turo tarzı) -->
-            <div class="absolute bottom-6 right-6 bg-white rounded-card shadow-card-hover p-4 flex items-center gap-3">
-              <div class="w-12 h-12 bg-accent-success/10 rounded-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-accent-success" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
-                </svg>
-              </div>
-              <div>
-                <div class="font-bold text-ink-900">4.9</div>
-                <div class="text-xs text-ink-500">2.400+ mutlu müşteri</div>
-              </div>
-            </div>
-
-            <!-- Fiyat badge (sol üst) -->
-            <div class="absolute top-6 left-6 bg-white rounded-card shadow-card-hover px-4 py-3">
-              <div class="text-xs text-ink-500 font-semibold uppercase">Günlük</div>
-              <div class="text-2xl font-extrabold text-brand-600">₺500'den başlar</div>
             </div>
           </div>
         </div>
@@ -176,20 +257,46 @@ export class HeroSearchComponent implements OnInit {
   private locationService = inject(LocationService);
   private bookingState = inject(BookingStateService);
   private router = inject(Router);
+  private el = inject(ElementRef);
 
   protected locations = this.locationService.locations;
 
   protected pickupLocationId = signal<number | null>(null);
-  protected returnLocationId = signal<number | null>(null);
-  protected differentReturn = signal(false);
+  protected selectedLocation = signal<Location | null>(null);
   protected pickupDate = signal<string>('');
   protected returnDate = signal<string>('');
   protected pickupTime = signal('09:00');
   protected returnTime = signal('09:00');
   protected error = signal<string | null>(null);
+  protected isLocationOpen = signal(false);
 
   protected timeOptions = this.generateTimeOptions();
   protected todayString = new Date().toISOString().split('T')[0];
+
+  // Havalimanı olan lokasyonlar
+  protected airportLocations = computed(() =>
+    this.locations().filter(l =>
+      l.name.toLowerCase().includes('havaliman') ||
+      l.name.toLowerCase().includes('airport')
+    )
+  );
+
+  // Şehirler (uniq)
+  protected cityGroups = computed(() => {
+    const cities = new Map<string, Location>();
+    this.locations().forEach(l => {
+      if (!cities.has(l.city)) {
+        cities.set(l.city, l);
+      }
+    });
+    return Array.from(cities.entries()).map(([name, location]) => ({ name, location }));
+  });
+
+  protected selectedLocationLabel = computed(() => {
+    const l = this.selectedLocation();
+    if (!l) return null;
+    return `${l.name} — ${l.city}`;
+  });
 
   protected minReturnDate = computed(() => {
     const pd = this.pickupDate();
@@ -218,15 +325,60 @@ export class HeroSearchComponent implements OnInit {
 
     // Önceki seçimi geri yükle
     const prev = this.bookingState.selection();
-    if (prev.pickupLocationId) this.pickupLocationId.set(prev.pickupLocationId);
-    if (prev.returnLocationId && prev.returnLocationId !== prev.pickupLocationId) {
-      this.returnLocationId.set(prev.returnLocationId);
-      this.differentReturn.set(true);
+    if (prev.pickupLocationId) {
+      this.pickupLocationId.set(prev.pickupLocationId);
+      // Seçili lokasyonu bul
+      const loc = this.locations().find(l => l.id === prev.pickupLocationId);
+      if (loc) this.selectedLocation.set(loc);
     }
     if (prev.pickupDate) this.pickupDate.set(this.formatDate(prev.pickupDate));
     if (prev.returnDate) this.returnDate.set(this.formatDate(prev.returnDate));
     if (prev.pickupTime) this.pickupTime.set(prev.pickupTime);
     if (prev.returnTime) this.returnTime.set(prev.returnTime);
+  }
+
+  toggleLocationDropdown(): void {
+    this.isLocationOpen.update(v => !v);
+  }
+
+  selectLocation(loc: Location): void {
+    this.selectedLocation.set(loc);
+    this.pickupLocationId.set(loc.id);
+    this.isLocationOpen.set(false);
+  }
+
+  selectAnywhere(): void {
+    // Herhangi bir yer = tüm araçları listele → ilk lokasyonu seç
+    const first = this.locations()[0];
+    if (first) {
+      this.selectedLocation.set(first);
+      this.pickupLocationId.set(first.id);
+    }
+    this.isLocationOpen.set(false);
+  }
+
+  useCurrentLocation(): void {
+    if (!navigator.geolocation) {
+      this.selectAnywhere();
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      () => {
+        // İleride en yakın şubeyi bulacağız — şimdilik ilk şubeyi seç
+        this.selectAnywhere();
+      },
+      () => this.selectAnywhere()
+    );
+  }
+
+  openDateInput(target: 'pickup' | 'return'): void {
+    // Native date picker'ı programatik açmak için (mobile)
+    setTimeout(() => {
+      const input = this.el.nativeElement.querySelector(
+        target === 'pickup' ? 'input[type="date"]:first-of-type' : 'input[type="date"]:last-of-type'
+      );
+      input?.showPicker?.();
+    });
   }
 
   search(): void {
@@ -235,17 +387,12 @@ export class HeroSearchComponent implements OnInit {
       return;
     }
 
-    const pickupLoc = this.locations().find(l => l.id === this.pickupLocationId());
-    const returnLocId = this.differentReturn() && this.returnLocationId()
-      ? this.returnLocationId()
-      : this.pickupLocationId();
-    const returnLoc = this.locations().find(l => l.id === returnLocId);
-
+    const loc = this.selectedLocation();
     this.bookingState.setSelection({
       pickupLocationId: this.pickupLocationId(),
-      pickupLocationName: pickupLoc?.name ?? null,
-      returnLocationId: returnLocId,
-      returnLocationName: returnLoc?.name ?? null,
+      pickupLocationName: loc?.name ?? null,
+      returnLocationId: this.pickupLocationId(),
+      returnLocationName: loc?.name ?? null,
       pickupDate: new Date(this.pickupDate()),
       pickupTime: this.pickupTime(),
       returnDate: new Date(this.returnDate()),
@@ -256,6 +403,12 @@ export class HeroSearchComponent implements OnInit {
     this.router.navigate(['/araclar'], {
       queryParams: { locationId: this.pickupLocationId() }
     });
+  }
+
+  formatShortDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+    return `${d.getDate()} ${months[d.getMonth()]}`;
   }
 
   private formatDate(d: Date): string {
@@ -272,5 +425,13 @@ export class HeroSearchComponent implements OnInit {
       }
     }
     return times;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!this.el.nativeElement.contains(target)) {
+      this.isLocationOpen.set(false);
+    }
   }
 }

@@ -12,7 +12,6 @@ interface Category {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <!-- Ortada, çizgi altı aktif (Turo tarzı) -->
     <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-5">
       <div class="flex items-center justify-center gap-6 lg:gap-8 overflow-x-auto scroll-hide">
         @for (cat of categories; track cat.id) {
@@ -23,7 +22,7 @@ interface Category {
                   [class.text-ink-500]="!isActive(cat.id)"
                   [class.font-medium]="!isActive(cat.id)"
                   [class.hover:text-ink-900]="!isActive(cat.id)">
-            <!-- İkonlar -->
+
             @switch (cat.icon) {
               @case ('all') {
                 <span class="w-8 h-8 rounded-full flex items-center justify-center"
@@ -69,7 +68,6 @@ interface Category {
             }
             <span class="text-sm">{{ cat.label }}</span>
 
-            <!-- Aktif alt çizgi -->
             @if (isActive(cat.id)) {
               <span class="absolute -bottom-0 left-0 right-0 h-0.5 bg-ink-900 rounded-full"></span>
             }
@@ -98,6 +96,8 @@ export class CategoryChipsComponent {
   }
 
   selectCategory(id: string): void {
+    // Aynı chip'e tekrar tıklanırsa iptal edilmesin (Turo davranışı)
+    if (this.activeCategory() === id) return;
     this.activeCategory.set(id);
     this.categoryChanged.emit(id);
   }

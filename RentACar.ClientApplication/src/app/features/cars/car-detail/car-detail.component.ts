@@ -14,179 +14,428 @@ import { environment } from '../../../../environments/environment';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div class="bg-ink-100/30 min-h-screen py-8">
+    <div class="bg-ink-100/30 min-h-screen py-6 lg:py-8">
       <div class="max-w-[1400px] mx-auto px-4 sm:px-6">
 
         <!-- Breadcrumb -->
-        <nav class="text-sm text-ink-500 mb-4">
+        <nav class="text-sm text-ink-500 mb-4 flex items-center gap-2 flex-wrap">
           <a routerLink="/" class="hover:text-brand-600">Ana Sayfa</a>
-          <span class="mx-2">/</span>
+          <span>/</span>
           <a routerLink="/araclar" class="hover:text-brand-600">Araçlar</a>
-          <span class="mx-2">/</span>
-          <span class="text-ink-700 font-semibold">{{ car()?.brandName }} {{ car()?.model }}</span>
+          <span>/</span>
+          <span class="text-ink-900 font-semibold">{{ car()?.brandName }} {{ car()?.model }}</span>
         </nav>
 
         @if (loading()) {
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-pulse">
-            <div class="aspect-video bg-ink-100 rounded-2xl"></div>
-            <div>
-              <div class="h-8 bg-ink-100 rounded w-3/4"></div>
-              <div class="h-6 bg-ink-100 rounded mt-3 w-1/2"></div>
-              <div class="h-32 bg-ink-100 rounded mt-6"></div>
+          <!-- Loading skeleton -->
+          <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 animate-pulse">
+            <div class="space-y-4">
+              <div class="aspect-video bg-ink-100 rounded-2xl"></div>
+              <div class="h-40 bg-ink-100 rounded-2xl"></div>
+              <div class="h-64 bg-ink-100 rounded-2xl"></div>
             </div>
+            <div class="h-96 bg-ink-100 rounded-2xl"></div>
           </div>
         } @else if (car(); as c) {
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
 
-            <!-- SOL: Fotoğraf galerisi -->
-            <div>
-              <div class="bg-white rounded-2xl shadow-card overflow-hidden aspect-video flex items-center justify-center">
-                @if (selectedImage(); as img) {
-                  <img [src]="apiBaseUrl + img" [alt]="c.model" class="w-full h-full object-cover">
-                } @else {
-                  <span class="text-9xl">🚗</span>
-                }
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- SOL KOLON: Fotoğraf + Bilgiler                       -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <div class="space-y-4">
+
+              <!-- ═══ Başlık Kartı ═══ -->
+              <div class="bg-white rounded-2xl shadow-card p-5 lg:p-6">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h1 class="text-2xl lg:text-3xl font-extrabold text-ink-900">
+                      {{ c.brandName }} {{ c.model }}
+                    </h1>
+                    <p class="text-ink-500 mt-1 text-sm">
+                      ya da benzeri
+                      @if (c.year) {
+                        <span>• {{ c.year }}</span>
+                      }
+                      @if (c.color) {
+                        <span>• {{ c.color }}</span>
+                      }
+                    </p>
+                  </div>
+                  <div class="flex gap-2">
+                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold"
+                          [class.bg-accent-success/10]="c.status === 1"
+                          [class.text-accent-success]="c.status === 1"
+                          [class.bg-ink-100]="c.status !== 1"
+                          [class.text-ink-500]="c.status !== 1">
+                      <span class="w-2 h-2 rounded-full"
+                            [class.bg-accent-success]="c.status === 1"
+                            [class.bg-ink-400]="c.status !== 1"></span>
+                      {{ getStatusLabel(c.status) }}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              @if (galleryImages().length > 1) {
-                <div class="mt-4 grid grid-cols-4 gap-3">
-                  @for (img of galleryImages(); track img; let i = $index) {
-                    <button (click)="selectImage(img)"
-                            class="aspect-video bg-white rounded-lg overflow-hidden border-2 transition"
-                            [class.border-brand-600]="img === selectedImage()"
-                            [class.border-transparent]="img !== selectedImage()">
-                      <img [src]="apiBaseUrl + img" [alt]="'Foto ' + (i+1)" class="w-full h-full object-cover">
+              <!-- ═══ Fotoğraf Galerisi ═══ -->
+              <div class="bg-white rounded-2xl shadow-card overflow-hidden">
+                <div class="aspect-[16/10] bg-ink-100 relative">
+                  @if (selectedImage(); as img) {
+                    <img [src]="apiBaseUrl + img" [alt]="c.model"
+                         class="w-full h-full object-cover">
+                  } @else {
+                    <div class="w-full h-full flex items-center justify-center text-9xl">🚗</div>
+                  }
+
+                  <!-- Görsel oku (varsa) -->
+                  @if (galleryImages().length > 1) {
+                    <button (click)="prevImage()"
+                            class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-card hover:bg-white transition flex items-center justify-center">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+                      </svg>
+                    </button>
+                    <button (click)="nextImage()"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-card hover:bg-white transition flex items-center justify-center">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                      </svg>
                     </button>
                   }
                 </div>
-              }
-            </div>
 
-            <!-- SAĞ: Bilgi & Rezervasyon -->
-            <div>
-              <div class="bg-white rounded-2xl shadow-card p-6 lg:p-8">
-                <div class="flex items-start justify-between">
-                  <div>
-                    <h1 class="text-2xl md:text-3xl font-extrabold text-ink-900">
-                      {{ c.brandName }} {{ c.model }}
-                    </h1>
-                    <p class="text-ink-500 mt-1">{{ c.modelYear }} • {{ c.color }} • {{ c.plate }}</p>
-                  </div>
-                  <span class="inline-flex items-center px-3 py-1 bg-brand-50 text-brand-600 text-xs font-bold rounded-full">
-                    {{ getStatusLabel(c.status) }}
-                  </span>
-                </div>
-
-                <!-- Özellikler -->
-                <div class="mt-6 grid grid-cols-2 gap-4">
-                  <div class="flex items-center gap-3 p-3 bg-ink-100/50 rounded-lg">
-                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-xl">⛽</div>
-                    <div>
-                      <div class="text-xs text-ink-500">Yakıt</div>
-                      <div class="font-bold text-sm">{{ getFuelLabel(c.fuelType) }}</div>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-3 p-3 bg-ink-100/50 rounded-lg">
-                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-xl">⚙️</div>
-                    <div>
-                      <div class="text-xs text-ink-500">Vites</div>
-                      <div class="font-bold text-sm">{{ getTransLabel(c.transmissionType) }}</div>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-3 p-3 bg-ink-100/50 rounded-lg">
-                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-xl">👥</div>
-                    <div>
-                      <div class="text-xs text-ink-500">Kapasite</div>
-                      <div class="font-bold text-sm">{{ c.seatCount }} kişi</div>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-3 p-3 bg-ink-100/50 rounded-lg">
-                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-xl">🚪</div>
-                    <div>
-                      <div class="text-xs text-ink-500">Kapı</div>
-                      <div class="font-bold text-sm">{{ c.doorCount }} kapı</div>
-                    </div>
-                  </div>
-                </div>
-
-                @if (c.description) {
-                  <div class="mt-6">
-                    <h3 class="font-bold text-ink-900 mb-2">Açıklama</h3>
-                    <p class="text-sm text-ink-700 leading-relaxed">{{ c.description }}</p>
-                  </div>
-                }
-
-                @if (c.locationName) {
-                  <div class="mt-6 p-4 bg-brand-50 rounded-lg flex items-start gap-3">
-                    <svg class="w-5 h-5 text-brand-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    <div>
-                      <div class="text-xs text-brand-600 font-bold uppercase">Şube</div>
-                      <div class="text-sm text-ink-900 font-semibold">{{ c.locationName }}</div>
-                    </div>
+                @if (galleryImages().length > 1) {
+                  <div class="p-3 grid grid-cols-6 gap-2">
+                    @for (img of galleryImages(); track img; let i = $index) {
+                      <button (click)="selectImage(img)"
+                              class="aspect-video bg-ink-100 rounded-lg overflow-hidden border-2 transition"
+                              [class.border-brand-600]="img === selectedImage()"
+                              [class.border-transparent]="img !== selectedImage()">
+                        <img [src]="apiBaseUrl + img" [alt]="'Foto ' + (i+1)"
+                             class="w-full h-full object-cover">
+                      </button>
+                    }
                   </div>
                 }
               </div>
 
-              <!-- Rezervasyon kartı -->
-              <div class="mt-4 bg-white rounded-2xl shadow-card p-6 lg:p-8 sticky top-32">
-                <div class="flex items-end justify-between mb-4">
+              <!-- ═══ Şube Bilgisi ═══ -->
+              @if (c.currentLocationName || c.locationName) {
+                <div class="bg-white rounded-2xl shadow-card p-5 flex items-start gap-4">
+                  <div class="w-12 h-12 bg-brand-50 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <div class="text-xs text-ink-500 font-bold uppercase tracking-wide">Aracın Mevcut Şubesi</div>
+                    <div class="text-lg font-bold text-ink-900 mt-0.5">
+                      {{ c.currentLocationName || c.locationName }}
+                    </div>
+                    <p class="text-sm text-ink-500 mt-1">
+                      Aracı bu şubeden teslim alabilir ve iade edebilirsiniz.
+                    </p>
+                  </div>
+                </div>
+              }
+
+              <!-- ═══ ARAÇ ÖZELLİKLERİ + KİRALAMA KOŞULLARI (Avis tarzı 2 sütun) ═══ -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <!-- Araç Özellikleri -->
+                <div class="bg-white rounded-2xl shadow-card p-5">
+                  <div class="flex items-center gap-2 mb-4 pb-3 border-b border-ink-100">
+                    <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <h3 class="font-bold text-ink-900">Araç Özellikleri</h3>
+                  </div>
+
+                  <div class="space-y-3 text-sm">
+                    <!-- Kişi kapasitesi -->
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 text-brand-600">👥</span>
+                      <span class="text-ink-700">{{ c.seatCount }} Yetişkin</span>
+                    </div>
+
+                    <!-- Bavul -->
+                    @if (c.luggageCount > 0) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">🧳</span>
+                        <span class="text-ink-700">{{ c.luggageCount }} Büyük Bavul</span>
+                      </div>
+                    }
+
+                    <!-- Airbag -->
+                    @if (c.hasAirbag) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">🛡️</span>
+                        <span class="text-ink-700">Yolcu Airbag</span>
+                      </div>
+                    }
+
+                    <!-- ABS -->
+                    @if (c.hasAbs) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">🔧</span>
+                        <span class="text-ink-700">ABS</span>
+                      </div>
+                    }
+
+                    <!-- Klima -->
+                    @if (c.hasAirConditioning) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">❄️</span>
+                        <span class="text-ink-700">Klima</span>
+                      </div>
+                    }
+
+                    <!-- Bluetooth -->
+                    @if (c.hasBluetooth) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">📶</span>
+                        <span class="text-ink-700">Bluetooth</span>
+                      </div>
+                    }
+
+                    <!-- Navigasyon -->
+                    @if (c.hasNavigation) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">🧭</span>
+                        <span class="text-ink-700">Navigasyon</span>
+                      </div>
+                    }
+
+                    <!-- Yakıt -->
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 text-brand-600">⛽</span>
+                      <span class="text-ink-700">{{ getFuelLabel(c.fuelType) }}</span>
+                    </div>
+
+                    <!-- Vites -->
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 text-brand-600">⚙️</span>
+                      <span class="text-ink-700">{{ getTransLabel(c.transmissionType) }}</span>
+                    </div>
+
+                    <!-- Kapı sayısı -->
+                    @if (c.doorCount > 0) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">🚪</span>
+                        <span class="text-ink-700">{{ c.doorCount }} Kapı</span>
+                      </div>
+                    }
+
+                    <!-- Kilometre -->
+                    @if (c.mileage) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">📏</span>
+                        <span class="text-ink-700">{{ c.mileage | number:'1.0-0' }} km</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Kiralama Koşulları -->
+                <div class="bg-white rounded-2xl shadow-card p-5">
+                  <div class="flex items-center gap-2 mb-4 pb-3 border-b border-ink-100">
+                    <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <h3 class="font-bold text-ink-900">Kiralama Koşulları</h3>
+                  </div>
+
+                  <div class="space-y-3 text-sm">
+                    <!-- Yaş sınırı -->
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 text-brand-600">🎂</span>
+                      <span class="text-ink-700">{{ c.minDriverAge }} Yaş Ve Üstü</span>
+                    </div>
+
+                    <!-- Ehliyet yaşı -->
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 text-brand-600">🪪</span>
+                      <span class="text-ink-700">
+                        Ehliyet Yaşı {{ c.minLicenseYears }} Ve Üzeri
+                      </span>
+                    </div>
+
+                    <!-- Findeks (varsa) -->
+                    @if (c.minFindeksScore > 0) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">📊</span>
+                        <span class="text-ink-700">
+                          Min. Findeks Skoru: {{ c.minFindeksScore }}
+                        </span>
+                      </div>
+                    }
+
+                    <!-- Kredi kartı zorunlu -->
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 text-brand-600">💳</span>
+                      <span class="text-ink-700">1 Kredi Kartı</span>
+                    </div>
+
+                    <!-- TC kimlik zorunlu -->
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 text-brand-600">🆔</span>
+                      <span class="text-ink-700">TC Kimlik Belgesi</span>
+                    </div>
+
+                    <!-- Sürücü belgesi -->
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 text-brand-600">📄</span>
+                      <span class="text-ink-700">Geçerli Sürücü Belgesi</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ═══ Açıklama ═══ -->
+              @if (c.description) {
+                <div class="bg-white rounded-2xl shadow-card p-5">
+                  <h3 class="font-bold text-ink-900 mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Araç Hakkında
+                  </h3>
+                  <p class="text-sm text-ink-700 leading-relaxed">{{ c.description }}</p>
+                </div>
+              }
+
+              <!-- ═══ Bilgilendirme Kutusu ═══ -->
+              <div class="bg-brand-50 border border-brand-100 rounded-2xl p-5">
+                <div class="flex gap-3">
+                  <svg class="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <div class="text-sm text-ink-700 space-y-2">
+                    <p><strong>Kiralama şartları:</strong></p>
+                    <ul class="list-disc list-inside space-y-1 ml-1 text-xs">
+                      <li>Aracın kullanımı sadece rezervasyon sahibi sürücü tarafından yapılabilir.</li>
+                      <li>Yurt dışı çıkışı için firma onayı gereklidir.</li>
+                      <li>Zorunlu trafik sigortası fiyata dahildir.</li>
+                      <li>Yakıt tam depo teslim edilir, aynı seviyede iade edilmelidir.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- SAĞ KOLON: Rezervasyon Kartı (sticky)               -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <aside class="lg:sticky lg:top-24 lg:self-start space-y-4">
+
+              <!-- Rezervasyon Kartı -->
+              <div class="bg-white rounded-2xl shadow-card p-5 lg:p-6">
+                <!-- Fiyat -->
+                <div class="flex items-baseline justify-between mb-4 pb-4 border-b border-ink-100">
                   <div>
-                    <div class="text-xs text-ink-500">Günlük fiyat</div>
-                    <div class="text-3xl font-extrabold text-brand-600">
+                    <div class="text-xs text-ink-500 uppercase font-bold tracking-wide">Günlük Fiyat</div>
+                    <div class="text-3xl font-extrabold text-brand-600 mt-0.5">
                       ₺{{ c.dailyPrice | number:'1.0-0' }}
                     </div>
                   </div>
                   @if (rentalDays() > 0) {
                     <div class="text-right">
                       <div class="text-xs text-ink-500">{{ rentalDays() }} gün toplam</div>
-                      <div class="text-xl font-bold text-ink-900">
+                      <div class="text-xl font-bold text-ink-900 mt-0.5">
                         ₺{{ totalPrice() | number:'1.0-0' }}
                       </div>
                     </div>
                   }
                 </div>
 
+                <!-- Tarih & Şube bilgisi (seçili ise) -->
                 @if (booking.hasSelection() && pickupDateFormatted() && returnDateFormatted()) {
-                  <div class="text-sm bg-ink-100/50 rounded-lg p-3 mb-4 space-y-1">
-                    <div class="flex justify-between">
-                      <span class="text-ink-500">Alış:</span>
-                      <span class="font-semibold">{{ pickupDateFormatted() }} • {{ booking.selection().pickupTime }}</span>
+                  <div class="space-y-3 mb-5">
+                    <div class="flex items-start gap-3">
+                      <div class="w-8 h-8 bg-accent-success/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-accent-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </div>
+                      <div class="flex-1 text-sm">
+                        <div class="text-xs text-ink-500 uppercase font-bold">Alış</div>
+                        <div class="font-semibold text-ink-900">
+                          {{ pickupDateFormatted() }} • {{ booking.selection().pickupTime }}
+                        </div>
+                      </div>
                     </div>
-                    <div class="flex justify-between">
-                      <span class="text-ink-500">İade:</span>
-                      <span class="font-semibold">{{ returnDateFormatted() }} • {{ booking.selection().returnTime }}</span>
+
+                    <div class="flex items-start gap-3">
+                      <div class="w-8 h-8 bg-accent-success/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-accent-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </div>
+                      <div class="flex-1 text-sm">
+                        <div class="text-xs text-ink-500 uppercase font-bold">İade</div>
+                        <div class="font-semibold text-ink-900">
+                          {{ returnDateFormatted() }} • {{ booking.selection().returnTime }}
+                        </div>
+                      </div>
                     </div>
+
                     @if (booking.selection().pickupLocationName) {
-                      <div class="flex justify-between">
-                        <span class="text-ink-500">Şube:</span>
-                        <span class="font-semibold truncate ml-2">{{ booking.selection().pickupLocationName }}</span>
+                      <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-brand-50 rounded-full flex items-center justify-center flex-shrink-0">
+                          <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          </svg>
+                        </div>
+                        <div class="flex-1 text-sm">
+                          <div class="text-xs text-ink-500 uppercase font-bold">Ofis</div>
+                          <div class="font-semibold text-ink-900 truncate">
+                            {{ booking.selection().pickupLocationName }}
+                          </div>
+                        </div>
                       </div>
                     }
-                    <div class="pt-2 mt-2 border-t border-ink-200">
-                      <button (click)="openBookingModal()"
-                              class="text-xs font-semibold text-brand-600 hover:underline">
-                        Tarihi Düzenle
-                      </button>
-                    </div>
+
+                    <button (click)="openBookingModal()"
+                            class="text-xs font-semibold text-brand-600 hover:underline">
+                      ✏️ Tarih ve ofisi düzenle
+                    </button>
                   </div>
                 } @else {
-                  <p class="text-sm text-ink-500 mb-4">
-                    Devam etmek için alış ve iade tarihlerini seçin.
-                  </p>
+                  <div class="bg-brand-50 rounded-xl p-4 mb-5 flex items-start gap-3">
+                    <svg class="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="text-sm text-ink-700">
+                      Devam etmek için önce alış ve iade tarihlerini seçin.
+                    </p>
+                  </div>
                 }
 
+                <!-- CTA -->
                 <button (click)="onReserveClick()"
                         [disabled]="c.status !== 1"
-                        class="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="btn-primary w-full text-base disabled:opacity-50 disabled:cursor-not-allowed">
                   @if (c.status !== 1) {
-                    BU ARAÇ ŞU AN MÜSAİT DEĞİL
+                    ARAÇ MÜSAİT DEĞİL
                   } @else if (!hasValidBooking()) {
                     KİRALAMA İÇİN TIKLAYIN
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                    </svg>
                   } @else {
-                    REZERVASYON YAP ›
+                    REZERVASYON YAP
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                    </svg>
                   }
                 </button>
 
@@ -196,7 +445,39 @@ import { environment } from '../../../../environments/environment';
                   </p>
                 }
               </div>
-            </div>
+
+              <!-- Güven Rozetleri -->
+              <div class="bg-white rounded-2xl shadow-card p-5">
+                <div class="space-y-3 text-sm">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-accent-success/10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg class="w-5 h-5 text-accent-success" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                      </svg>
+                    </div>
+                    <span class="font-semibold text-ink-900">Ücretsiz iptal (24 saat öncesine kadar)</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-brand-50 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                      </svg>
+                    </div>
+                    <span class="font-semibold text-ink-900">256-bit SSL güvenli ödeme</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-brand-50 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                      </svg>
+                    </div>
+                    <span class="font-semibold text-ink-900">7/24 müşteri desteği</span>
+                  </div>
+                </div>
+              </div>
+            </aside>
           </div>
         } @else {
           <div class="text-center py-20">
@@ -208,22 +489,19 @@ import { environment } from '../../../../environments/environment';
       </div>
     </div>
 
-    <!-- ═══ KİRALAMA MODALI (Avis tarzı) ═══ -->
+    <!-- ═══ KİRALAMA MODALI ═══ -->
     @if (isModalOpen() && car(); as c) {
-      <!-- Backdrop -->
       <div class="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
            style="z-index: 100;"
            (click)="closeBookingModal()"></div>
 
-      <!-- Modal -->
       <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
            style="z-index: 101;">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto pointer-events-auto animate-fade-in"
              (click)="$event.stopPropagation()">
 
-          <!-- Modal Header -->
           <div class="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-ink-100">
-            <h3 class="text-lg font-bold text-ink-900">Kiralama Yapmak İçin Seçim Yapınız</h3>
+            <h3 class="text-lg font-bold text-ink-900">Kiralama İçin Seçim Yapınız</h3>
             <button (click)="closeBookingModal()"
                     class="w-9 h-9 rounded-full hover:bg-ink-100 flex items-center justify-center transition">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,7 +510,6 @@ import { environment } from '../../../../environments/environment';
             </button>
           </div>
 
-          <!-- Araç Özet Kartı -->
           <div class="px-6 py-4 bg-brand-50/50 border-b border-brand-100 flex items-center gap-4">
             <div class="w-20 h-14 bg-white rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
               @if (c.imageUrl) {
@@ -248,19 +525,16 @@ import { environment } from '../../../../environments/environment';
             </div>
           </div>
 
-          <!-- Form -->
           <div class="p-6 space-y-4">
 
-            <!-- Alış Ofisi -->
             <div>
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-xs font-bold text-ink-700 uppercase tracking-wide">Alış Ofisi Seçiniz</label>
-                <button class="text-xs font-bold text-brand-600 hover:underline">OFİS DETAYI</button>
-              </div>
+              <label class="text-xs font-bold text-ink-700 uppercase tracking-wide mb-2 block">Alış Ofisi</label>
               <div class="relative">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-600"
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-600 pointer-events-none"
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 <select [(ngModel)]="modalPickupLocationId"
                         class="input-field pl-10 pr-4 text-sm cursor-pointer">
@@ -272,18 +546,6 @@ import { environment } from '../../../../environments/environment';
               </div>
             </div>
 
-            <!-- Farklı iade konumu -->
-            <div class="flex items-center gap-2">
-              <input type="checkbox"
-                     id="differentDropoff"
-                     [(ngModel)]="modalDifferentDropoff"
-                     class="w-4 h-4 accent-brand-600 cursor-pointer">
-              <label for="differentDropoff" class="text-sm text-ink-700 cursor-pointer">
-                Farklı bir noktaya teslim etmek istiyorum.
-              </label>
-            </div>
-
-            <!-- Alış / İade Tarihleri -->
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="text-xs font-bold text-ink-700 uppercase tracking-wide mb-2 block">Alış Tarihi</label>
@@ -297,9 +559,7 @@ import { environment } from '../../../../environments/environment';
                   <select [(ngModel)]="modalPickupTime"
                           class="input-field text-sm cursor-pointer w-20 px-2 appearance-none">
                     @for (t of pickupTimeOptions(); track t.value) {
-                      <option [value]="t.value" [disabled]="t.disabled">
-                        {{ t.value }}
-                      </option>
+                      <option [value]="t.value" [disabled]="t.disabled">{{ t.value }}</option>
                     }
                   </select>
                 </div>
@@ -323,7 +583,6 @@ import { environment } from '../../../../environments/environment';
               </div>
             </div>
 
-            <!-- Kural bildirimi -->
             <div class="text-xs text-ink-500 bg-ink-50 rounded-lg p-3 flex items-start gap-2">
               <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -337,7 +596,6 @@ import { environment } from '../../../../environments/environment';
               </div>
             }
 
-            <!-- Toplam ve CTA -->
             @if (modalRentalDays() > 0) {
               <div class="bg-brand-50 border border-brand-100 rounded-lg p-4 flex items-center justify-between">
                 <div>
@@ -346,13 +604,10 @@ import { environment } from '../../../../environments/environment';
                     ₺{{ modalTotalPrice() | number:'1.0-0' }}
                   </div>
                 </div>
-                <div class="text-xs text-ink-500">
-                  Günlük ₺{{ c.dailyPrice | number:'1.0-0' }}
-                </div>
+                <div class="text-xs text-ink-500">Günlük ₺{{ c.dailyPrice | number:'1.0-0' }}</div>
               </div>
             }
 
-            <!-- CTA -->
             <button (click)="confirmBooking()"
                     [disabled]="!canConfirm()"
                     class="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed">
@@ -385,7 +640,6 @@ export class CarDetailComponent implements OnInit {
   // Modal state
   protected isModalOpen = signal(false);
   protected modalPickupLocationId = signal<number | null>(null);
-  protected modalDifferentDropoff = signal(false);
   protected modalPickupDate = signal<string>('');
   protected modalReturnDate = signal<string>('');
   protected modalPickupTime = signal<string>('09:00');
@@ -395,13 +649,10 @@ export class CarDetailComponent implements OnInit {
   // İş kuralları
   protected readonly MIN_ADVANCE_MINUTES = 30;
   protected readonly MIN_RENTAL_DAYS = 1;
-  protected readonly MAX_ADVANCE_DAYS = 365;
 
   protected todayString = this.formatDateForInput(new Date());
-
   protected timeOptions = this.generateTimeOptions();
 
-  // Dinamik alış saati (bugün seçilirse geçmiş saatler disabled)
   protected pickupTimeOptions = computed(() => {
     const pd = this.modalPickupDate();
     if (!pd) return this.timeOptions.map(v => ({ value: v, disabled: false }));
@@ -410,9 +661,7 @@ export class CarDetailComponent implements OnInit {
     const selectedDate = new Date(pd);
     const isToday = this.isSameDay(selectedDate, now);
 
-    if (!isToday) {
-      return this.timeOptions.map(v => ({ value: v, disabled: false }));
-    }
+    if (!isToday) return this.timeOptions.map(v => ({ value: v, disabled: false }));
 
     const minTime = new Date(now.getTime() + this.MIN_ADVANCE_MINUTES * 60 * 1000);
     const minHour = minTime.getHours();
@@ -466,11 +715,9 @@ export class CarDetailComponent implements OnInit {
     return images;
   });
 
-  // ═══ Booking state'ten gelen tarihler için güvenli parse ═══
   protected pickupDateFormatted = computed(() => {
     const d = this.booking.selection().pickupDate;
     if (!d) return null;
-    // sessionStorage'dan gelirse string olur, Date değilse çevir
     const date = d instanceof Date ? d : new Date(d);
     if (isNaN(date.getTime())) return null;
     return this.formatDisplayDate(date);
@@ -504,11 +751,9 @@ export class CarDetailComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    // Konumları yükle
     if (this.locations().length === 0) {
       this.locationService.getAll().subscribe();
     }
-
     this.route.params.subscribe(params => {
       const id = +params['id'];
       if (!id) return;
@@ -537,31 +782,39 @@ export class CarDetailComponent implements OnInit {
     this.selectedImage.set(url);
   }
 
-  // ═══ "Rezervasyon Yap" butonu ═══
+  nextImage(): void {
+    const imgs = this.galleryImages();
+    if (imgs.length <= 1) return;
+    const currentIdx = imgs.indexOf(this.selectedImage() ?? '');
+    const nextIdx = (currentIdx + 1) % imgs.length;
+    this.selectedImage.set(imgs[nextIdx]);
+  }
+
+  prevImage(): void {
+    const imgs = this.galleryImages();
+    if (imgs.length <= 1) return;
+    const currentIdx = imgs.indexOf(this.selectedImage() ?? '');
+    const prevIdx = currentIdx <= 0 ? imgs.length - 1 : currentIdx - 1;
+    this.selectedImage.set(imgs[prevIdx]);
+  }
+
   onReserveClick(): void {
-    // 1) Tarih/konum eksikse modalı aç
     if (!this.hasValidBooking()) {
       this.openBookingModal();
       return;
     }
-
-    // 2) Login değilse login sayfasına
     if (!this.auth.isAuthenticated()) {
       this.router.navigate(['/login'], {
         queryParams: { returnUrl: `/rezervasyon/ozet?carId=${this.car()?.id}` }
       });
       return;
     }
-
-    // 3) Wizard'a yönlendir
     this.router.navigate(['/rezervasyon/ozet'], {
       queryParams: { carId: this.car()?.id }
     });
   }
 
-  // ═══ MODAL ═══
   openBookingModal(): void {
-    // Mevcut booking state varsa modalı doldur
     const s = this.booking.selection();
     if (s.pickupLocationId) this.modalPickupLocationId.set(s.pickupLocationId);
     if (s.pickupDate) {
@@ -575,12 +828,13 @@ export class CarDetailComponent implements OnInit {
     if (s.pickupTime) this.modalPickupTime.set(s.pickupTime);
     if (s.returnTime) this.modalReturnTime.set(s.returnTime);
 
-    // Aracın kendi şubesi varsa varsayılan olarak seç (isim üzerinden eşleştir)
+    // Aracın kendi şubesi varsayılan
     const c = this.car();
-    if (c?.locationName && !this.modalPickupLocationId()) {
-      const matchedLocation = this.locations().find(l => l.name === c.locationName);
-      if (matchedLocation) {
-        this.modalPickupLocationId.set(matchedLocation.id);
+    if (c && !this.modalPickupLocationId()) {
+      const locName = c.currentLocationName || c.locationName;
+      if (locName) {
+        const matched = this.locations().find(l => l.name === locName);
+        if (matched) this.modalPickupLocationId.set(matched.id);
       }
     }
 
@@ -601,7 +855,6 @@ export class CarDetailComponent implements OnInit {
   }
 
   onPickupDateChange(): void {
-    // İade tarihi geriye kalırsa +1 gün ayarla
     const pd = this.modalPickupDate();
     const rd = this.modalReturnDate();
     if (pd && rd) {
@@ -613,8 +866,6 @@ export class CarDetailComponent implements OnInit {
         this.modalReturnDate.set(this.formatDateForInput(newReturn));
       }
     }
-
-    // Alış saati bugün seçilirse ve geçmişteyse otomatik düzelt
     if (pd && this.isSameDay(new Date(pd), new Date())) {
       const opts = this.pickupTimeOptions();
       const currentValid = opts.find(o => o.value === this.modalPickupTime() && !o.disabled);
@@ -629,7 +880,6 @@ export class CarDetailComponent implements OnInit {
   confirmBooking(): void {
     if (!this.canConfirm()) return;
 
-    // Validation
     const pickupDT = this.combineDateAndTime(this.modalPickupDate(), this.modalPickupTime());
     const returnDT = this.combineDateAndTime(this.modalReturnDate(), this.modalReturnTime());
     const now = new Date();
@@ -638,26 +888,22 @@ export class CarDetailComponent implements OnInit {
       this.modalError.set('Alış tarihi ve saati geçmişte olamaz.');
       return;
     }
-
     const minPickup = new Date(now.getTime() + this.MIN_ADVANCE_MINUTES * 60 * 1000);
     if (pickupDT < minPickup) {
       this.modalError.set(`Alış zamanı şu andan en az ${this.MIN_ADVANCE_MINUTES} dakika sonra olmalı.`);
       return;
     }
-
     if (returnDT <= pickupDT) {
       this.modalError.set('İade zamanı alış zamanından sonra olmalı.');
       return;
     }
 
-    // Konumu bul
     const loc = this.locations().find(l => l.id === this.modalPickupLocationId());
 
-    // BookingStateService'e kaydet
     this.booking.setSelection({
       pickupLocationId: this.modalPickupLocationId(),
       pickupLocationName: loc?.name ?? null,
-      returnLocationId: this.modalDifferentDropoff() ? null : this.modalPickupLocationId(),
+      returnLocationId: this.modalPickupLocationId(),
       returnLocationName: loc?.name ?? null,
       pickupDate: pickupDT,
       pickupTime: this.modalPickupTime(),
@@ -667,21 +913,17 @@ export class CarDetailComponent implements OnInit {
 
     this.closeBookingModal();
 
-    // Login değilse login'e yönlendir
     if (!this.auth.isAuthenticated()) {
       this.router.navigate(['/login'], {
         queryParams: { returnUrl: `/rezervasyon/ozet?carId=${this.car()?.id}` }
       });
       return;
     }
-
-    // Direkt wizard'a git
     this.router.navigate(['/rezervasyon/ozet'], {
       queryParams: { carId: this.car()?.id }
     });
   }
 
-  // ═══ Helpers ═══
   private formatDateForInput(d: Date): string {
     const y = d.getFullYear();
     const m = (d.getMonth() + 1).toString().padStart(2, '0');

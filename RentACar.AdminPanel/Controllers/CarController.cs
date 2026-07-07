@@ -23,12 +23,9 @@ public class CarController : Controller
     {
         _apiService = apiService;
         _configuration = configuration;
-        
-        // appsettings.json'dan API adresini okur, bulamazsa varsayılanı kullanır
         _apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5065/";
     }
 
-    // ── KOD TEKRARINI ÖNLEMEK İÇİN YARDIMCI METOT ──
     private async Task LoadViewBags()
     {
         var brandResponse = await _apiService.GetAsync<IEnumerable<BrandDto>>("api/Brand/All");
@@ -36,6 +33,37 @@ public class CarController : Controller
 
         ViewBag.AllBrands = brandResponse?.Data?.ToList() ?? new List<BrandDto>();
         ViewBag.AllLocations = locationResponse?.Data?.ToList() ?? new List<LocationDto>();
+    }
+
+    // ── HELPER: Yeni alanları form data'ya ekle ──
+    private void AddCarSpecFieldsToContent(MultipartFormDataContent content, dynamic model)
+    {
+        // Araç özellikleri
+        content.Add(new StringContent(((int)model.FuelType).ToString()), "FuelType");
+        content.Add(new StringContent(((int)model.TransmissionType).ToString()), "TransmissionType");
+        content.Add(new StringContent(((int)model.SeatCount).ToString()), "SeatCount");
+        content.Add(new StringContent(((int)model.DoorCount).ToString()), "DoorCount");
+        content.Add(new StringContent(((int)model.LuggageCount).ToString()), "LuggageCount");
+
+        if (!string.IsNullOrEmpty((string?)model.Color))
+            content.Add(new StringContent((string)model.Color), "Color");
+
+        if (model.Mileage != null)
+            content.Add(new StringContent(((int)model.Mileage).ToString()), "Mileage");
+
+        if (!string.IsNullOrEmpty((string?)model.Description))
+            content.Add(new StringContent((string)model.Description), "Description");
+
+        // Ek özellikler (bool → "true"/"false")
+        content.Add(new StringContent(((bool)model.HasAirbag).ToString().ToLower()), "HasAirbag");
+        content.Add(new StringContent(((bool)model.HasAbs).ToString().ToLower()), "HasAbs");
+        content.Add(new StringContent(((bool)model.HasAirConditioning).ToString().ToLower()), "HasAirConditioning");
+        content.Add(new StringContent(((bool)model.HasBluetooth).ToString().ToLower()), "HasBluetooth");
+        content.Add(new StringContent(((bool)model.HasNavigation).ToString().ToLower()), "HasNavigation");
+
+        // Kiralama koşulları
+        content.Add(new StringContent(((int)model.MinDriverAge).ToString()), "MinDriverAge");
+        content.Add(new StringContent(((int)model.MinLicenseYears).ToString()), "MinLicenseYears");
     }
 
     // ── ARAÇ LİSTESİ ──
@@ -54,8 +82,7 @@ public class CarController : Controller
             if (response != null && response.Success && response.Data != null)
             {
                 var cars = response.Data.Items.ToList();
-                
-                // RESİM URL DÜZELTMESİ BURADA YAPILIYOR
+
                 foreach (var car in cars)
                 {
                     if (!string.IsNullOrEmpty(car.ImageUrl) && !car.ImageUrl.StartsWith("http"))
@@ -76,8 +103,7 @@ public class CarController : Controller
             if (listResponse != null && listResponse.Success && listResponse.Data != null)
             {
                 var cars = listResponse.Data.ToList();
-                
-                // RESİM URL DÜZELTMESİ BURADA YAPILIYOR
+
                 foreach (var car in cars)
                 {
                     if (!string.IsNullOrEmpty(car.ImageUrl) && !car.ImageUrl.StartsWith("http"))
@@ -94,7 +120,6 @@ public class CarController : Controller
         return View(model);
     }
 
-    // ── YENİ ARAÇ EKLEME (GET) ──
     [HttpGet]
     public async Task<IActionResult> Create()
     {
@@ -103,7 +128,6 @@ public class CarController : Controller
         return View(model);
     }
 
-    // ── YENİ ARAÇ EKLEME (POST) ──
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateViewModel viewModel)
@@ -115,20 +139,26 @@ public class CarController : Controller
         }
 
         using var content = new MultipartFormDataContent();
-        content.Add(new StringContent(viewModel.BrandId.ToString()), nameof(CarCreateDto.BrandId));
-        content.Add(new StringContent(viewModel.CurrentLocationId.ToString()), nameof(CarCreateDto.CurrentLocationId));
-        content.Add(new StringContent(viewModel.Model ?? ""), nameof(CarCreateDto.Model));
-        content.Add(new StringContent(viewModel.Year.ToString()), nameof(CarCreateDto.Year));
-        content.Add(new StringContent(viewModel.Plate ?? ""), nameof(CarCreateDto.Plate));
-        content.Add(new StringContent(viewModel.DailyPrice.ToString(CultureInfo.InvariantCulture)), nameof(CarCreateDto.DailyPrice));
-        content.Add(new StringContent(viewModel.MinFindeksScore.ToString()), nameof(CarCreateDto.MinFindeksScore));
-        content.Add(new StringContent(((int)viewModel.Status).ToString()), nameof(CarCreateDto.Status));
 
+        // Temel alanlar
+        content.Add(new StringContent(viewModel.BrandId.ToString()), "BrandId");
+        content.Add(new StringContent(viewModel.CurrentLocationId.ToString()), "CurrentLocationId");
+        content.Add(new StringContent(viewModel.Model ?? ""), "Model");
+        content.Add(new StringContent(viewModel.Year.ToString()), "Year");
+        content.Add(new StringContent(viewModel.Plate ?? ""), "Plate");
+        content.Add(new StringContent(viewModel.DailyPrice.ToString(CultureInfo.InvariantCulture)), "DailyPrice");
+        content.Add(new StringContent(viewModel.MinFindeksScore.ToString()), "MinFindeksScore");
+        content.Add(new StringContent(((int)viewModel.Status).ToString()), "Status");
+
+        // Yeni alanlar
+        AddCarSpecFieldsToContent(content, viewModel);
+
+        // Fotoğraf
         if (viewModel.ImageFile != null && viewModel.ImageFile.Length > 0)
         {
             var fileContent = new StreamContent(viewModel.ImageFile.OpenReadStream());
             fileContent.Headers.ContentType = new MediaTypeHeaderValue(viewModel.ImageFile.ContentType);
-            content.Add(fileContent, "ImageFile", viewModel.ImageFile.FileName);
+            content.Add(fileContent, "ImageFiles", viewModel.ImageFile.FileName);
         }
 
         var response = await _apiService.PostMultipartAsync<int>("api/Car", content);
@@ -144,7 +174,6 @@ public class CarController : Controller
         return View(viewModel);
     }
 
-    // ── ARAÇ GÜNCELLEME (GET) ──
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
@@ -167,18 +196,36 @@ public class CarController : Controller
             Year = car.Year,
             Plate = car.Plate,
             DailyPrice = car.DailyPrice,
+
+            // Yeni alanlar (backend'den gelen)
+            FuelType = car.FuelType,
+            TransmissionType = car.TransmissionType,
+            SeatCount = car.SeatCount > 0 ? car.SeatCount : 5,
+            DoorCount = car.DoorCount > 0 ? car.DoorCount : 4,
+            LuggageCount = car.LuggageCount,
+            Color = car.Color,
+            Mileage = car.Mileage,
+            Description = car.Description,
+
+            HasAirbag = car.HasAirbag,
+            HasAbs = car.HasAbs,
+            HasAirConditioning = car.HasAirConditioning,
+            HasBluetooth = car.HasBluetooth,
+            HasNavigation = car.HasNavigation,
+
             MinFindeksScore = car.MinFindeksScore,
+            MinDriverAge = car.MinDriverAge > 0 ? car.MinDriverAge : 21,
+            MinLicenseYears = car.MinLicenseYears,
+
             Status = car.Status,
-            // RESİM URL DÜZELTMESİ BURADA YAPILIYOR (Edit sayfasındaki "Mevcut Resim" için)
-            CurrentImageUrl = string.IsNullOrEmpty(car.ImageUrl) || car.ImageUrl.StartsWith("http") 
-                              ? car.ImageUrl 
+            CurrentImageUrl = string.IsNullOrEmpty(car.ImageUrl) || car.ImageUrl.StartsWith("http")
+                              ? car.ImageUrl
                               : $"{_apiBaseUrl.TrimEnd('/')}{car.ImageUrl}"
         };
 
         return View(model);
     }
 
-    // ── ARAÇ GÜNCELLEME (POST) ──
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(EditViewModel viewModel)
@@ -190,21 +237,27 @@ public class CarController : Controller
         }
 
         using var content = new MultipartFormDataContent();
-        content.Add(new StringContent(viewModel.Id.ToString()), nameof(CarUpdateDto.Id));
-        content.Add(new StringContent(viewModel.BrandId.ToString()), nameof(CarUpdateDto.BrandId));
-        content.Add(new StringContent(viewModel.CurrentLocationId.ToString()), nameof(CarUpdateDto.CurrentLocationId));
-        content.Add(new StringContent(viewModel.Model ?? ""), nameof(CarUpdateDto.Model));
-        content.Add(new StringContent(viewModel.Year.ToString()), nameof(CarUpdateDto.Year));
-        content.Add(new StringContent(viewModel.Plate ?? ""), nameof(CarUpdateDto.Plate));
-        content.Add(new StringContent(viewModel.DailyPrice.ToString(CultureInfo.InvariantCulture)), nameof(CarUpdateDto.DailyPrice));
-        content.Add(new StringContent(viewModel.MinFindeksScore.ToString()), nameof(CarUpdateDto.MinFindeksScore));
-        content.Add(new StringContent(((int)viewModel.Status).ToString()), nameof(CarUpdateDto.Status));
 
+        // Temel alanlar
+        content.Add(new StringContent(viewModel.Id.ToString()), "Id");
+        content.Add(new StringContent(viewModel.BrandId.ToString()), "BrandId");
+        content.Add(new StringContent(viewModel.CurrentLocationId.ToString()), "CurrentLocationId");
+        content.Add(new StringContent(viewModel.Model ?? ""), "Model");
+        content.Add(new StringContent(viewModel.Year.ToString()), "Year");
+        content.Add(new StringContent(viewModel.Plate ?? ""), "Plate");
+        content.Add(new StringContent(viewModel.DailyPrice.ToString(CultureInfo.InvariantCulture)), "DailyPrice");
+        content.Add(new StringContent(viewModel.MinFindeksScore.ToString()), "MinFindeksScore");
+        content.Add(new StringContent(((int)viewModel.Status).ToString()), "Status");
+
+        // Yeni alanlar
+        AddCarSpecFieldsToContent(content, viewModel);
+
+        // Fotoğraf
         if (viewModel.ImageFile != null && viewModel.ImageFile.Length > 0)
         {
             var fileContent = new StreamContent(viewModel.ImageFile.OpenReadStream());
             fileContent.Headers.ContentType = new MediaTypeHeaderValue(viewModel.ImageFile.ContentType);
-            content.Add(fileContent, "ImageFile", viewModel.ImageFile.FileName);
+            content.Add(fileContent, "ImageFiles", viewModel.ImageFile.FileName);
         }
 
         var response = await _apiService.PutMultipartAsync<object>($"api/Car/{viewModel.Id}", content);
@@ -220,7 +273,6 @@ public class CarController : Controller
         return View(viewModel);
     }
 
-    // ── ARAÇ SİLME ──
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
@@ -239,7 +291,6 @@ public class CarController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // ── EXCEL ÇIKTISI (CLOSEDXML) ──
     [HttpGet]
     public async Task<IActionResult> ExportExcel()
     {

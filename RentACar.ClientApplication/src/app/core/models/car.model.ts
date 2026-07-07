@@ -19,33 +19,54 @@ export enum TransmissionType {
   SemiAutomatic = 3
 }
 
+export interface CarImage {
+  id: number;
+  imageUrl: string;
+  isMain: boolean;
+}
+
 export interface Car {
   id: number;
   plate: string;
   model: string;
-  modelYear: number;
-  color: string;
+  year: number;                   // Backend "Year"
   dailyPrice: number;
   status: CarStatus;
+
+  // ═══ Araç Özellikleri ═══
   fuelType: FuelType;
   transmissionType: TransmissionType;
   seatCount: number;
   doorCount: number;
-  mileage: number;
+  luggageCount: number;
+  color?: string | null;
+  mileage?: number | null;
+  description?: string | null;
+
+  // ═══ Ek Özellikler ═══
+  hasAirbag: boolean;
+  hasAbs: boolean;
+  hasAirConditioning: boolean;
+  hasBluetooth: boolean;
+  hasNavigation: boolean;
+
+  // ═══ Kiralama Koşulları ═══
+  minFindeksScore: number;
+  minDriverAge: number;
+  minLicenseYears: number;
+
+  // ═══ İlişkiler ═══
   brandId: number;
   brandName?: string;
   currentLocationId: number;
-  locationName?: string;
-  imageUrl?: string;
-  carImages?: CarImage[];
-  description?: string;
-}
+  currentLocationName?: string;
 
-export interface CarImage {
-  id: number;
-  carId: number;
-  imageUrl: string;
-  isMain: boolean;
+  imageUrl?: string | null;
+  carImages?: CarImage[];
+
+  // Eski isimler için backward compat (frontend'in başka yerlerinde kullanılıyor olabilir)
+  modelYear?: number;
+  locationName?: string;
 }
 
 export interface CarFilter {

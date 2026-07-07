@@ -1,230 +1,232 @@
+@model RentACar.AdminPanel.Models.EditViewModel
 @using RentACar.Application.DTOs.Brand
 @using RentACar.Application.DTOs.Location
 @using RentACar.Domain.Entities
-@model EditViewModel
-@{
-    ViewData["Title"] = "Araç Düzenle";
-    ViewData["Breadcrumb"] = "Araç Düzenle";
 
-    var brands = (List<BrandDto>)(ViewBag.AllBrands ?? new List<BrandDto>());
-    var locations = (List<LocationDto>)(ViewBag.AllLocations ?? new List<LocationDto>());
+@{
+    ViewData["Title"] = "Araç Güncelle";
+    var brands = ViewBag.AllBrands as List<BrandDto> ?? new List<BrandDto>();
+    var locations = ViewBag.AllLocations as List<LocationDto> ?? new List<LocationDto>();
 }
 
-<div class="page-header">
-    <div class="page-header-title">
-        <h1>Aracı Düzenle</h1>
-        <p>Araç bilgilerini güncelleyin.</p>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>✏️ @ViewData["Title"]</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary">← Listeye Dön</a>
     </div>
-</div>
 
-<div style="display: grid; grid-template-columns: 1fr 350px; gap: 20px; max-width: 1100px;">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <input asp-for="Id" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    @* ── Form (enctype kritik!) ── *@
-    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="card">
-        @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="Id" />
-        <input type="hidden" asp-for="CurrentImageUrl" />
+        <!-- Temel Bilgiler -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">📝 Temel Bilgiler</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="BrandId" class="form-label"></label>
+                        <select asp-for="BrandId" class="form-select">
+                            @foreach (var b in brands)
+                            {
+                                <option value="@b.Id" selected="@(b.Id == Model.BrandId)">@b.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="CurrentLocationId" class="form-label"></label>
+                        <select asp-for="CurrentLocationId" class="form-select">
+                            @foreach (var l in locations)
+                            {
+                                <option value="@l.Id" selected="@(l.Id == Model.CurrentLocationId)">@l.Name — @l.City</option>
+                            }
+                        </select>
+                    </div>
+                </div>
 
-        <div class="card-header">
-            <span class="card-title">Araç Bilgileri</span>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Model" class="form-label"></label>
+                        <input asp-for="Model" class="form-control" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Year" class="form-label"></label>
+                        <input asp-for="Year" type="number" class="form-control" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Plate" class="form-label"></label>
+                        <input asp-for="Plate" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="DailyPrice" class="form-label"></label>
+                        <input asp-for="DailyPrice" type="number" step="0.01" class="form-control" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Color" class="form-label"></label>
+                        <input asp-for="Color" class="form-control" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Status" class="form-label"></label>
+                        <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<CarStatus>()"></select>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="card-body">
-
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display:none;"></div>
-
-            @* Marka & Şube *@
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
-                <div class="form-group">
-                    <label asp-for="BrandId" class="form-label">Marka <span style="color: var(--danger);">*</span></label>
-                    <select asp-for="BrandId" class="form-control"
-                            asp-items="@(new SelectList(brands, "Id", "Name"))">
-                        <option value="">-- Marka Seçin --</option>
-                    </select>
-                    <span asp-validation-for="BrandId" class="invalid-feedback"></span>
+        <!-- Araç Özellikleri -->
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">⚙️ Araç Özellikleri</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="FuelType" class="form-label"></label>
+                        <select asp-for="FuelType" class="form-select">
+                            <option value="1">Benzin</option>
+                            <option value="2">Dizel</option>
+                            <option value="3">Elektrik</option>
+                            <option value="4">Hibrit</option>
+                            <option value="5">LPG</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="TransmissionType" class="form-label"></label>
+                        <select asp-for="TransmissionType" class="form-select">
+                            <option value="1">Manuel</option>
+                            <option value="2">Otomatik</option>
+                            <option value="3">Yarı Otomatik</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Mileage" class="form-label"></label>
+                        <input asp-for="Mileage" type="number" class="form-control" />
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label asp-for="CurrentLocationId" class="form-label">Şube <span style="color: var(--danger);">*</span></label>
-                    <select asp-for="CurrentLocationId" class="form-control"
-                            asp-items="@(new SelectList(locations, "Id", "Name"))">
-                        <option value="">-- Şube Seçin --</option>
-                    </select>
-                    <span asp-validation-for="CurrentLocationId" class="invalid-feedback"></span>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="SeatCount" class="form-label"></label>
+                        <input asp-for="SeatCount" type="number" min="2" max="9" class="form-control" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="DoorCount" class="form-label"></label>
+                        <input asp-for="DoorCount" type="number" min="2" max="5" class="form-control" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="LuggageCount" class="form-label"></label>
+                        <input asp-for="LuggageCount" type="number" min="0" max="10" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                 </div>
             </div>
-
-            @* Model & Yıl *@
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
-                <div class="form-group">
-                    <label asp-for="Model" class="form-label">Model <span style="color: var(--danger);">*</span></label>
-                    <input asp-for="Model" type="text" class="form-control" />
-                    <span asp-validation-for="Model" class="invalid-feedback"></span>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="Year" class="form-label">Yıl <span style="color: var(--danger);">*</span></label>
-                    <input asp-for="Year" type="number" class="form-control" />
-                    <span asp-validation-for="Year" class="invalid-feedback"></span>
-                </div>
-            </div>
-
-            @* Plaka *@
-            <div class="form-group">
-                <label asp-for="Plate" class="form-label">Plaka <span style="color: var(--danger);">*</span></label>
-                <input asp-for="Plate" type="text" class="form-control" />
-                <small style="color: var(--text-muted);">Türkiye plakası formatı (Örn: 34 ABC 123)</small>
-                <span asp-validation-for="Plate" class="invalid-feedback"></span>
-            </div>
-
-            @* Fiyat & Findeks *@
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
-                <div class="form-group">
-                    <label asp-for="DailyPrice" class="form-label">Günlük Fiyat (₺) <span style="color: var(--danger);">*</span></label>
-                    <input asp-for="DailyPrice" type="number" step="0.01" class="form-control" />
-                    <span asp-validation-for="DailyPrice" class="invalid-feedback"></span>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="MinFindeksScore" class="form-label">Min. Findeks Puanı</label>
-                    <input asp-for="MinFindeksScore" type="number" class="form-control" />
-                    <span asp-validation-for="MinFindeksScore" class="invalid-feedback"></span>
-                </div>
-            </div>
-
-            @* Durum *@
-            <div class="form-group">
-                <label asp-for="Status" class="form-label">Durum</label>
-                <select asp-for="Status" class="form-control">
-                    <option value="@CarStatus.Available">Müsait</option>
-                    <option value="@CarStatus.Rented">Kirada</option>
-                    <option value="@CarStatus.InMaintenance">Bakımda</option>
-                    <option value="@CarStatus.Passive">Pasif</option>
-                </select>
-            </div>
-
-            @* ── RESİM YÜKLEME (drag-drop) ── *@
-            <div class="form-group">
-                <label class="form-label">Araç Resmi (Yeni resim seçilirse mevcut değiştirilir)</label>
-                <div id="dropZone"
-                     style="position: relative; border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 28px 20px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--bg-elevated);">
-                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 28px; color: var(--accent); margin-bottom: 10px;"></i>
-                    <p style="color: var(--text-muted); margin: 8px 0;">
-                        Yeni resmi sürükleyip bırakın veya <strong>tıklayarak</strong> seçin
-                    </p>
-                    <small style="color: var(--text-muted);">JPG, PNG, GIF, WEBP — Max 5MB</small>
-                    <input type="file" asp-for="ImageFile" id="ImageFile" accept="image/*" style="display: none;" />
-                </div>
-
-                <div id="imagePreview" style="display: none; margin-top: 12px;">
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
-                        <strong>Yeni resim:</strong>
-                    </p>
-                    <img id="previewImg" src="" alt="Önizleme"
-                         style="max-width: 200px; max-height: 200px; border-radius: var(--radius-md); border: 1px solid var(--border-color);" />
-                    <button type="button" class="btn btn-sm btn-danger" onclick="clearImage()" style="margin-left: 10px;">
-                        <i class="fa-solid fa-times"></i> İptal
-                    </button>
-                </div>
-                <span asp-validation-for="ImageFile" class="invalid-feedback"></span>
-            </div>
-
         </div>
 
-        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; justify-content: flex-end;">
-            <a asp-action="Index" class="btn btn-secondary">İptal</a>
-            <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-save"></i> Değişiklikleri Kaydet
+        <!-- Ek Özellikler -->
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">✨ Ek Özellikler</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <div class="form-check form-switch">
+                            <input asp-for="HasAirbag" class="form-check-input" />
+                            <label asp-for="HasAirbag" class="form-check-label"></label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <div class="form-check form-switch">
+                            <input asp-for="HasAbs" class="form-check-input" />
+                            <label asp-for="HasAbs" class="form-check-label"></label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <div class="form-check form-switch">
+                            <input asp-for="HasAirConditioning" class="form-check-input" />
+                            <label asp-for="HasAirConditioning" class="form-check-label"></label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <div class="form-check form-switch">
+                            <input asp-for="HasBluetooth" class="form-check-input" />
+                            <label asp-for="HasBluetooth" class="form-check-label"></label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <div class="form-check form-switch">
+                            <input asp-for="HasNavigation" class="form-check-input" />
+                            <label asp-for="HasNavigation" class="form-check-label"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kiralama Koşulları -->
+        <div class="card mb-3">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0">📋 Kiralama Koşulları</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="MinDriverAge" class="form-label"></label>
+                        <input asp-for="MinDriverAge" type="number" min="18" max="75" class="form-control" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="MinLicenseYears" class="form-label"></label>
+                        <input asp-for="MinLicenseYears" type="number" min="0" max="20" class="form-control" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="MinFindeksScore" class="form-label"></label>
+                        <input asp-for="MinFindeksScore" type="number" min="0" max="2000" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fotoğraf -->
+        <div class="card mb-3">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">📷 Araç Fotoğrafı</h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(Model.CurrentImageUrl))
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Mevcut Fotoğraf</label>
+                        <div>
+                            <img src="@Model.CurrentImageUrl" alt="Mevcut" style="max-width: 200px; border-radius: 8px;" />
+                        </div>
+                    </div>
+                }
+                <label asp-for="ImageFile" class="form-label"></label>
+                <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+                <small class="text-muted">Yeni fotoğraf seçilirse eski değiştirilir.</small>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+            <button type="submit" class="btn btn-primary btn-lg px-5">
+                ✓ Güncelle
             </button>
         </div>
     </form>
-
-    @* ── Yan panel: Mevcut Resim ── *@
-    <div class="card">
-        <div class="card-header">
-            <span class="card-title">Mevcut Araç Resmi</span>
-        </div>
-        <div class="card-body" style="display: flex; flex-direction: column; gap: 12px;">
-            @if (!string.IsNullOrEmpty(Model.CurrentImageUrl))
-            {
-                <img src="@Model.CurrentImageUrl" alt="@Model.Model"
-                     style="width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-color); object-fit: cover; aspect-ratio: 4/3;" />
-                <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">
-                    Yeni resim yüklerseniz bu resim değişir.
-                </p>
-            }
-            else
-            {
-                <div style="width: 100%; aspect-ratio: 4/3; background: var(--bg-elevated); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border-color);">
-                    <div style="text-align: center; color: var(--text-muted);">
-                        <i class="fa-solid fa-image" style="font-size: 32px; opacity: 0.5;"></i>
-                        <p style="margin-top: 8px; font-size: 0.85rem;">Resim yok</p>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
 </div>
 
 @section Scripts {
-<partial name="_ValidationScriptsPartial" />
-<script>
-    (function () {
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('ImageFile');
-        const preview = document.getElementById('imagePreview');
-        const previewImg = document.getElementById('previewImg');
-
-        if (!dropZone || !fileInput) return;
-
-        dropZone.addEventListener('click', () => fileInput.click());
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
-            dropZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
-        });
-
-        ['dragenter', 'dragover'].forEach(ev => {
-            dropZone.addEventListener(ev, () => {
-                dropZone.style.borderColor = 'var(--accent)';
-                dropZone.style.backgroundColor = 'var(--accent-muted)';
-            });
-        });
-
-        ['dragleave', 'drop'].forEach(ev => {
-            dropZone.addEventListener(ev, () => {
-                dropZone.style.borderColor = 'var(--border-color)';
-                dropZone.style.backgroundColor = 'var(--bg-elevated)';
-            });
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                showPreview(files[0]);
-            }
-        });
-
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files && fileInput.files[0]) {
-                showPreview(fileInput.files[0]);
-            }
-        });
-
-        function showPreview(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                previewImg.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        window.clearImage = function () {
-            fileInput.value = '';
-            preview.style.display = 'none';
-            previewImg.src = '';
-        };
-    })();
-</script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

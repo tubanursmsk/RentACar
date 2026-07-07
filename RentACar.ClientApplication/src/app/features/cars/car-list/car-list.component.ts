@@ -420,7 +420,7 @@ export class CarListComponent implements OnInit {
     switch (this.sortBy) {
       case 'price-asc': list.sort((a, b) => a.dailyPrice - b.dailyPrice); break;
       case 'price-desc': list.sort((a, b) => b.dailyPrice - a.dailyPrice); break;
-      case 'year-desc': list.sort((a, b) => b.modelYear - a.modelYear); break;
+      case 'year-desc': list.sort((a, b) => (b.year ?? b.modelYear ?? 0) - (a.year ?? a.modelYear ?? 0)); break;
     }
     this.cars.set(list);
   }

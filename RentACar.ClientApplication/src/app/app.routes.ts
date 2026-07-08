@@ -1,5 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { MyReservationsComponent } from './features/my-reservations/my-reservations.component';
+import { ReservationDetailComponent } from './features/my-reservations/reservation-detail.component';
+ 
 
 export const routes: Routes = [
   {
@@ -98,6 +101,21 @@ export const routes: Routes = [
       }
     ]
   },
+
+  
+{
+  path: 'rezervasyonlarim',
+  component: MyReservationsComponent,
+  title: 'Rezervasyonlarım — RentACar',
+  // canActivate: [authGuard],   // ← eğer sende authGuard varsa aktif et
+},
+{
+  path: 'rezervasyonlarim/:id',
+  component: ReservationDetailComponent,
+  title: 'Rezervasyon Detayı — RentACar',
+  // canActivate: [authGuard],
+},
+ 
 
   // ─── BAŞARI SAYFASI ───
   {

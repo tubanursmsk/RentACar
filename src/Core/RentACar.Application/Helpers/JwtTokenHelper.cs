@@ -31,8 +31,14 @@ namespace RentACar.Application.Helpers
             };
 
             foreach (var role in roles)
-                claims.Add(new Claim(ClaimTypes.Role, role));
-
+{
+    // Veritabanından "Admin,Customer" gibi tek string gelme ihtimaline karşı virgülle parçalıyoruz
+    var splittedRoles = role.Split(',', StringSplitOptions.RemoveEmptyEntries);
+    foreach (var r in splittedRoles)
+    {
+        claims.Add(new Claim(ClaimTypes.Role, r.Trim()));
+    }
+}
             var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

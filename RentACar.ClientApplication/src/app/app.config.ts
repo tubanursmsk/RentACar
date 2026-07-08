@@ -5,14 +5,13 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { registerLocaleData } from '@angular/common';
 import localeTr from '@angular/common/locales/tr';
 import localeTrExtra from '@angular/common/locales/extra/tr';
-
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 // ═══ Türkçe locale kayıt ═══
 // Bu, tüm date, number, currency pipe'larının Türkçe formatta çıkmasını sağlar.
 // Örn: 2999.50 → "2.999,50" (binlik nokta, ondalık virgül)
-registerLocaleData(localeTr, 'tr-TR', localeTrExtra);
+registerLocaleData(localeTr, 'tr', localeTrExtra);
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,7 +23,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideAnimations(),
 
-    // ⭐ Uygulamanın varsayılan locale'i Türkçe
-    { provide: LOCALE_ID, useValue: 'tr-TR' },
+    // 'tr-TR' yerine 'tr' kullanın
+    { provide: LOCALE_ID, useValue: 'tr' }, 
   ]
 };

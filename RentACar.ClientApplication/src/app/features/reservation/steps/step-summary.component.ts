@@ -37,12 +37,12 @@ import { environment } from '../../../../environments/environment';
           <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-ink-100/40 rounded-lg p-4">
               <div class="text-xs text-ink-500 font-bold uppercase mb-1">Alış</div>
-              <div class="font-semibold">{{ wizard.state().rentStartDate | date:'dd MMMM yyyy':'':'tr' }}</div>
+              <div class="font-semibold">{{ wizard.state().rentStartDate | date:'dd MMMM yyyy' }}</div>
               <div class="text-sm text-ink-500">{{ getPickupLocation() }}</div>
             </div>
             <div class="bg-ink-100/40 rounded-lg p-4">
               <div class="text-xs text-ink-500 font-bold uppercase mb-1">İade</div>
-              <div class="font-semibold">{{ wizard.state().rentEndDate | date:'dd MMMM yyyy':'':'tr' }}</div>
+              <div class="font-semibold">{{ wizard.state().rentEndDate | date:'dd MMMM yyyy' }}</div>
               <div class="text-sm text-ink-500">{{ getDropoffLocation() }}</div>
             </div>
           </div>
@@ -98,3 +98,11 @@ export class StepSummaryComponent implements OnInit {
     return this.wizard.state().dropOffLocationId ? `Şube #${this.wizard.state().dropOffLocationId}` : '';
   }
 }
+
+
+
+
+
+
+
+

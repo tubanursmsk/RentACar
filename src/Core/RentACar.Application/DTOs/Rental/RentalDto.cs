@@ -98,6 +98,18 @@ public class ReservationDetailDto
     public DateTime RentEndDate { get; set; }
     public int TotalDays { get; set; }
 
+      // ── YENİ: Rezervasyon Yönetimi ──
+    public string? ReservationCode { get; set; }
+    public string? CancelReason { get; set; }
+    public DateTime? CancelledDate { get; set; }
+ 
+    // ── YENİ: Aksiyon İzinleri (Frontend'in "İptal Et"/"Düzenle" butonları için) ──
+    public bool CanCancel { get; set; }
+    public bool CanEdit { get; set; }
+    public string? CannotCancelReason { get; set; }
+    public int? HoursUntilPickup { get; set; }
+ 
+
     public InsurancePackageDto? InsurancePackage { get; set; }
     public List<ReservationProductDetailDto> AdditionalProducts { get; set; } = new();
 

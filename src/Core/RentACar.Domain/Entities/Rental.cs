@@ -52,6 +52,12 @@ public class Rental : BaseEntity
     public string? DriverEmail { get; set; }
     public string? DriverAddress { get; set; }
 
+    
+    // ── YENİ: Rezervasyon Yönetimi ──
+    public string? CancelReason { get; set; }
+    public DateTime? CancelledDate { get; set; }
+    public string? ReservationCode { get; set; }  // "RNT-2026-0001" gibi kısa referans kod (opsiyonel)
+
     // ── YENİ: Ödeme ──
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 

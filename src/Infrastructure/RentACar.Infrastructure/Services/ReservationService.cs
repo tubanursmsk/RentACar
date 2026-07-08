@@ -247,6 +247,9 @@ public class ReservationService : IReservationService
             Status = rental.Status.ToString(),
             IsPaid = rental.IsPaid,
             CreatedDate = rental.CreatedDate,
+            ReservationCode = rental.ReservationCode,
+            CancelReason = rental.CancelReason,
+            CancelledDate = rental.CancelledDate,
             InsurancePackage = rental.InsurancePackage != null ? new InsurancePackageDto
             {
                 Id = rental.InsurancePackage.Id,
@@ -264,6 +267,282 @@ public class ReservationService : IReservationService
             }).ToList()
         };
 
+
+        var now = GetTurkeyNow();
+        dto.CanCancel = CanCancelReservation(rental, now);
+        dto.CanEdit = CanEditReservation(rental, now);
+        dto.CannotCancelReason = dto.CanCancel ? null : GetCannotCancelReason(rental, now);
+        dto.HoursUntilPickup = rental.RentStartDate > now
+            ? (int?)(rental.RentStartDate - now).TotalHours
+            : null;
+
+
         return ApiResponse<ReservationDetailDto>.SuccessResult(dto);
     }
+
+
+
+    // İş Kuralı: Alışa 24 saatten az kaldıysa iptal/düzenleme yapılamaz
+    private const int MIN_HOURS_BEFORE_CHANGE = 24;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 1. Kullanıcının rezervasyon listesi (filtreli)
+    // ═══════════════════════════════════════════════════════════════════
+    public async Task<ApiResponse<List<MyReservationDto>>> GetMyReservationsAsync(int currentUserId, string? filter = null)
+    {
+        var customer = await _unitOfWork.Repository<Customer>()
+            .GetWhere(c => c.UserId == currentUserId && !c.IsDeleted)
+            .FirstOrDefaultAsync();
+
+        if (customer == null)
+        {
+            return ApiResponse<List<MyReservationDto>>.SuccessResult(new List<MyReservationDto>(),
+                "Henüz rezervasyonunuz bulunmuyor.");
+        }
+
+        var query = _unitOfWork.Repository<Rental>()
+            .GetWhere(r => r.CustomerId == customer.Id && !r.IsDeleted)
+            .Include(r => r.Car).ThenInclude(c => c.Brand)
+            .Include(r => r.PickUpLocation)
+            .Include(r => r.DropOffLocation)
+            .AsQueryable();
+
+        var now = GetTurkeyNow();
+
+        // Filtre uygula
+        query = filter?.ToLower() switch
+        {
+            "active" => query.Where(r =>
+                           (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Approved)
+                           && r.RentEndDate >= now),
+            "past" => query.Where(r =>
+                           r.Status == ReservationStatus.Completed
+                           || (r.Status == ReservationStatus.Approved && r.RentEndDate < now)),
+            "cancelled" => query.Where(r => r.Status == ReservationStatus.Cancelled),
+            _ => query   // "all" veya null
+        };
+
+        var rentals = await query
+            .OrderByDescending(r => r.CreatedDate)
+            .ToListAsync();
+
+        var dtos = rentals.Select(r =>
+        {
+            var hoursUntil = r.RentStartDate > now
+                ? (int?)(r.RentStartDate - now).TotalHours
+                : null;
+
+            return new MyReservationDto
+            {
+                Id = r.Id,
+                ReservationCode = r.ReservationCode,
+                CarId = r.CarId,
+                CarBrand = r.Car.Brand?.Name ?? "",
+                CarModel = r.Car.Model,
+                CarPlate = r.Car.Plate,
+                CarImageUrl = r.Car.ImageUrl,
+                RentStartDate = r.RentStartDate,
+                RentEndDate = r.RentEndDate,
+                TotalDays = r.TotalDays,
+                PickUpLocationName = r.PickUpLocation?.Name ?? "",
+                DropOffLocationName = r.DropOffLocation?.Name ?? "",
+                TotalAmount = r.TotalAmount,
+                Status = r.Status.ToString(),
+                IsPaid = r.IsPaid,
+                HoursUntilPickup = hoursUntil,
+                CanCancel = CanCancelReservation(r, now),
+                CanEdit = CanEditReservation(r, now),
+                CreatedDate = r.CreatedDate
+            };
+        }).ToList();
+
+        return ApiResponse<List<MyReservationDto>>.SuccessResult(dtos);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 2. Rezervasyon iptali
+    // ═══════════════════════════════════════════════════════════════════
+    public async Task<ApiResponse<bool>> CancelMyReservationAsync(int reservationId, int currentUserId, CancelReservationDto dto)
+    {
+        var customer = await _unitOfWork.Repository<Customer>()
+            .GetWhere(c => c.UserId == currentUserId && !c.IsDeleted)
+            .FirstOrDefaultAsync();
+
+        if (customer == null)
+            return ApiResponse<bool>.ErrorResult("Müşteri profili bulunamadı.");
+
+        var rental = await _unitOfWork.Repository<Rental>()
+            .GetWhere(r => r.Id == reservationId && !r.IsDeleted)
+            .FirstOrDefaultAsync();
+
+        if (rental == null)
+            return ApiResponse<bool>.ErrorResult("Rezervasyon bulunamadı.");
+
+        if (rental.CustomerId != customer.Id)
+            return ApiResponse<bool>.ErrorResult("Bu rezervasyonu iptal etme yetkiniz yok.");
+
+        var now = GetTurkeyNow();
+        if (!CanCancelReservation(rental, now))
+        {
+            return ApiResponse<bool>.ErrorResult(
+                GetCannotCancelReason(rental, now) ?? "Bu rezervasyon iptal edilemez.");
+        }
+
+        rental.Status = ReservationStatus.Cancelled;
+        rental.CancelReason = dto.Reason;
+        rental.CancelledDate = now;
+        rental.UpdatedDate = now;
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ApiResponse<bool>.SuccessResult(true, "Rezervasyon başarıyla iptal edildi.");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 3. Rezervasyon tarih güncelleme
+    // ═══════════════════════════════════════════════════════════════════
+    public async Task<ApiResponse<bool>> UpdateMyReservationDatesAsync(int reservationId, int currentUserId, UpdateReservationDatesDto dto)
+    {
+        var customer = await _unitOfWork.Repository<Customer>()
+            .GetWhere(c => c.UserId == currentUserId && !c.IsDeleted)
+            .FirstOrDefaultAsync();
+
+        if (customer == null)
+            return ApiResponse<bool>.ErrorResult("Müşteri profili bulunamadı.");
+
+        var rental = await _unitOfWork.Repository<Rental>()
+            .GetWhere(r => r.Id == reservationId && !r.IsDeleted)
+            .Include(r => r.Car)
+            .FirstOrDefaultAsync();
+
+        if (rental == null)
+            return ApiResponse<bool>.ErrorResult("Rezervasyon bulunamadı.");
+
+        if (rental.CustomerId != customer.Id)
+            return ApiResponse<bool>.ErrorResult("Bu rezervasyonu düzenleme yetkiniz yok.");
+
+        var now = GetTurkeyNow();
+        if (!CanEditReservation(rental, now))
+            return ApiResponse<bool>.ErrorResult("Bu rezervasyon artık düzenlenemez.");
+
+        // Yeni tarihleri validate et
+        if (dto.NewRentStartDate < now)
+            return ApiResponse<bool>.ErrorResult("Yeni alış tarihi geçmişte olamaz.");
+
+        if (dto.NewRentStartDate < now.AddMinutes(30))
+            return ApiResponse<bool>.ErrorResult("Yeni alış tarihi en az 30 dakika sonrası olmalı.");
+
+        if (dto.NewRentEndDate <= dto.NewRentStartDate)
+            return ApiResponse<bool>.ErrorResult("İade tarihi alış tarihinden sonra olmalı.");
+
+        var newTotalDays = Math.Max(1, (dto.NewRentEndDate - dto.NewRentStartDate).Days);
+        if (newTotalDays < 1)
+            return ApiResponse<bool>.ErrorResult("Minimum kiralama süresi 1 gün.");
+
+        if (dto.NewRentStartDate > now.AddDays(365))
+            return ApiResponse<bool>.ErrorResult("En fazla 365 gün ileri rezervasyon yapılabilir.");
+
+        // Aracın yeni tarihte müsait olup olmadığını kontrol et (aynı araca başka rezervasyon var mı?)
+        bool hasConflict = await _unitOfWork.Repository<Rental>().AnyAsync(r =>
+            r.Id != reservationId &&
+            r.CarId == rental.CarId &&
+            !r.IsDeleted &&
+            r.Status != ReservationStatus.Cancelled &&
+            r.Status != ReservationStatus.Completed &&
+            r.RentStartDate <= dto.NewRentEndDate &&
+            r.RentEndDate >= dto.NewRentStartDate);
+
+        if (hasConflict)
+            return ApiResponse<bool>.ErrorResult("Seçilen tarihlerde araç başka bir rezervasyonda.");
+
+        // Fiyatı yeniden hesapla (araç bedeli değişir, sigorta ve ek ürünler günlük bazlı olduğu için de değişir)
+        var newSubTotal = newTotalDays * rental.Car.DailyPrice;
+
+        // Sigorta ve ek ürünler de gün başına — orantısal yeniden hesaplama
+        var oldDays = Math.Max(1, rental.TotalDays);
+        var insurancePerDay = rental.InsuranceTotal / oldDays;
+        var productsPerDay = rental.AdditionalProductsTotal / oldDays;
+
+        var newInsuranceTotal = insurancePerDay * newTotalDays;
+        var newProductsTotal = productsPerDay * newTotalDays;
+        var newTotalAmount = newSubTotal + newInsuranceTotal + newProductsTotal;
+
+        rental.RentStartDate = dto.NewRentStartDate;
+        rental.RentEndDate = dto.NewRentEndDate;
+        rental.SubTotal = newSubTotal;
+        rental.InsuranceTotal = newInsuranceTotal;
+        rental.AdditionalProductsTotal = newProductsTotal;
+        rental.TotalAmount = newTotalAmount;
+        rental.UpdatedDate = now;
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ApiResponse<bool>.SuccessResult(true, "Rezervasyon tarihleri güncellendi.");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PRIVATE HELPERS
+    // ═══════════════════════════════════════════════════════════════════
+
+    private static bool CanCancelReservation(Rental rental, DateTime now)
+    {
+        // Zaten iptal veya tamamlanmışsa iptal edilemez
+        if (rental.Status == ReservationStatus.Cancelled || rental.Status == ReservationStatus.Completed)
+            return false;
+
+        // Alışa 24 saatten az kaldıysa iptal edilemez
+        var hoursUntilPickup = (rental.RentStartDate - now).TotalHours;
+        if (hoursUntilPickup < MIN_HOURS_BEFORE_CHANGE)
+            return false;
+
+        return true;
+    }
+
+    private static bool CanEditReservation(Rental rental, DateTime now)
+    {
+        // Yalnızca Pending veya Approved düzenlenebilir
+        if (rental.Status != ReservationStatus.Pending && rental.Status != ReservationStatus.Approved)
+            return false;
+
+        // Alışa 24 saatten az kaldıysa düzenlenemez
+        var hoursUntilPickup = (rental.RentStartDate - now).TotalHours;
+        if (hoursUntilPickup < MIN_HOURS_BEFORE_CHANGE)
+            return false;
+
+        return true;
+    }
+
+    private static string? GetCannotCancelReason(Rental rental, DateTime now)
+    {
+        if (rental.Status == ReservationStatus.Cancelled)
+            return "Bu rezervasyon zaten iptal edilmiş.";
+
+        if (rental.Status == ReservationStatus.Completed)
+            return "Tamamlanmış rezervasyonlar iptal edilemez.";
+
+        var hoursUntilPickup = (rental.RentStartDate - now).TotalHours;
+        if (hoursUntilPickup < MIN_HOURS_BEFORE_CHANGE)
+        {
+            if (hoursUntilPickup < 0)
+                return "Alış tarihi geçtiği için iptal edilemez.";
+            return $"Alış tarihine {MIN_HOURS_BEFORE_CHANGE} saatten az kaldığı için iptal edilemez.";
+        }
+
+        return null;
+    }
+
+    private static DateTime GetTurkeyNow()
+    {
+        try
+        {
+            var turkeyTz = TimeZoneInfo.FindSystemTimeZoneById(
+                OperatingSystem.IsWindows() ? "Turkey Standard Time" : "Europe/Istanbul");
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, turkeyTz);
+        }
+        catch
+        {
+            return DateTime.Now;
+        }
+    }
+
 }

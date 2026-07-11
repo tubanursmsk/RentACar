@@ -19,6 +19,13 @@ public class UserUpdateDto
     [Required(ErrorMessage = "E-posta adresi zorunludur.")]
     [EmailAddress(ErrorMessage = "Geçersiz e-posta formatı.")]
     public string Email { get; set; } = string.Empty;
-    public string Role { get; set; } = "Customer";
+    
+     [Required(ErrorMessage = "Telefon zorunludur.")]
+    [Phone(ErrorMessage = "Geçerli bir telefon numarası giriniz.")]
+    [StringLength(20)]
+    public string Phone { get; set; } = string.Empty;
+ 
+    [StringLength(500, ErrorMessage = "Adres en fazla 500 karakter olabilir.")]
+    public string? Address { get; set; }
 }
 

@@ -9,61 +9,66 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
     <header class="sticky top-0 z-50 bg-white border-b border-ink-200">
-      <!-- Geniş layout: max-w-[1600px], daha az kenar boşluğu -->
       <div class="max-w-[1600px] mx-auto px-6 lg:px-8">
         <div class="flex items-center h-16">
 
+          <!-- Sol Alan -->
+          <div class="flex items-center gap-10">
 
-        
-         <!-- Sol Alan -->
-         <div class="flex items-center gap-12">
+            <!-- ═══ Logo ═══ -->
+            <a routerLink="/" class="flex items-center gap-2 flex-shrink-0 group">
+              <div class="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center group-hover:bg-brand-700 transition">
+                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                </svg>
+              </div>
+              <span class="text-lg font-extrabold text-ink-900 tracking-tight">RentACar</span>
+            </a>
 
+            <!-- ═══ Menü Linkleri ═══ -->
+            <nav class="hidden lg:flex items-center gap-1">
+              <a routerLink="/rezervasyonlarim" routerLinkActive="text-brand-600"
+                 class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
+                Rezervasyon Yönetimi
+              </a>
+              <a routerLink="/araclar" routerLinkActive="text-brand-600"
+                 class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
+                Araçlar
+              </a>
+              <a routerLink="/kampanyalar" routerLinkActive="text-brand-600"
+                 class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
+                Kampanyalar
+              </a>
+              <a routerLink="/hizmetler" routerLinkActive="text-brand-600"
+                 class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
+                Hizmetler
+              </a>
+              <a routerLink="/ofisler" routerLinkActive="text-brand-600"
+                 class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
+                Ofisler
+              </a>
 
-
-          <!-- ═══ Logo ═══ -->
-          <a routerLink="/" class="flex items-center gap-2 flex-shrink-0 group">
-            <div class="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center group-hover:bg-brand-700 transition">
-              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-              </svg>
-            </div>
-            <span class="text-lg font-extrabold text-ink-900 tracking-tight">RentACar</span>
-          </a>
-
-          <!-- ═══ Orta: Menü Linkleri ═══ -->
-          <nav class="hidden lg:flex items-center gap-4">
-            <a routerLink="/rezervasyonlarim" routerLinkActive="text-brand-600"
-               class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
-              Rezervasyon Yönetimi
-            </a>
-            <a routerLink="/araclar" routerLinkActive="text-brand-600"
-               class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
-              Araçlar
-            </a>
-            <a routerLink="/kampanyalar" routerLinkActive="text-brand-600"
-               class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
-              Kampanyalar
-            </a>
-            <a routerLink="/hizmetler" routerLinkActive="text-brand-600"
-               class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
-              Hizmetler
-            </a>
-            <a routerLink="/ofisler" routerLinkActive="text-brand-600"
-               class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
-              Ofisler
-            </a>
-          </nav>
+              <!-- ⭐ YENİ LİNKLER ⭐ -->
+              <a routerLink="/hakkimizda" routerLinkActive="text-brand-600"
+                 class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
+                Hakkımızda
+              </a>
+               <a routerLink="/iletisim" routerLinkActive="text-brand-600"
+                 class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
+                İletişim
+              </a>
+              <a routerLink="/kiralama-kosullari" routerLinkActive="text-brand-600"
+                 class="px-2 py-2 text-sm font-semibold text-ink-700 hover:text-ink-900 hover:bg-ink-100 rounded-lg transition">
+                Kiralama Koşulları
+              </a>
+            </nav>
 
           </div>
 
+          <!-- Sağ Alan -->
+          <div class="ml-auto flex items-center gap-3">
 
-
-            <!-- Sağ Alan -->
-            <div class="ml-auto flex items-center gap-3">
-
-
-
-            <!-- Dil seçici (çalışır dropdown) -->
+            <!-- Dil seçici -->
             <div class="relative">
               <button (click)="toggleLangMenu()"
                       class="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-ink-100 transition text-sm font-semibold text-ink-700">
@@ -147,7 +152,7 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
         </div>
       </div>
- 
+
       <!-- ═══ Mobil Menü ═══ -->
       @if (isMobileMenuOpen()) {
         <div class="lg:hidden border-t border-ink-100 bg-white animate-fade-in">
@@ -157,6 +162,9 @@ import { AuthService } from '../../core/services/auth.service';
             <a routerLink="/kampanyalar" (click)="closeMenus()" class="block py-2.5 text-sm font-semibold text-ink-700 hover:text-brand-600">Kampanyalar</a>
             <a routerLink="/hizmetler" (click)="closeMenus()" class="block py-2.5 text-sm font-semibold text-ink-700 hover:text-brand-600">Hizmetler</a>
             <a routerLink="/ofisler" (click)="closeMenus()" class="block py-2.5 text-sm font-semibold text-ink-700 hover:text-brand-600">Ofisler</a>
+            <a routerLink="/hakkimizda" (click)="closeMenus()" class="block py-2.5 text-sm font-semibold text-ink-700 hover:text-brand-600">Hakkımızda</a>
+            <a routerLink="/iletisim" (click)="closeMenus()" class="block py-2.5 text-sm font-semibold text-ink-700 hover:text-brand-600">İletişim</a>
+            <a routerLink="/kiralama-kosullari" (click)="closeMenus()" class="block py-2.5 text-sm font-semibold text-ink-700 hover:text-brand-600">Kiralama Koşulları</a>
           </nav>
         </div>
       }
@@ -189,7 +197,6 @@ export class HeaderComponent {
   setLang(lang: 'TR' | 'EN'): void {
     this.currentLang.set(lang);
     this.isLangMenuOpen.set(false);
-    // TODO: ngx-translate ile gerçek dil değişimi (sonraki modül)
   }
 
   closeMenus(): void {

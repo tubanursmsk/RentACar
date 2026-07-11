@@ -1,10 +1,11 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [RouterLink],
+  imports: [CommonModule, RouterLink],
   template: `
     <footer class="bg-ink-900 text-white">
       <div class="page-container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -34,9 +35,10 @@ import { RouterLink } from '@angular/router';
             <h4 class="font-bold mb-4">Hizmetler</h4>
             <ul class="space-y-2 text-sm text-ink-300">
               <li><a routerLink="/araclar" class="hover:text-white transition">Araç Kiralama</a></li>
-              <li><a href="#" class="hover:text-white transition">Kurumsal Çözümler</a></li>
-              <li><a href="#" class="hover:text-white transition">Şoförlü Hizmet</a></li>
-              <li><a href="#" class="hover:text-white transition">Uzun Dönem Kiralama</a></li>
+               <li><a routerLink="/kurumsal-cozumler" class="hover:text-brand-600 transition">Kurumsal Çözümler</a></li>
+               <li><a routerLink="/soforlu-hizmet" class="hover:text-brand-600 transition">Şoförlü Hizmet</a></li>
+               <li><a routerLink="/uzun-donem-kiralama" class="hover:text-brand-600 transition">Uzun Dönem Kiralama</a></li>
+ 
             </ul>
           </div>
 
@@ -44,10 +46,11 @@ import { RouterLink } from '@angular/router';
           <div>
             <h4 class="font-bold mb-4">Kurumsal</h4>
             <ul class="space-y-2 text-sm text-ink-300">
-              <li><a href="#" class="hover:text-white transition">Hakkımızda</a></li>
-              <li><a href="#" class="hover:text-white transition">Kariyer</a></li>
-              <li><a href="#" class="hover:text-white transition">Basın Odası</a></li>
-              <li><a href="#" class="hover:text-white transition">İletişim</a></li>
+              <li><a routerLink="/hakkimizda" class="hover:text-brand-600 transition">Hakkımızda</a></li>
+             <li> <a routerLink="/kariyer" class="hover:text-brand-600 transition">Kariyer</a></li>
+             <li> <a routerLink="/basin-odasi" class="hover:text-brand-600 transition">Basın Odası</a></li>
+             <li> <a routerLink="/iletisim" class="hover:text-brand-600 transition">İletişim</a></li>
+ 
             </ul>
           </div>
 
@@ -55,10 +58,11 @@ import { RouterLink } from '@angular/router';
           <div>
             <h4 class="font-bold mb-4">Yardım</h4>
             <ul class="space-y-2 text-sm text-ink-300">
-              <li><a href="#" class="hover:text-white transition">Sıkça Sorulan Sorular</a></li>
-              <li><a href="#" class="hover:text-white transition">Kiralama Koşulları</a></li>
-              <li><a href="#" class="hover:text-white transition">Gizlilik Politikası</a></li>
-              <li><a href="#" class="hover:text-white transition">KVKK</a></li>
+             <li><a routerLink="/sikca-sorulan-sorular" class="hover:text-brand-600 transition">Sıkça Sorulan Sorular</a></li>
+             <li> <a routerLink="/kiralama-kosullari" class="hover:text-brand-600 transition">Kiralama Koşulları</a></li>
+              <li><a routerLink="/gizlilik-politikasi" class="hover:text-brand-600 transition">Gizlilik Politikası</a></li>
+             <li> <a routerLink="/kvkk" class="hover:text-brand-600 transition">KVKK</a></li>
+              
             </ul>
           </div>
         </div>

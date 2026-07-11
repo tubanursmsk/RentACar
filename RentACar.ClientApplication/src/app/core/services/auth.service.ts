@@ -5,9 +5,13 @@ import { Observable, tap, catchError, of, switchMap, map } from 'rxjs';
 import { ApiResponse } from '../models/api-response.model';
 import { User, LoginRequest, RegisterRequest } from '../models/user.model';
 import { environment } from '../../../environments/environment';
+import { UserProfile } from './profile.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  updateUser(data: UserProfile) {
+    throw new Error('Method not implemented.');
+  }
   private http = inject(HttpClient);
   private router = inject(Router);
 

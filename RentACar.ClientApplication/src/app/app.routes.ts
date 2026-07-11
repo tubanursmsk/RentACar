@@ -4,7 +4,7 @@ import { MyReservationsComponent } from './features/my-reservations/my-reservati
 import { ReservationDetailComponent } from './features/my-reservations/reservation-detail.component';
 import { ReservationSuccessComponent } from './features/my-reservations/reservation-success.component';
 import { PaymentResultComponent } from './features/payment/payment-result.component';
-
+import { InfoPageComponent } from './features/info/info-page.component';
 
 export const routes: Routes = [
   {
@@ -47,14 +47,12 @@ export const routes: Routes = [
       import('./features/auth/login/login.component').then(m => m.LoginComponent),
     title: 'Giriş Yap — RentACar'
   },
-
   {
     path: 'register',
     loadComponent: () =>
       import('./features/auth/register/register.component').then(m => m.RegisterComponent),
     title: 'Kayıt Ol — RentACar'
   },
-
   {
     path: 'profile',
     canActivate: [authGuard],
@@ -104,40 +102,110 @@ export const routes: Routes = [
     ]
   },
 
-
+  // ─── REZERVASYONLARIM ───
   {
     path: 'rezervasyonlarim',
     component: MyReservationsComponent,
     title: 'Rezervasyonlarım — RentACar',
-    // canActivate: [authGuard],   // ← eğer sende authGuard varsa aktif et
   },
   {
     path: 'rezervasyonlarim/:id',
     component: ReservationDetailComponent,
     title: 'Rezervasyon Detayı — RentACar',
-    // canActivate: [authGuard],
   },
 
-
-  // ─── BAŞARI SAYFASI ───
-
+  // ─── BAŞARI VE ÖDEME SAYFALARI ───
   {
     path: 'rezervasyon-basarili/:id',
     canActivate: [authGuard],
     component: ReservationSuccessComponent,
     title: 'Rezervasyon Başarılı — RentACar',
   },
-
-  {
-    path: '**',
-    redirectTo: ''
-  },
-
   {
     path: 'odeme-sonuc',
     component: PaymentResultComponent,
     title: 'Ödeme Sonucu — RentACar',
   },
 
+  // ═══ BİLGİ SAYFALARI — HİZMETLER ═══
+  {
+    path: 'kurumsal-cozumler',
+    component: InfoPageComponent,
+    data: { slug: 'kurumsal-cozumler' },
+    title: 'Kurumsal Çözümler — RentACar',
+  },
+  {
+    path: 'soforlu-hizmet',
+    component: InfoPageComponent,
+    data: { slug: 'soforlu-hizmet' },
+    title: 'Şoförlü Hizmet — RentACar',
+  },
+  {
+    path: 'uzun-donem-kiralama',
+    component: InfoPageComponent,
+    data: { slug: 'uzun-donem-kiralama' },
+    title: 'Uzun Dönem Kiralama — RentACar',
+  },
 
+  // ═══ BİLGİ SAYFALARI — KURUMSAL ═══
+  {
+    path: 'hakkimizda',
+    component: InfoPageComponent,
+    data: { slug: 'hakkimizda' },
+    title: 'Hakkımızda — RentACar',
+  },
+  {
+    path: 'kariyer',
+    component: InfoPageComponent,
+    data: { slug: 'kariyer' },
+    title: 'Kariyer — RentACar',
+  },
+  {
+    path: 'basin-odasi',
+    component: InfoPageComponent,
+    data: { slug: 'basin-odasi' },
+    title: 'Basın Odası — RentACar',
+  },
+  {
+    path: 'iletisim',
+    component: InfoPageComponent,
+    data: { slug: 'iletisim' },
+    title: 'İletişim — RentACar',
+  },
+
+  // ═══ BİLGİ SAYFALARI — YARDIM ═══
+  {
+    path: 'sikca-sorulan-sorular',
+    component: InfoPageComponent,
+    data: { slug: 'sikca-sorulan-sorular' },
+    title: 'Sıkça Sorulan Sorular — RentACar',
+  },
+  {
+    path: 'kiralama-kosullari',
+    component: InfoPageComponent,
+    data: { slug: 'kiralama-kosullari' },
+    title: 'Kiralama Koşulları — RentACar',
+  },
+  {
+    path: 'gizlilik-politikasi',
+    component: InfoPageComponent,
+    data: { slug: 'gizlilik-politikasi' },
+    title: 'Gizlilik Politikası — RentACar',
+  },
+  {
+    path: 'kvkk',
+    component: InfoPageComponent,
+    data: { slug: 'kvkk' },
+    title: 'KVKK — RentACar',
+  },
+
+
+  
+
+  // ⚠️ WILDCARD — HER ZAMAN EN SONDA olsun
+  // Yukarıdaki hiçbir route eşleşmezse buraya düşer, ana sayfaya yönlendirir.
+  {
+    path: '**',
+    redirectTo: ''
+  },
 ];

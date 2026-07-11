@@ -16,7 +16,7 @@ public class BrandController : ControllerBase
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10) 
         => Ok(await _brandService.GetPagedBrandsAsync(pageNumber, pageSize));
 
-    [HttpGet("All")]
+    [HttpGet]
     public async Task<IActionResult> GetAll() => Ok(await _brandService.GetAllBrandsAsync());
 
     [HttpGet("{id}")]

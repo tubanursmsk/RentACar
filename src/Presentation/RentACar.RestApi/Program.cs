@@ -14,7 +14,10 @@ using RentACar.RestApi.Authorization;
 using RentACar.Domain.Entities;
 using RentACar.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
-
+using RentACar.Infrastructure.Configurations;
+using RentACar.Infrastructure.Services;
+using RentACar.Application.Interfaces;
+ 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +29,11 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 //Controller ve JSON Ayarları
 builder.Services.AddControllers();
 
+// ═══ Iyzico Payment ═══
+builder.Services.Configure<IyzicoSettings>(builder.Configuration.GetSection("Iyzico"));
+builder.Services.AddHttpClient("Iyzico");   // ← HttpClient factory - REST için ŞART
+builder.Services.AddScoped<IPaymentService, IyzicoPaymentService>();
+ 
 //CORS Politikası
 builder.Services.AddCors(options =>
 {

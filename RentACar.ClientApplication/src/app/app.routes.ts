@@ -2,7 +2,9 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { MyReservationsComponent } from './features/my-reservations/my-reservations.component';
 import { ReservationDetailComponent } from './features/my-reservations/reservation-detail.component';
- 
+import { ReservationSuccessComponent } from './features/my-reservations/reservation-success.component';
+import { PaymentResultComponent } from './features/payment/payment-result.component';
+
 
 export const routes: Routes = [
   {
@@ -102,28 +104,28 @@ export const routes: Routes = [
     ]
   },
 
-  
-{
-  path: 'rezervasyonlarim',
-  component: MyReservationsComponent,
-  title: 'Rezervasyonlarım — RentACar',
-  // canActivate: [authGuard],   // ← eğer sende authGuard varsa aktif et
-},
-{
-  path: 'rezervasyonlarim/:id',
-  component: ReservationDetailComponent,
-  title: 'Rezervasyon Detayı — RentACar',
-  // canActivate: [authGuard],
-},
- 
+
+  {
+    path: 'rezervasyonlarim',
+    component: MyReservationsComponent,
+    title: 'Rezervasyonlarım — RentACar',
+    // canActivate: [authGuard],   // ← eğer sende authGuard varsa aktif et
+  },
+  {
+    path: 'rezervasyonlarim/:id',
+    component: ReservationDetailComponent,
+    title: 'Rezervasyon Detayı — RentACar',
+    // canActivate: [authGuard],
+  },
+
 
   // ─── BAŞARI SAYFASI ───
+
   {
     path: 'rezervasyon-basarili/:id',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/reservation/reservation-success.component').then(m => m.ReservationSuccessComponent),
-    title: 'Rezervasyon Tamamlandı'
+    component: ReservationSuccessComponent,
+    title: 'Rezervasyon Başarılı — RentACar',
   },
 
   {
@@ -131,8 +133,11 @@ export const routes: Routes = [
     redirectTo: ''
   },
 
-
-
+  {
+    path: 'odeme-sonuc',
+    component: PaymentResultComponent,
+    title: 'Ödeme Sonucu — RentACar',
+  },
 
 
 ];

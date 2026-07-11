@@ -491,9 +491,6 @@ namespace RentACar.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("BinNumber")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CardAssociation")
                         .HasColumnType("nvarchar(max)");
 
@@ -503,7 +500,15 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<string>("CardHolderName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CardLastFourDigits")
+                    b.Property<string>("CardType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("DATEADD(HOUR, 3, GETUTCDATE())");
+
+                    b.Property<string>("ConversationId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedDate")
@@ -515,7 +520,10 @@ namespace RentACar.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FailureReason")
+                    b.Property<string>("ErrorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorMessage")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
@@ -527,19 +535,22 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<string>("IyzicoPaymentId")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("MaskedCardNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Method")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("PaidAt")
+                    b.Property<string>("PaymentTransactionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefundedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("DATEADD(HOUR, 3, GETUTCDATE())");
 
                     b.Property<int>("RentalId")
                         .HasColumnType("int");
-
-                    b.Property<string>("ResponseJson")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");

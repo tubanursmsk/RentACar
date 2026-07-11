@@ -12,8 +12,8 @@ using RentACar.Infrastructure.Context;
 namespace RentACar.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260514193859_InitialMigration10")]
-    partial class InitialMigration10
+    [Migration("20260711114247_AddIyzicoPaymentFields")]
+    partial class AddIyzicoPaymentFields
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -161,6 +161,9 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<int>("BrandId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Color")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -172,13 +175,49 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<decimal>("DailyPrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DoorCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FuelType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("HasAbs")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasAirConditioning")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasAirbag")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasBluetooth")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasNavigation")
+                        .HasColumnType("bit");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<int>("LuggageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Mileage")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinDriverAge")
+                        .HasColumnType("int");
+
                     b.Property<int>("MinFindeksScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinLicenseYears")
                         .HasColumnType("int");
 
                     b.Property<string>("Model")
@@ -189,7 +228,13 @@ namespace RentACar.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("SeatCount")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TransmissionType")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedDate")
@@ -449,9 +494,6 @@ namespace RentACar.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("BinNumber")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CardAssociation")
                         .HasColumnType("nvarchar(max)");
 
@@ -461,7 +503,15 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<string>("CardHolderName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CardLastFourDigits")
+                    b.Property<string>("CardType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("DATEADD(HOUR, 3, GETUTCDATE())");
+
+                    b.Property<string>("ConversationId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedDate")
@@ -473,7 +523,10 @@ namespace RentACar.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FailureReason")
+                    b.Property<string>("ErrorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorMessage")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
@@ -485,19 +538,22 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<string>("IyzicoPaymentId")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("MaskedCardNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Method")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("PaidAt")
+                    b.Property<string>("PaymentTransactionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefundedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("DATEADD(HOUR, 3, GETUTCDATE())");
 
                     b.Property<int>("RentalId")
                         .HasColumnType("int");
-
-                    b.Property<string>("ResponseJson")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -525,6 +581,14 @@ namespace RentACar.Infrastructure.Migrations
                     b.Property<decimal>("AdditionalProductsTotal")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("CancelReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CancelledDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("DATEADD(HOUR, 3, GETUTCDATE())");
 
                     b.Property<int>("CarId")
                         .HasColumnType("int");
@@ -589,6 +653,9 @@ namespace RentACar.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("DATEADD(HOUR, 3, GETUTCDATE())");
+
+                    b.Property<string>("ReservationCode")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("ReturnDate")
                         .ValueGeneratedOnAdd()

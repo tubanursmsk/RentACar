@@ -6,15 +6,13 @@ using RentACar.Application.DTOs.Payment;
 using RentACar.Application.DTOs.Responses;
 using RentACar.Application.Interfaces;
 using RentACar.Domain.Entities;
-using RentACar.Infrastre;
-using RentACar.Infrastructure;
+using RentACar.Infrastructure.Configurations;
 using RentACar.Infrastructure.Services.Iyzico;
 
 namespace RentACar.Infrastructure.Services;
 
 /// <summary>
 /// Iyzico REST API entegrasyonu — .NET 9+ uyumlu, paket bağımlılığı yok.
-/// IyzicoRestClient üzerinden Iyzico'nun HTTPS endpoint'lerini çağırır.
 /// </summary>
 public class IyzicoPaymentService : IPaymentService
 {
@@ -34,7 +32,6 @@ public class IyzicoPaymentService : IPaymentService
         _settings = settings.Value;
         _logger = logger;
 
-        // HttpClient factory'den al — connection pool doğru yönetilir
         var httpClient = httpFactory.CreateClient("Iyzico");
         httpClient.Timeout = TimeSpan.FromSeconds(30);
 
@@ -52,7 +49,6 @@ public class IyzicoPaymentService : IPaymentService
     public async Task<ApiResponse<PaymentInitResponseDto>> InitThreeDSPaymentAsync(
         int currentUserId, InitPaymentDto dto)
     {
-        // ── 1. Rezervasyonu ve müşteriyi bul ──
         var customer = await _unitOfWork.Repository<Customer>()
             .GetWhere(c => c.UserId == currentUserId && !c.IsDeleted)
             .Include(c => c.User)
@@ -72,11 +68,14 @@ public class IyzicoPaymentService : IPaymentService
         if (rental.IsPaid)
             return ApiResponse<PaymentInitResponseDto>.ErrorResult("Bu rezervasyon zaten ödendi.");
 
-        // ── 2. Conversation ID ──
         var conversationId = $"CONV-{rental.Id}-{Guid.NewGuid():N}"[..40];
-
-        // ── 3. Iyzico request'i hazırla ──
         var priceStr = rental.TotalAmount.ToString("F2", CultureInfo.InvariantCulture);
+
+        // ═══ Ortak alanları önceden hesapla ═══
+        var buyerName = FirstNonEmpty(rental.DriverFirstName, customer.User?.FirstName, "Customer");
+        var buyerSurname = FirstNonEmpty(rental.DriverLastName, customer.User?.LastName, "User");
+        var contactName = $"{buyerName} {buyerSurname}".Trim();
+        var addressDescription = FirstNonEmpty(rental.DriverAddress, "Turkey");
 
         var request = new ThreeDSInitRequest
         {
@@ -104,27 +103,35 @@ public class IyzicoPaymentService : IPaymentService
             Buyer = new IyzicoBuyer
             {
                 Id = customer.Id.ToString(),
-                Name = FirstNonEmpty(rental.DriverFirstName, customer.User?.FirstName, "Buyer"),
-                Surname = FirstNonEmpty(rental.DriverLastName, customer.User?.LastName, "User"),
+                Name = buyerName,
+                Surname = buyerSurname,
                 GsmNumber = NormalizePhone(FirstNonEmpty(rental.DriverPhone, customer.User?.Phone, "+905555555555")),
                 Email = FirstNonEmpty(rental.DriverEmail, customer.User?.Email, "buyer@example.com"),
                 IdentityNumber = FirstNonEmpty(rental.DriverIdentityNumber, "11111111111"),
-                RegistrationAddress = FirstNonEmpty(rental.DriverAddress, "Turkey"),
+                RegistrationAddress = addressDescription,
+                Ip = "85.34.78.112",
                 City = "Istanbul",
                 Country = "Turkey",
                 ZipCode = "34732"
             },
 
+            // ⭐ FIX: Tüm alanları explicit ver
             ShippingAddress = new IyzicoAddress
             {
-                ContactName = $"{rental.DriverFirstName} {rental.DriverLastName}".Trim(),
-                Description = FirstNonEmpty(rental.DriverAddress, "Turkey")
+                ContactName = contactName,
+                City = "Istanbul",
+                Country = "Turkey",
+                Description = addressDescription,
+                ZipCode = "34732"
             },
 
             BillingAddress = new IyzicoAddress
             {
-                ContactName = $"{rental.DriverFirstName} {rental.DriverLastName}".Trim(),
-                Description = FirstNonEmpty(rental.DriverAddress, "Turkey")
+                ContactName = contactName,
+                City = "Istanbul",
+                Country = "Turkey",
+                Description = addressDescription,
+                ZipCode = "34732"
             },
 
             BasketItems = new List<IyzicoBasketItem>
@@ -140,7 +147,7 @@ public class IyzicoPaymentService : IPaymentService
             }
         };
 
-        // ── 4. Payment kaydı oluştur (Pending) ──
+        // Payment kaydı
         var payment = new Payment
         {
             RentalId = rental.Id,
@@ -156,7 +163,7 @@ public class IyzicoPaymentService : IPaymentService
         await _unitOfWork.Repository<Payment>().AddAsync(payment);
         await _unitOfWork.SaveChangesAsync();
 
-        // ── 5. Iyzico'ya çağrı yap ──
+        // Iyzico'ya çağrı
         try
         {
             _logger.LogInformation("Iyzico 3DS Init: Rental={RentalId}, Amount={Amount}",
@@ -182,7 +189,6 @@ public class IyzicoPaymentService : IPaymentService
                     TranslateIyzicoError(iyzicoResponse.ErrorCode, iyzicoResponse.ErrorMessage));
             }
 
-            // ── 6. 3DS HTML'i decode et ──
             if (string.IsNullOrEmpty(iyzicoResponse.ThreeDSHtmlContent))
             {
                 await MarkPaymentFailedAsync(payment, "NO_3DS_HTML", "3DS HTML içeriği alınamadı.");
@@ -212,11 +218,10 @@ public class IyzicoPaymentService : IPaymentService
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // 2. 3DS CALLBACK — Iyzico ödeme sonucu
+    // 2. 3DS CALLBACK
     // ═══════════════════════════════════════════════════════════════════
     public async Task<ApiResponse<int>> ProcessThreeDSCallbackAsync(ThreeDSCallbackDto dto)
     {
-        // ── 1. Payment kaydını bul ──
         var payment = await _unitOfWork.Repository<Payment>()
             .GetWhere(p => p.ConversationId == dto.ConversationId && !p.IsDeleted)
             .Include(p => p.Rental)
@@ -228,11 +233,9 @@ public class IyzicoPaymentService : IPaymentService
             return ApiResponse<int>.ErrorResult("Ödeme kaydı bulunamadı.");
         }
 
-        // Idempotency
         if (payment.Status == PaymentStatus.Success)
             return ApiResponse<int>.SuccessResult(payment.RentalId, "Zaten başarılı.");
 
-        // ── 2. Bankadan gelen 3DS sonucunu değerlendir ──
         if (dto.Status != "success" || dto.MdStatus != "1")
         {
             await MarkPaymentFailedAsync(payment, "3DS_FAILED",
@@ -245,7 +248,6 @@ public class IyzicoPaymentService : IPaymentService
                 "Kart doğrulaması başarısız oldu. Lütfen tekrar deneyin.");
         }
 
-        // ── 3. Iyzico'dan ödemeyi tamamla (Complete) ──
         try
         {
             var request = new ThreeDSCompleteRequest
@@ -267,7 +269,6 @@ public class IyzicoPaymentService : IPaymentService
                 return ApiResponse<int>.ErrorResult(TranslateIyzicoError(code, msg));
             }
 
-            // ── 4. Payment başarılı — güncelle ──
             payment.Status = PaymentStatus.Success;
             payment.IyzicoPaymentId = result.PaymentId;
             payment.IyzicoConversationId = result.ConversationId;
@@ -278,13 +279,11 @@ public class IyzicoPaymentService : IPaymentService
             payment.CompletedDate = DateTime.UtcNow;
             payment.UpdatedDate = DateTime.UtcNow;
 
-            // ── 5. Rental güncelle: Approved + IsPaid ──
             var rental = payment.Rental;
             rental.IsPaid = true;
             rental.Status = ReservationStatus.Approved;
             rental.UpdatedDate = DateTime.UtcNow;
 
-            // Araç status Rented
             var car = await _unitOfWork.Repository<Car>().GetByIdAsync(rental.CarId);
             if (car != null)
             {
@@ -331,7 +330,6 @@ public class IyzicoPaymentService : IPaymentService
 
     private static string NormalizePhone(string phone)
     {
-        // Iyzico +90XXXXXXXXXX formatını sever
         if (string.IsNullOrWhiteSpace(phone)) return "+905555555555";
         var digits = new string(phone.Where(char.IsDigit).ToArray());
         if (digits.Length == 10) return "+90" + digits;

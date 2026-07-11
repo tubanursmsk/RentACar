@@ -1,4 +1,4 @@
-namespace RentACar.Infrastre;
+namespace RentACar.Infrastructure.Configurations;
 
 public class IyzicoSettings
 {

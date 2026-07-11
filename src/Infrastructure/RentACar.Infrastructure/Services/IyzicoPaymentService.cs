@@ -115,13 +115,12 @@ public class IyzicoPaymentService : IPaymentService
                 ZipCode = "34732"
             },
 
-            // ⭐ FIX: Tüm alanları explicit ver
             ShippingAddress = new IyzicoAddress
             {
                 ContactName = contactName,
                 City = "Istanbul",
                 Country = "Turkey",
-                Description = addressDescription,
+                Address = addressDescription,       // ← Description → Address
                 ZipCode = "34732"
             },
 
@@ -130,7 +129,7 @@ public class IyzicoPaymentService : IPaymentService
                 ContactName = contactName,
                 City = "Istanbul",
                 Country = "Turkey",
-                Description = addressDescription,
+                Address = addressDescription,       // ← Description → Address
                 ZipCode = "34732"
             },
 

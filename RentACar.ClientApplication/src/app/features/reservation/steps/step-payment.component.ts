@@ -250,21 +250,21 @@ export class StepPaymentComponent implements OnInit {
     cvc: ''
   };
 
-  protected canSubmit = computed(() => {
-    const method = this.paymentMethod();
-    if (method === 'office') return true;
-    if (method === 'online') {
-      const c = this.cardData;
-      const numDigits = c.number.replace(/\s/g, '');
-      return !!(
-        c.holderName.trim().length >= 3 &&
-        numDigits.length === 16 &&
-        /^\d{2}\/\d{2}$/.test(c.expiry) &&
-        c.cvc.length >= 3
-      );
-    }
-    return false;
-  });
+  protected canSubmit(): boolean {
+  const method = this.paymentMethod();
+  if (method === 'office') return true;
+  if (method === 'online') {
+    const c = this.cardData;
+    const numDigits = c.number.replace(/\s/g, '');
+    return !!(
+      c.holderName.trim().length >= 3 &&
+      numDigits.length === 16 &&
+      /^\d{2}\/\d{2}$/.test(c.expiry) &&
+      c.cvc.length >= 3
+    );
+  }
+  return false;
+}
 
   protected threeDSHtmlSafe = computed((): SafeHtml =>
     this.sanitizer.bypassSecurityTrustHtml(this.threeDSHtml() ?? '')

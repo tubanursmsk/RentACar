@@ -1,8 +1,9 @@
+using System.Text.Json.Serialization;
+
 namespace RentACar.Infrastructure.Services.Iyzico;
 
-
 // ═══════════════════════════════════════════════════════════════════
-// REQUEST MODELS — Iyzico'ya gönderdiğimiz JSON'un tipi
+// REQUEST MODELS
 // ═══════════════════════════════════════════════════════════════════
 
 public class ThreeDSInitRequest
@@ -54,7 +55,12 @@ public class IyzicoAddress
     public string ContactName { get; set; } = string.Empty;
     public string City { get; set; } = "Istanbul";
     public string Country { get; set; } = "Turkey";
-    public string Description { get; set; } = string.Empty;
+
+    // ⭐ CRITICAL FIX: Iyzico REST API 'address' bekliyor, 'description' değil
+    // JsonPropertyName ile serialize edilirken doğru isim gönderilir
+    [JsonPropertyName("address")]
+    public string Address { get; set; } = string.Empty;
+
     public string ZipCode { get; set; } = "34732";
 }
 
@@ -76,7 +82,7 @@ public class ThreeDSCompleteRequest
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// RESPONSE MODELS — Iyzico'dan gelen JSON'un tipi
+// RESPONSE MODELS
 // ═══════════════════════════════════════════════════════════════════
 
 public class ThreeDSInitResponse

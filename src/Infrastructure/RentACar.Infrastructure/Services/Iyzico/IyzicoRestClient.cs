@@ -80,9 +80,13 @@ public class IyzicoRestClient
         try
         {
             _logger.LogInformation("Iyzico API çağrısı: {Uri}", uriPath);
+            _logger.LogInformation("Iyzico REQUEST BODY: {Payload}", payloadJson);  // ← EKLE
 
             using var response = await _httpClient.SendAsync(request);
             var responseBody = await response.Content.ReadAsStringAsync();
+
+            // Response'u da logla
+            _logger.LogInformation("Iyzico RESPONSE BODY: {Response}", responseBody);  // ← EKLE
 
             if (!response.IsSuccessStatusCode)
             {

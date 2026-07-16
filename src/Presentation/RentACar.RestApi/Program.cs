@@ -149,7 +149,7 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate(); // Pending migration'ları çalıştır
+    //db.Database.Migrate(); // Pending migration'ları çalıştır
 
     // Seed InsurancePackages
     if (!db.InsurancePackages.Any())

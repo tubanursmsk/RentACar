@@ -483,4 +483,6 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
- #appsettings.Development.json
+# --- Kendi Projeniz İçin Eklenen Özel Engellemeler ---
+# Uygulama ayar dosyalarını ve gizli verileri GitHub'a yüklemeyi engeller
+appsettings*.json

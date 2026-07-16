@@ -15,15 +15,22 @@ public class AuthService : IAuthService
     private readonly IJwtTokenHelper _jwtTokenHelper;
     private readonly IIdentityValidationService _identityService;
     private readonly IFindeksService _findeksService;
+    private readonly IEmailService _emailService;   // ⭐ YENİ
 
-    public AuthService(IUnitOfWork unitOfWork, IMapper mapper, IJwtTokenHelper jwtTokenHelper, 
-                       IIdentityValidationService identityService, IFindeksService findeksService)
+    public AuthService(
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IJwtTokenHelper jwtTokenHelper,
+        IIdentityValidationService identityService,
+        IFindeksService findeksService,
+        IEmailService emailService)   // ⭐ YENİ parametre
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _jwtTokenHelper = jwtTokenHelper;
         _identityService = identityService;
         _findeksService = findeksService;
+        _emailService = emailService;   // ⭐ YENİ
     }
 
     public async Task<ApiResponse<string>> LoginAsync(LoginDto dto)
@@ -61,7 +68,7 @@ public class AuthService : IAuthService
             FullAddress = dto.FullAddress
         };
         await _unitOfWork.Repository<Company>().AddAsync(newCompany);
-        await _unitOfWork.SaveChangesAsync(); // ID oluşması için önce şirketi kaydediyoruz
+        await _unitOfWork.SaveChangesAsync();
 
         var user = new User
         {
@@ -87,7 +94,7 @@ public class AuthService : IAuthService
 
         // 2. GERÇEK MERNİS TC KİMLİK DOĞRULAMA (Devlet Sunucusuna Bağlanıyor)
         bool isIdentityValid = await _identityService.ValidateTcKimlikNoAsync(dto.IdentityNumber, dto.FirstName, dto.LastName, dto.DateOfBirth.Year);
-        
+
         if (!isIdentityValid)
             return ApiResponse<int>.ErrorResult("MERNİS doğrulaması başarısız! Lütfen TC Kimlik No, Ad, Soyad ve Doğum Yılı bilgilerinizi kimliğinizdeki gibi eksiksiz giriniz.");
 
@@ -97,18 +104,17 @@ public class AuthService : IAuthService
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             Email = dto.Email,
-            Phone = dto.Phone, 
+            Phone = dto.Phone,
             PasswordHash = PasswordHasher.HashPassword(dto.Password),
             Role = "Customer",
             CompanyId = null,
-            FullAddress = "" 
+            FullAddress = ""
         };
 
         await _unitOfWork.Repository<User>().AddAsync(user);
-        await _unitOfWork.SaveChangesAsync(); 
+        await _unitOfWork.SaveChangesAsync();
 
         // 4. KKB FINDEKS SORGULAMA SİMÜLASYONU
-        // Müşterinin TC numarasını KKB'ye (Fake Servisimize) gönderip puanını çekiyoruz!
         int findeksScore = await _findeksService.GetFindeksScoreAsync(dto.IdentityNumber);
 
         // 5. Customer tablosuna kayıt oluştur
@@ -118,11 +124,15 @@ public class AuthService : IAuthService
             IdentityNumber = dto.IdentityNumber,
             Phone = dto.Phone,
             DateOfBirth = dto.DateOfBirth,
-            FindeksScore = findeksScore // Zeki algoritmamızdan gelen puan buraya yazılıyor!
+            FindeksScore = findeksScore
         };
 
         await _unitOfWork.Repository<Customer>().AddAsync(customer);
         await _unitOfWork.SaveChangesAsync();
+
+        // 6. ⭐ YENİ: Hoş geldin maili gönder (fire-and-forget)
+        // Kullanıcı akışını geciktirmemesi için await kullanmıyoruz
+        _ = SendWelcomeEmailSafeAsync(user.Id);
 
         return ApiResponse<int>.SuccessResult(user.Id, "Müşteri kaydı başarıyla oluşturuldu ve Findeks puanı hesaplandı.");
     }
@@ -163,5 +173,28 @@ public class AuthService : IAuthService
         await _unitOfWork.SaveChangesAsync();
 
         return ApiResponse<int>.SuccessResult(user.Id, "Şirket personeli kaydı başarılı.");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ⭐ YENİ: EMAIL GÖNDERİM HELPER'I
+    // ═══════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Hoş geldin mailini fire-and-forget ile gönderir.
+    /// Email hatası kayıt işlemini etkilemez.
+    /// </summary>
+    private async Task SendWelcomeEmailSafeAsync(int userId)
+    {
+        try
+        {
+            var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+            if (user != null)
+                await _emailService.SendWelcomeEmailAsync(user);
+        }
+        catch
+        {
+            // Email hatası zaten EmailService içinde loglanıyor
+            // Kayıt işlemini etkilemesin
+        }
     }
 }

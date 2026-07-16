@@ -28,7 +28,8 @@ public class AutoMapperProfiles : Profile
         // ═══════════════════════════════════════════════════
         // USER MAPPINGS
         // ═══════════════════════════════════════════════════
-        CreateMap<User, UserDto>().ReverseMap();
+        CreateMap<User, UserDto>().ReverseMap()
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
         CreateMap<User, UserUpdateDto>().ReverseMap();
 
         // ═══════════════════════════════════════════════════

@@ -10,6 +10,9 @@ public class User : BaseEntity
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string FullAddress { get; set; } = string.Empty;
+
+    // ⭐ Profil sayfasında düzenlenebilir adres (FullAddress'ten ayrı)
+    public string? Address { get; set; }
     public string Phone { get; set; } = string.Empty;
     
     // Role-Based Auth için

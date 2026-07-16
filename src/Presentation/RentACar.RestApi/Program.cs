@@ -34,6 +34,11 @@ builder.Services.Configure<IyzicoSettings>(builder.Configuration.GetSection("Iyz
 builder.Services.AddHttpClient("Iyzico");   // ← HttpClient factory - REST için ŞART
 builder.Services.AddScoped<IPaymentService, IyzicoPaymentService>();
  
+// ═══ Email (SMTP) ═══
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped<IEmailService, EmailService>();
+ 
+
 //CORS Politikası
 builder.Services.AddCors(options =>
 {

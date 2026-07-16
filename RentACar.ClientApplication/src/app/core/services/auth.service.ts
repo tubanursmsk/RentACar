@@ -9,9 +9,7 @@ import { UserProfile } from './profile.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  updateUser(data: UserProfile) {
-    throw new Error('Method not implemented.');
-  }
+  
   private http = inject(HttpClient);
   private router = inject(Router);
 
@@ -42,7 +40,7 @@ export class AuthService {
         this._isLoading.set(false);
         return of(null);
       }),
-      tap()
+      
     ) as unknown as Observable<User | null>;
   }
 
@@ -105,4 +103,16 @@ export class AuthService {
       }
     });
   }
+
+ 
+updateUser(updatedUser: Partial<User>): void {
+  const current = this.user();
+  if (!current) return;
+ 
+  const merged = { ...current, ...updatedUser };
+  this._user.set(merged);
+ 
+  // localStorage/sessionStorage'ta tutuyorsan burayı da güncelle:
+  // localStorage.setItem('user', JSON.stringify(merged));
+}
 }

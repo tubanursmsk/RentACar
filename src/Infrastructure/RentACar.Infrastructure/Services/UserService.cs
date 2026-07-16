@@ -57,22 +57,27 @@ public class UserService : IUserService
         return ApiResponse<UserDto>.SuccessResult(_mapper.Map<UserDto>(user));
     }
 
-    public async Task<ApiResponse<bool>> UpdateProfileAsync(int userId, UserUpdateDto dto)
-    {
-        var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
-        if (user == null) return ApiResponse<bool>.ErrorResult("Kullanıcı bulunamadı.");
-
-        user.FirstName = dto.FirstName;
-        user.LastName = dto.LastName;
-        user.Email = dto.Email;
-        user.UpdatedDate = DateTime.UtcNow;
-
-        _unitOfWork.Repository<User>().Update(user);
-        await _unitOfWork.SaveChangesAsync();
-        return ApiResponse<bool>.SuccessResult(true, "Profil güncellendi.");
-    }
-
-    public async Task<ApiResponse<bool>> AssignRoleAsync(UserDto dto)
+    
+public async Task<ApiResponse<UserDto>> UpdateProfileAsync(int userId, UserUpdateDto dto)
+{
+    var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+    if (user == null) return ApiResponse<UserDto>.ErrorResult("Kullanıcı bulunamadı.");
+ 
+    // Sadece güvenli alanları güncelle (Email değiştirilmez, güvenlik için)
+    user.FirstName = dto.FirstName.Trim();
+    user.LastName = dto.LastName.Trim();
+    user.Phone = dto.Phone.Trim();
+    user.Address = dto.Address?.Trim();
+    user.UpdatedDate = DateTime.UtcNow;
+ 
+    _unitOfWork.Repository<User>().Update(user);
+    await _unitOfWork.SaveChangesAsync();
+ 
+    // Güncellenmiş kullanıcıyı DTO olarak dön (frontend AuthService'i günceller)
+    var result = _mapper.Map<UserDto>(user);
+    return ApiResponse<UserDto>.SuccessResult(result, "Profil güncellendi.");
+}
+     public async Task<ApiResponse<bool>> AssignRoleAsync(UserDto dto)
     {
         var user = await _unitOfWork.Repository<User>().GetByIdAsync(dto.Id);
         if (user == null) return ApiResponse<bool>.ErrorResult("Kullanıcı bulunamadı.");

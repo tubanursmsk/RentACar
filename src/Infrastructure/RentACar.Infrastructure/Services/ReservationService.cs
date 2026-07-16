@@ -10,10 +10,12 @@ namespace RentACar.Infrastructure.Services;
 public class ReservationService : IReservationService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmailService _emailService;   // ⭐ YENİ
 
-    public ReservationService(IUnitOfWork unitOfWork)
+    public ReservationService(IUnitOfWork unitOfWork, IEmailService emailService)   // ⭐ YENİ parametre
     {
         _unitOfWork = unitOfWork;
+        _emailService = emailService;   // ⭐ YENİ
     }
 
     // ──────────────────────────────────────────
@@ -204,6 +206,10 @@ public class ReservationService : IReservationService
         await _unitOfWork.Repository<Rental>().AddAsync(rental);
         await _unitOfWork.SaveChangesAsync();
 
+        // ⭐ YENİ: Rezervasyon onay maili gönder (fire-and-forget)
+        // Email hatası rezervasyonu iptal etmez, kullanıcı akışı gecikmez
+        _ = SendConfirmationEmailSafeAsync(rental.Id);
+
         return ApiResponse<int>.SuccessResult(rental.Id, "Rezervasyon başarıyla oluşturuldu.");
     }
 
@@ -267,7 +273,6 @@ public class ReservationService : IReservationService
             }).ToList()
         };
 
-
         var now = GetTurkeyNow();
         dto.CanCancel = CanCancelReservation(rental, now);
         dto.CanEdit = CanEditReservation(rental, now);
@@ -276,11 +281,8 @@ public class ReservationService : IReservationService
             ? (int?)(rental.RentStartDate - now).TotalHours
             : null;
 
-
         return ApiResponse<ReservationDetailDto>.SuccessResult(dto);
     }
-
-
 
     // İş Kuralı: Alışa 24 saatten az kaldıysa iptal/düzenleme yapılamaz
     private const int MIN_HOURS_BEFORE_CHANGE = 24;
@@ -442,7 +444,7 @@ public class ReservationService : IReservationService
         if (dto.NewRentStartDate > now.AddDays(365))
             return ApiResponse<bool>.ErrorResult("En fazla 365 gün ileri rezervasyon yapılabilir.");
 
-        // Aracın yeni tarihte müsait olup olmadığını kontrol et (aynı araca başka rezervasyon var mı?)
+        // Aracın yeni tarihte müsait olup olmadığını kontrol et
         bool hasConflict = await _unitOfWork.Repository<Rental>().AnyAsync(r =>
             r.Id != reservationId &&
             r.CarId == rental.CarId &&
@@ -455,10 +457,9 @@ public class ReservationService : IReservationService
         if (hasConflict)
             return ApiResponse<bool>.ErrorResult("Seçilen tarihlerde araç başka bir rezervasyonda.");
 
-        // Fiyatı yeniden hesapla (araç bedeli değişir, sigorta ve ek ürünler günlük bazlı olduğu için de değişir)
+        // Fiyatı yeniden hesapla
         var newSubTotal = newTotalDays * rental.Car.DailyPrice;
 
-        // Sigorta ve ek ürünler de gün başına — orantısal yeniden hesaplama
         var oldDays = Math.Max(1, rental.TotalDays);
         var insurancePerDay = rental.InsuranceTotal / oldDays;
         var productsPerDay = rental.AdditionalProductsTotal / oldDays;
@@ -481,16 +482,44 @@ public class ReservationService : IReservationService
     }
 
     // ═══════════════════════════════════════════════════════════════════
+    // ⭐ YENİ: EMAIL GÖNDERİM HELPER
+    // ═══════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Rezervasyon onay mailini fire-and-forget ile gönderir.
+    /// Email hatası rezervasyonu iptal etmez, kullanıcı akışını geciktirmez.
+    /// </summary>
+    private async Task SendConfirmationEmailSafeAsync(int rentalId)
+    {
+        try
+        {
+            // Rental'ı email için gerekli tüm ilişkilerle çek
+            var rental = await _unitOfWork.Repository<Rental>()
+                .GetWhere(r => r.Id == rentalId)
+                .Include(r => r.Car).ThenInclude(c => c.Brand)
+                .Include(r => r.PickUpLocation)
+                .Include(r => r.DropOffLocation)
+                .FirstOrDefaultAsync();
+
+            if (rental != null)
+                await _emailService.SendReservationConfirmationAsync(rental);
+        }
+        catch
+        {
+            // Email hatası zaten EmailService içinde loglanıyor
+            // Burada sessiz kalıyoruz — rezervasyonu etkilemesin
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
     // PRIVATE HELPERS
     // ═══════════════════════════════════════════════════════════════════
 
     private static bool CanCancelReservation(Rental rental, DateTime now)
     {
-        // Zaten iptal veya tamamlanmışsa iptal edilemez
         if (rental.Status == ReservationStatus.Cancelled || rental.Status == ReservationStatus.Completed)
             return false;
 
-        // Alışa 24 saatten az kaldıysa iptal edilemez
         var hoursUntilPickup = (rental.RentStartDate - now).TotalHours;
         if (hoursUntilPickup < MIN_HOURS_BEFORE_CHANGE)
             return false;
@@ -500,11 +529,9 @@ public class ReservationService : IReservationService
 
     private static bool CanEditReservation(Rental rental, DateTime now)
     {
-        // Yalnızca Pending veya Approved düzenlenebilir
         if (rental.Status != ReservationStatus.Pending && rental.Status != ReservationStatus.Approved)
             return false;
 
-        // Alışa 24 saatten az kaldıysa düzenlenemez
         var hoursUntilPickup = (rental.RentStartDate - now).TotalHours;
         if (hoursUntilPickup < MIN_HOURS_BEFORE_CHANGE)
             return false;
@@ -544,5 +571,4 @@ public class ReservationService : IReservationService
             return DateTime.Now;
         }
     }
-
 }

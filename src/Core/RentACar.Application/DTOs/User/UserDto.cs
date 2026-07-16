@@ -19,6 +19,8 @@ public class UserDto
     [EmailAddress(ErrorMessage = "Geçersiz e-posta formatı.")]
     public string Email { get; set; } = string.Empty;
 
+     public string? Address { get; set; }
+
     // Basit rolde string var
     public string Role { get; set; } = "Customer";
 

@@ -23,6 +23,7 @@ export interface UserProfile {
   email: string;
   phone?: string;
   address?: string | null;
+  role?: string;
 }
 
 export interface ApiResponse<T> {
@@ -36,11 +37,24 @@ export class ProfileService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/User`;
 
+  /**
+   * Kullanıcı kendi profilini günceller.
+   * Backend JWT'den userId'yi çıkarıyor, biz göndermiyoruz.
+   */
   updateProfile(request: UpdateProfileRequest): Observable<ApiResponse<UserProfile>> {
-    return this.http.put<ApiResponse<UserProfile>>(`${this.apiUrl}/UpdateProfile`, request);
+    return this.http.put<ApiResponse<UserProfile>>(
+      `${this.apiUrl}/UpdateProfile`,
+      request
+    );
   }
 
+  /**
+   * Şifre değiştirme.
+   */
   changePassword(request: ChangePasswordRequest): Observable<ApiResponse<boolean>> {
-    return this.http.put<ApiResponse<boolean>>(`${this.apiUrl}/ChangePassword`, request);
+    return this.http.put<ApiResponse<boolean>>(
+      `${this.apiUrl}/ChangePassword`,
+      request
+    );
   }
 }

@@ -8,26 +8,15 @@ import {
 } from '../models/reservation.model';
 
 export interface WizardState {
-  // Step 0 (anasayfa booking card'tan gelir)
   car: Car | null;
   pickUpLocationId: number | null;
   dropOffLocationId: number | null;
   rentStartDate: Date | null;
   rentEndDate: Date | null;
-
-  // Step 2
   selectedInsurance: InsurancePackage | null;
-
-  // Step 3
-  selectedProducts: Map<number, number>;   // productId → quantity
-
-  // Step 4
+  selectedProducts: Map<number, number>;
   driverInfo: DriverInfo;
-
-  // Step 5
   paymentMethod: 'online' | 'office' | null;
-
-  // Hesaplanmış fiyat (her step'te güncellenebilir)
   pricePreview: PricePreview | null;
 }
 
@@ -46,15 +35,12 @@ const EMPTY_DRIVER: DriverInfo = {
 
 @Injectable({ providedIn: 'root' })
 export class ReservationWizardService {
-  // ─── State ───
   private readonly _state = signal<WizardState>(this.loadFromStorage());
   private readonly _currentStep = signal(1);
 
-  // Public readonly
   readonly state = this._state.asReadonly();
   readonly currentStep = this._currentStep.asReadonly();
 
-  // ─── Computed ───
   readonly totalDays = computed(() => {
     const s = this._state();
     if (!s.rentStartDate || !s.rentEndDate) return 0;
@@ -113,6 +99,32 @@ export class ReservationWizardService {
     this.persist();
   }
 
+  /**
+   * ⭐ YENİ: Aynı wizard içinde yeni bir araç seçildiğinde çağrılır.
+   * Sadece car değil, bağlı olan tüm state (fiyat, ürünler) sıfırlanır.
+   * Sürücü bilgisi kalır (kullanıcı değişmediyse).
+   */
+  switchCar(car: Car, pickUpLocationId: number, dropOffLocationId: number,
+             rentStartDate: Date, rentEndDate: Date): void {
+    this._state.update(s => ({
+      ...s,
+      // Yeni araç bilgileri
+      car,
+      pickUpLocationId,
+      dropOffLocationId,
+      rentStartDate,
+      rentEndDate,
+      // Araca bağlı seçimleri sıfırla
+      selectedInsurance: null,
+      selectedProducts: new Map(),
+      paymentMethod: null,
+      pricePreview: null
+      // driverInfo korunur (aynı kullanıcı)
+    }));
+    this._currentStep.set(1);
+    this.persist();
+  }
+
   setInsurance(insurance: InsurancePackage | null): void {
     this._state.update(s => ({ ...s, selectedInsurance: insurance }));
     this.persist();
@@ -155,17 +167,25 @@ export class ReservationWizardService {
 
   setPricePreview(preview: PricePreview | null): void {
     this._state.update(s => ({ ...s, pricePreview: preview }));
-    // Fiyatı persist etmiyoruz, her seferinde API'den hesaplıyoruz
+    // Fiyatı persist etmiyoruz
   }
 
   // ─── Reset ───
+  /**
+   * ⭐ GÜÇLENDİRİLDİ: Hem sessionStorage hem localStorage temizle
+   * (bazı tarayıcılarda tutarsız davranış için ikisini de temizliyoruz).
+   */
   reset(): void {
     this._state.set(this.emptyState());
     this._currentStep.set(1);
-    sessionStorage.removeItem(STORAGE_KEY);
+    this._restoreStep = null;
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+    } catch { /* sessizce yut */ }
   }
 
-  // ─── Persist (sessionStorage) ───
+  // ─── Persist ───
   private emptyState(): WizardState {
     return {
       car: null,
@@ -206,8 +226,6 @@ export class ReservationWizardService {
       if (!raw) return this.emptyState();
       const parsed = JSON.parse(raw);
       if (parsed.currentStep) {
-        // _currentStep henüz initialize edilmediği için doğrudan set'liyemeyiz.
-        // ngOnInit'te restore edilecek (aşağıdaki restoreCurrentStep ile)
         this._restoreStep = parsed.currentStep;
       }
       return {
@@ -229,7 +247,6 @@ export class ReservationWizardService {
 
   private _restoreStep: number | null = null;
 
-  // Component ngOnInit'te çağırsın
   restoreStep(): void {
     if (this._restoreStep != null) {
       this._currentStep.set(this._restoreStep);

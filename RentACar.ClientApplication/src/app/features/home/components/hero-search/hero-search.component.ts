@@ -398,23 +398,30 @@ export class HeroSearchComponent implements OnInit {
     }, { allowSignalWrites: true });
   }
 
-  ngOnInit(): void {
+   ngOnInit(): void {
     if (this.locations().length === 0) {
       this.locationService.getAll().subscribe();
     }
-
+ 
     // İlk açılışta varsayılan saatleri hesapla
     this.setDefaultTimes();
-
-    // Önceki seçimi geri yükle (VALIDATION İLE)
+ 
+    // ⭐ Sadece TAZE seçimi (son 30 dk) geri yükle
+    // Eski seçimler taze değil → form boş kalır, kullanıcı yeni tercih yapar
+    if (!this.bookingState.isFresh()) {
+      // Eski seçim varsa temizle
+      this.bookingState.clear();
+      return;
+    }
+ 
     const prev = this.bookingState.selection();
+ 
     if (prev.pickupLocationId) {
       this.pickupLocationId.set(prev.pickupLocationId);
       const loc = this.locations().find(l => l.id === prev.pickupLocationId);
       if (loc) this.selectedLocation.set(loc);
     }
-
-    // Tarih ve saati geri yükle ama geçmişteyse yükleme
+ 
     if (prev.pickupDate && this.isFutureDate(prev.pickupDate)) {
       this.pickupDate.set(this.formatDateForInput(prev.pickupDate));
       if (prev.pickupTime) this.pickupTime.set(prev.pickupTime);

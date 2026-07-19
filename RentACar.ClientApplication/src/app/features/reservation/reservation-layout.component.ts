@@ -35,7 +35,6 @@ interface Step {
           <div class="flex">
             @for (step of steps; track step.number; let i = $index) {
               <div class="flex-1 relative">
-                <!-- Progress bar -->
                 <div class="absolute top-0 left-0 right-0 h-1"
                      [class.bg-brand-600]="step.number <= wizard.currentStep()"
                      [class.bg-ink-100]="step.number > wizard.currentStep()">
@@ -50,17 +49,14 @@ interface Step {
 
                   <div class="flex items-center gap-2">
                     @if (step.number < wizard.currentStep()) {
-                      <!-- Tamamlanmış -->
                       <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
                       </svg>
                     } @else if (step.number === wizard.currentStep()) {
-                      <!-- Aktif -->
                       <div class="w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold">
                         {{ step.number }}
                       </div>
                     } @else {
-                      <!-- Sıradaki -->
                       <div class="w-5 h-5 rounded-full bg-ink-100 text-ink-500 flex items-center justify-center text-xs font-bold">
                         {{ step.number }}
                       </div>
@@ -73,7 +69,6 @@ interface Step {
                     </span>
                   </div>
 
-                  <!-- Mevcut adım için "DÜZENLE" linki -->
                   @if (step.number < wizard.currentStep()) {
                     <span class="text-[10px] font-bold text-brand-600 hidden md:inline-block mt-1">
                       DÜZENLE
@@ -86,12 +81,12 @@ interface Step {
         </div>
       </div>
 
-      <!-- ═══ İçerik + Sticky Özet ═══ -->
+      <!-- ═══ İçerik ═══ -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <router-outlet />
       </div>
 
-      <!-- ═══ Alt Sticky Toplam (Avis stili) ═══ -->
+      <!-- ═══ Alt Sticky Toplam ═══ -->
       @if (wizard.state().pricePreview; as price) {
         <div class="sticky bottom-0 bg-ink-700 text-white py-3 shadow-2xl z-20">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center gap-6">
@@ -122,10 +117,8 @@ export class ReservationLayoutComponent implements OnInit {
   ];
 
   constructor() {
-    // Adımı erken restore et — effect'in ilk çalışması doğru adımı görsün
     this.wizard.restoreStep();
 
-    // Wizard currentStep her değiştiğinde route'u güncelle
     effect(() => {
       const step = this.wizard.currentStep();
       const target = `/rezervasyon/${this.routeForStep(step)}`;
@@ -139,20 +132,32 @@ export class ReservationLayoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // ⭐ Query param'daki carId'yi izle, değiştikçe state'i güncelle
     this.route.queryParams
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
         const carId = +params['carId'];
-        if (carId && !this.wizard.state().car) {
+        if (!carId) return;
+
+        const currentCar = this.wizard.state().car;
+
+        if (!currentCar) {
+          // Wizard boş → normal başlatma
           this.initializeFromQueryParams(carId);
+        } else if (currentCar.id !== carId) {
+          // ⭐ KRİTİK: Farklı bir araç için wizard'a giriyor
+          // Eski state'i temizle, yeni araçla başla
+          console.log('[Wizard] Farklı araç algılandı, state sıfırlanıyor:',
+                      currentCar.id, '→', carId);
+          this.switchToNewCar(carId);
         }
+        // else: aynı araç → hiçbir şey yapma (kullanıcı wizard içinde geziyor)
       });
   }
 
   goToStep(step: number): void {
     if (this.canGoToStep(step)) {
       this.wizard.goToStep(step);
-      // effect() route sync'i halleder
     }
   }
 
@@ -160,6 +165,9 @@ export class ReservationLayoutComponent implements OnInit {
     return stepNumber <= this.wizard.currentStep();
   }
 
+  /**
+   * Ana sayfa/araç detayından ilk kez wizard'a girişte kullanılır.
+   */
   private initializeFromQueryParams(carId: number): void {
     const booking = this.bookingState.selection();
     this.carService.getById(carId).subscribe(res => {
@@ -170,6 +178,34 @@ export class ReservationLayoutComponent implements OnInit {
           booking.returnLocationId ?? booking.pickupLocationId,
           booking.pickupDate,
           booking.returnDate
+        );
+      } else {
+        this.router.navigate(['/']);
+      }
+    });
+  }
+
+  /**
+   * ⭐ YENİ: Yeni bir arabaya geçildiğinde çağrılır.
+   * Wizard'ın araçla ilgili tüm state'ini temizler ve yeni araçla başlatır.
+   */
+  private switchToNewCar(newCarId: number): void {
+    const booking = this.bookingState.selection();
+
+    if (!booking.pickupLocationId || !booking.pickupDate || !booking.returnDate) {
+      // Ana sayfadan gelmeden direkt buraya geldiyse ana sayfaya yönlendir
+      this.router.navigate(['/']);
+      return;
+    }
+
+    this.carService.getById(newCarId).subscribe(res => {
+      if (res.success && res.data) {
+        this.wizard.switchCar(
+          res.data,
+          booking.pickupLocationId!,
+          booking.returnLocationId ?? booking.pickupLocationId!,
+          booking.pickupDate!,
+          booking.returnDate!
         );
       } else {
         this.router.navigate(['/']);

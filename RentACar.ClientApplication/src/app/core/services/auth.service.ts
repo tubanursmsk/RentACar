@@ -9,7 +9,7 @@ import { UserProfile } from './profile.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  
+
   private http = inject(HttpClient);
   private router = inject(Router);
 
@@ -40,7 +40,7 @@ export class AuthService {
         this._isLoading.set(false);
         return of(null);
       }),
-      
+
     ) as unknown as Observable<User | null>;
   }
 
@@ -89,30 +89,51 @@ export class AuthService {
     );
   }
 
+
+
+  updateUser(updatedUser: Partial<User>): void {
+    const current = this.user();
+    if (!current) return;
+
+    const merged = { ...current, ...updatedUser };
+    this._user.set(merged);
+
+    // localStorage/sessionStorage'ta tutuyorsan burayı da güncelle:
+    // localStorage.setItem('user', JSON.stringify(merged));
+  }
+
   // ── Logout ──
   logout(): void {
     this.http.post(`${environment.apiUrl}/Auth/Logout`, {}).subscribe({
       next: () => {
         this._user.set(null);
+        this.clearAllUserData();   
         this.router.navigate(['/']);
       },
       error: () => {
-        // Hata olsa da local state'i temizle
         this._user.set(null);
+        this.clearAllUserData();   
         this.router.navigate(['/']);
       }
     });
   }
 
- 
-updateUser(updatedUser: Partial<User>): void {
-  const current = this.user();
-  if (!current) return;
- 
-  const merged = { ...current, ...updatedUser };
-  this._user.set(merged);
- 
-  // localStorage/sessionStorage'ta tutuyorsan burayı da güncelle:
-  // localStorage.setItem('user', JSON.stringify(merged));
-}
+  /**
+   * - Logout'ta kullanıcıya ait TÜM local state'i temizle.
+   * - Wizard state (yarım kalmış rezervasyon)
+   * - Booking selection (ana sayfa arama tercihleri)
+   * - Diğer localStorage/sessionStorage anahtarları
+   */
+  private clearAllUserData(): void {
+    try {
+      // Wizard state (sessionStorage + localStorage - iki yerde de temizle)
+      sessionStorage.removeItem('rentacar_wizard');
+      localStorage.removeItem('rentacar_wizard');
+
+      // Booking state (ana sayfada seçilen tarih/lokasyon)
+      sessionStorage.removeItem('rentacar_booking');
+      localStorage.removeItem('rentacar_booking');
+    } catch { /* sessizce yut */ }
+  }
+
 }

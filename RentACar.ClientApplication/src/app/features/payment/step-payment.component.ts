@@ -6,8 +6,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ReservationWizardService } from '../../core/services/reservation-wizard.service';
 import { ReservationService } from '../../core/services/reservation.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { BookingStateService } from '../../core/services/booking-state.service';   // ⭐ YENİ
 import { CreateReservationRequest } from '../../core/models/reservation.model';
-
 
 @Component({
   selector: 'app-step-payment',
@@ -241,15 +241,16 @@ export class StepPaymentComponent implements OnInit {
   protected wizard = inject(ReservationWizardService);
   private reservationService = inject(ReservationService);
   private paymentService = inject(PaymentService);
+  private bookingState = inject(BookingStateService);   // ⭐ YENİ
   private router = inject(Router);
   private sanitizer = inject(DomSanitizer);
 
   protected paymentMethod = signal<'online' | 'office' | null>(null);
   protected submitting = signal(false);
-  protected cancelling = signal(false);   // ⭐ YENİ
+  protected cancelling = signal(false);
   protected submitError = signal<string | null>(null);
   protected threeDSHtml = signal<string | null>(null);
-  protected currentConversationId = signal<string | null>(null);   // ⭐ YENİ
+  protected currentConversationId = signal<string | null>(null);
 
   protected cardData = {
     holderName: '',
@@ -323,7 +324,7 @@ export class StepPaymentComponent implements OnInit {
   }
 
   // ═══════════════════════════════════════════════════
-  // ⭐ GÜNCELLENDI: 3DS iframe X ile kapatılınca backend'e cancel isteği
+  // 3DS iframe X ile kapatılınca backend'e cancel isteği
   // ═══════════════════════════════════════════════════
   cancelThreeDS(): void {
     const conversationId = this.currentConversationId();
@@ -332,8 +333,8 @@ export class StepPaymentComponent implements OnInit {
     this.threeDSHtml.set(null);
 
     if (!conversationId) {
-      // Conversation ID yoksa direkt yönlendir
       this.wizard.reset();
+      this.bookingState.clear();   // ⭐ YENİ
       this.router.navigate(['/rezervasyonlarim']);
       return;
     }
@@ -346,7 +347,7 @@ export class StepPaymentComponent implements OnInit {
         this.cancelling.set(false);
         this.currentConversationId.set(null);
         this.wizard.reset();
-        // Kullanıcıyı rezervasyonlarım sayfasına at (iptal edilen orada görünür)
+        this.bookingState.clear();   // ⭐ YENİ
         this.router.navigate(['/rezervasyonlarim']);
       },
       error: () => {
@@ -354,6 +355,7 @@ export class StepPaymentComponent implements OnInit {
         this.cancelling.set(false);
         this.currentConversationId.set(null);
         this.wizard.reset();
+        this.bookingState.clear();   // ⭐ YENİ
         this.router.navigate(['/rezervasyonlarim']);
       }
     });
@@ -389,6 +391,7 @@ export class StepPaymentComponent implements OnInit {
         if (res.success && res.data) {
           const reservationId = res.data;
           this.wizard.reset();
+          this.bookingState.clear();   // ⭐ YENİ
           this.router.navigate(['/rezervasyon-basarili', reservationId]);
         } else {
           this.submitError.set(res.message || 'Rezervasyon oluşturulamadı.');
@@ -431,7 +434,6 @@ export class StepPaymentComponent implements OnInit {
           next: (paymentRes) => {
             this.submitting.set(false);
             if (paymentRes.success && paymentRes.data) {
-              // ⭐ ConversationId'yi sakla — X'e basılınca kullanacağız
               this.currentConversationId.set(paymentRes.data.conversationId);
               this.threeDSHtml.set(paymentRes.data.threeDSHtmlContent);
             } else {

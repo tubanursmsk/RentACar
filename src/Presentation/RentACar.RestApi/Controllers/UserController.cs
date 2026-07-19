@@ -53,7 +53,7 @@ public class UserController : ControllerBase
 
     // ⭐ YENİ: Şifre değiştirme
     [HttpPut("ChangePassword")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordDto dto)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var result = await _userService.ChangePasswordAsync(

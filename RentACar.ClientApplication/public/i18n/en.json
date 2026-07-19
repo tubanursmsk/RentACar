@@ -1,0 +1,123 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "search": "Search",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "showAll": "Show All",
+    "days": "Days",
+    "day": "Day",
+    "hour": "Hour",
+    "minute": "Minute"
+  },
+
+  "header": {
+    "reservationManagement": "Reservation Management",
+    "cars": "Cars",
+    "campaigns": "Campaigns",
+    "services": "Services",
+    "offices": "Offices",
+    "about": "About Us",
+    "contact": "Contact",
+    "rentalConditions": "Rental Terms",
+    "login": "Sign In",
+    "register": "Sign Up",
+    "logout": "Sign Out",
+    "profile": "My Profile",
+    "myReservations": "My Reservations",
+    "loginRequired": "Sign in to manage your reservations",
+    "language": {
+      "tr": "Turkish",
+      "en": "English"
+    }
+  },
+
+  "footer": {
+    "quickLinks": "Quick Links",
+    "corporate": "Corporate",
+    "services": "Services",
+    "help": "Help",
+    "followUs": "Follow Us",
+    "copyright": "© {{ year }} RentACar. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "kvkk": "Data Protection",
+    "terms": "Terms of Use"
+  },
+
+  "home": {
+    "heroTitle": "Car rental, redefined",
+    "heroSubtitle": "Rent exactly the car you want, exactly where you need it — by day, week or month.",
+    "campaign": "🎉 Special offer for new customers! 20% off your first rental — Code: WELCOME",
+    "search": {
+      "location": "Where",
+      "locationPlaceholder": "Airport, hotel, address, city",
+      "pickupDate": "From",
+      "returnDate": "Until",
+      "time": "Time",
+      "currentLocation": "My current location",
+      "anywhere": "Anywhere",
+      "seeAllCars": "See all cars",
+      "airports": "Airports",
+      "cities": "Cities",
+      "loadingLocations": "Loading locations...",
+      "minPrep": "{{ min }} min preparation time",
+      "minRental": "Minimum 1 day rental",
+      "maxAdvance": "Max {{ days }} days ahead"
+    },
+    "categories": {
+      "featured": "Featured Cars",
+      "featuredSubtitle": "Our most popular vehicles",
+      "airport": "Cars Available at Airports",
+      "airportSubtitle": "{{ count }} cars • Ready when your flight lands",
+      "monthly": "Monthly Rentals",
+      "monthlySubtitle": "Best prices for long-term rentals — 15% discount",
+      "nearby": "Cars Near You",
+      "nearbyLocated": "Cars Available in {{ city }}",
+      "nearbySubtitle": "Locations closest to you",
+      "nearbyLoading": "Waiting for location info...",
+      "delivery": "Delivered to Your Address",
+      "deliverySubtitle": "We bring the car to you",
+      "cities": "Cars by City",
+      "citiesSubtitle": "Available cars across Turkey",
+      "empty": "No cars found in this category",
+      "emptyDescription": "Try a different category or see all cars.",
+      "showAll": "Show All Cars"
+    },
+    "whyUs": {
+      "title": "Why RentACar?",
+      "subtitle": "Turkey's most trusted car rental experience",
+      "instantTitle": "Instant Booking",
+      "instantDesc": "Complete your reservation in 3 minutes, get instant confirmation.",
+      "secureTitle": "Safe Driving",
+      "secureDesc": "All our cars are fully insured and regularly maintained.",
+      "supportTitle": "24/7 Support",
+      "supportDesc": "Roadside assistance and customer service always by your side."
+    },
+    "car": {
+      "perDay": "/ day",
+      "monthly": "Monthly",
+      "seats": "seats"
+    },
+    "errors": {
+      "selectLocation": "Please select a location.",
+      "selectDates": "Please select pickup and return dates.",
+      "selectTimes": "Please select pickup and return times.",
+      "pastDateTime": "Pickup date and time cannot be in the past.",
+      "minAdvance": "Pickup time must be at least {{ min }} minutes from now.",
+      "returnBeforePickup": "Return time must be after pickup time.",
+      "minRentalDays": "Minimum rental period is {{ days }} days.",
+      "maxAdvance": "Reservations can be made up to {{ days }} days in advance."
+    }
+  }
+}

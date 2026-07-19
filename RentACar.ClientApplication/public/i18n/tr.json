@@ -1,0 +1,123 @@
+{
+  "common": {
+    "loading": "Yükleniyor...",
+    "search": "Ara",
+    "submit": "Gönder",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "close": "Kapat",
+    "back": "Geri",
+    "next": "İleri",
+    "continue": "Devam Et",
+    "confirm": "Onayla",
+    "yes": "Evet",
+    "no": "Hayır",
+    "all": "Tümü",
+    "showAll": "Tümünü Göster",
+    "days": "Gün",
+    "day": "Gün",
+    "hour": "Saat",
+    "minute": "Dakika"
+  },
+
+  "header": {
+    "reservationManagement": "Rezervasyon Yönetimi",
+    "cars": "Araçlar",
+    "campaigns": "Kampanyalar",
+    "services": "Hizmetler",
+    "offices": "Ofisler",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "rentalConditions": "Kiralama Koşulları",
+    "login": "Giriş Yap",
+    "register": "Kayıt Ol",
+    "logout": "Çıkış Yap",
+    "profile": "Profilim",
+    "myReservations": "Rezervasyonlarım",
+    "loginRequired": "Rezervasyonlarınızı yönetmek için giriş yapın",
+    "language": {
+      "tr": "Türkçe",
+      "en": "İngilizce"
+    }
+  },
+
+  "footer": {
+    "quickLinks": "Hızlı Bağlantılar",
+    "corporate": "Kurumsal",
+    "services": "Hizmetler",
+    "help": "Yardım",
+    "followUs": "Bizi Takip Edin",
+    "copyright": "© {{ year }} RentACar. Tüm hakları saklıdır.",
+    "privacy": "Gizlilik Politikası",
+    "kvkk": "KVKK",
+    "terms": "Kullanım Koşulları"
+  },
+
+  "home": {
+    "heroTitle": "Araç kiralama yeniden tanımlandı",
+    "heroSubtitle": "Tam istediğiniz aracı, tam ihtiyacınız olan yerde, günlerce, haftalarca veya aylarca kiralayın.",
+    "campaign": "🎉 Yeni müşterilere özel! İlk kiralamanızda %20 indirim — Kod: HOSGELDIN",
+    "search": {
+      "location": "Nerede",
+      "locationPlaceholder": "Havalimanı, otel, adres, şehir",
+      "pickupDate": "İtibaren",
+      "returnDate": "Değin",
+      "time": "Saat",
+      "currentLocation": "Mevcut konumum",
+      "anywhere": "Herhangi bir yer",
+      "seeAllCars": "Tüm araçları gör",
+      "airports": "Havalimanları",
+      "cities": "Şehirler",
+      "loadingLocations": "Konumlar yükleniyor...",
+      "minPrep": "{{ min }} dakikalık hazırlık süresi",
+      "minRental": "Minimum 1 gün kiralama",
+      "maxAdvance": "Maks. {{ days }} gün ileri"
+    },
+    "categories": {
+      "featured": "Öne Çıkan Araçlar",
+      "featuredSubtitle": "En çok tercih edilen araçlar",
+      "airport": "Havalimanlarında Müsait Araçlar",
+      "airportSubtitle": "{{ count }} araç • Uçağınıza indiğinizde teslim",
+      "monthly": "Aylık Kiralamalar",
+      "monthlySubtitle": "Uzun dönem için en avantajlı fiyatlar — %15 indirim",
+      "nearby": "Yakınındaki Araçlar",
+      "nearbyLocated": "{{ city }}'da Müsait Araçlar",
+      "nearbySubtitle": "Konumunuza en yakın şubeler",
+      "nearbyLoading": "Konum bilgisi bekleniyor...",
+      "delivery": "Adrese Teslim Araçlar",
+      "deliverySubtitle": "İstediğiniz adrese getirelim",
+      "cities": "Şehirlere Göre Araçlar",
+      "citiesSubtitle": "Türkiye'nin dört bir yanında müsait araçlar",
+      "empty": "Bu kategoride araç bulunamadı",
+      "emptyDescription": "Farklı bir kategori deneyin veya tüm araçları görün.",
+      "showAll": "Tüm Araçları Göster"
+    },
+    "whyUs": {
+      "title": "Neden RentACar?",
+      "subtitle": "Türkiye'nin en güvenilir araç kiralama deneyimi",
+      "instantTitle": "Anında Rezervasyon",
+      "instantDesc": "3 dakikada rezervasyonunu tamamla, anında onay al.",
+      "secureTitle": "Güvenli Sürüş",
+      "secureDesc": "Tüm araçlarımız tam sigortalı ve düzenli bakımlıdır.",
+      "supportTitle": "7/24 Destek",
+      "supportDesc": "Yol yardım ve müşteri hizmetleri her an yanında."
+    },
+    "car": {
+      "perDay": "/ gün",
+      "monthly": "Aylık",
+      "seats": "kişi"
+    },
+    "errors": {
+      "selectLocation": "Lütfen bir konum seçin.",
+      "selectDates": "Lütfen alış ve iade tarihlerini seçin.",
+      "selectTimes": "Lütfen alış ve iade saatlerini seçin.",
+      "pastDateTime": "Alış tarihi ve saati geçmişte olamaz.",
+      "minAdvance": "Alış zamanı şu andan en az {{ min }} dakika sonra olmalı.",
+      "returnBeforePickup": "İade zamanı alış zamanından sonra olmalı.",
+      "minRentalDays": "Minimum kiralama süresi {{ days }} gün.",
+      "maxAdvance": "En fazla {{ days }} gün ileri rezervasyon yapılabilir."
+    }
+  }
+}

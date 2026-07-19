@@ -17,4 +17,13 @@ public interface IPaymentService
     /// </summary>
     /// <returns>Kullanıcının yönlendirileceği rentalId</returns>
     Task<ApiResponse<int>> ProcessThreeDSCallbackAsync(ThreeDSCallbackDto dto);
+
+    
+ 
+    /// <summary>
+    /// Kullanıcı 3DS iframe'i iptal ettiğinde çağrılır.
+    /// Pending durumundaki Payment kaydını Cancelled'e çeker
+    /// ve ilgili Rental'ı da iptal eder.
+    /// </summary>
+    Task<ApiResponse<bool>> CancelPendingPaymentAsync(int currentUserId, CancelPaymentDto dto);
 }

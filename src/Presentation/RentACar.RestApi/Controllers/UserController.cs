@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentACar.Application.Interfaces;
+using RentACar.Application.DTOs.Auth;
 using RentACar.Application.DTOs.User;
 using System.Security.Claims;
 

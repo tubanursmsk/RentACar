@@ -44,7 +44,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("DefaultCorsPolicy",
         policy => policy.WithOrigins("http://localhost:4200",
-                                     "http://localhost:5048") 
+                                     "http://localhost:5048",
+                                      "https://jaws-stellar-deeply.ngrok-free.dev") 
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials());

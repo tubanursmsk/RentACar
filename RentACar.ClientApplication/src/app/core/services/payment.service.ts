@@ -29,13 +29,19 @@ export class PaymentService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/Payment`;
 
-  /**
-   * 3DS ödemeyi başlatır. Iyzico'nun döndürdüğü HTML content ile iframe'i doldururuz.
-   */
+  
+  // 3DS ödemeyi başlatır. Iyzico'nun döndürdüğü HTML content ile iframe'i doldururuz.
   initThreeDS(request: InitPaymentRequest): Observable<ApiResponse<PaymentInitResponse>> {
     return this.http.post<ApiResponse<PaymentInitResponse>>(
       `${this.apiUrl}/InitThreeDS`,
       request
+    );
+  }
+
+  cancelPending(conversationId: string): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(
+      `${this.apiUrl}/Payment/CancelPending`,
+      { conversationId }
     );
   }
 }

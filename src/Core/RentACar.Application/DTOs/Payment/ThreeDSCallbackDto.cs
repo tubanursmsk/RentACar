@@ -1,9 +1,8 @@
 namespace RentACar.Application.DTOs.Payment;
 
-/// <summary>
 /// Iyzico'dan 3DS tamamlandığında gelen callback verileri.
-/// FormBody olarak POST edilir.
-/// </summary>
+/// PaymentController'da Request.Form'dan manuel doldurulur.
+/// Application katmanı framework-agnostic kalması için attribute yok.
 public class ThreeDSCallbackDto
 {
     public string Status { get; set; } = string.Empty;

@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RentACar.Application.DTOs.Payment;
@@ -20,17 +21,20 @@ public class IyzicoPaymentService : IPaymentService
     private readonly IyzicoSettings _settings;
     private readonly ILogger<IyzicoPaymentService> _logger;
     private readonly IyzicoRestClient _iyzicoClient;
+    private readonly IServiceScopeFactory _scopeFactory;   // ⭐ YENİ
 
     public IyzicoPaymentService(
         IUnitOfWork unitOfWork,
         IOptions<IyzicoSettings> settings,
         ILogger<IyzicoPaymentService> logger,
         IHttpClientFactory httpFactory,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        IServiceScopeFactory scopeFactory)   // ⭐ YENİ parametre
     {
         _unitOfWork = unitOfWork;
         _settings = settings.Value;
         _logger = logger;
+        _scopeFactory = scopeFactory;   // ⭐ YENİ
 
         var httpClient = httpFactory.CreateClient("Iyzico");
         httpClient.Timeout = TimeSpan.FromSeconds(30);
@@ -71,7 +75,6 @@ public class IyzicoPaymentService : IPaymentService
         var conversationId = $"CONV-{rental.Id}-{Guid.NewGuid():N}"[..40];
         var priceStr = rental.TotalAmount.ToString("F2", CultureInfo.InvariantCulture);
 
-        // ═══ Ortak alanları önceden hesapla ═══
         var buyerName = FirstNonEmpty(rental.DriverFirstName, customer.User?.FirstName, "Customer");
         var buyerSurname = FirstNonEmpty(rental.DriverLastName, customer.User?.LastName, "User");
         var contactName = $"{buyerName} {buyerSurname}".Trim();
@@ -120,7 +123,7 @@ public class IyzicoPaymentService : IPaymentService
                 ContactName = contactName,
                 City = "Istanbul",
                 Country = "Turkey",
-                Address = addressDescription,       // ← Description → Address
+                Address = addressDescription,
                 ZipCode = "34732"
             },
 
@@ -129,7 +132,7 @@ public class IyzicoPaymentService : IPaymentService
                 ContactName = contactName,
                 City = "Istanbul",
                 Country = "Turkey",
-                Address = addressDescription,       // ← Description → Address
+                Address = addressDescription,
                 ZipCode = "34732"
             },
 
@@ -146,7 +149,6 @@ public class IyzicoPaymentService : IPaymentService
             }
         };
 
-        // Payment kaydı
         var payment = new Payment
         {
             RentalId = rental.Id,
@@ -162,7 +164,6 @@ public class IyzicoPaymentService : IPaymentService
         await _unitOfWork.Repository<Payment>().AddAsync(payment);
         await _unitOfWork.SaveChangesAsync();
 
-        // Iyzico'ya çağrı
         try
         {
             _logger.LogInformation("Iyzico 3DS Init: Rental={RentalId}, Amount={Amount}",
@@ -296,6 +297,9 @@ public class IyzicoPaymentService : IPaymentService
             _logger.LogInformation("Ödeme başarılı. Rental={Id}, Amount={Amt}",
                 rental.Id, payment.Amount);
 
+            // ⭐ Ödeme başarılı - onay maili gönder (kendi scope'unda, güvenli)
+            _ = SendPaymentConfirmationEmailSafeAsync(rental.Id);
+
             return ApiResponse<int>.SuccessResult(rental.Id, "Ödeme başarılı!");
         }
         catch (Exception ex)
@@ -303,6 +307,106 @@ public class IyzicoPaymentService : IPaymentService
             _logger.LogError(ex, "3DS callback exception.");
             await MarkPaymentFailedAsync(payment, "EXCEPTION", ex.Message);
             return ApiResponse<int>.ErrorResult("Ödeme sonucu işlenirken hata oluştu.");
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 3. IPTAL (X butonu ile)
+    // ═══════════════════════════════════════════════════════════════════
+    public async Task<ApiResponse<bool>> CancelPendingPaymentAsync(int currentUserId, CancelPaymentDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.ConversationId))
+            return ApiResponse<bool>.ErrorResult("Geçersiz istek.");
+
+        var customer = await _unitOfWork.Repository<Customer>()
+            .GetWhere(c => c.UserId == currentUserId && !c.IsDeleted)
+            .FirstOrDefaultAsync();
+
+        if (customer == null)
+            return ApiResponse<bool>.ErrorResult("Müşteri profili bulunamadı.");
+
+        var payment = await _unitOfWork.Repository<Payment>()
+            .GetWhere(p => p.ConversationId == dto.ConversationId && !p.IsDeleted)
+            .Include(p => p.Rental)
+            .FirstOrDefaultAsync();
+
+        if (payment == null)
+            return ApiResponse<bool>.SuccessResult(true, "Payment kaydı bulunamadı.");
+
+        if (payment.Rental == null || payment.Rental.CustomerId != customer.Id)
+            return ApiResponse<bool>.ErrorResult("Bu ödemeyi iptal etme yetkiniz yok.");
+
+        if (payment.Status != PaymentStatus.Pending)
+            return ApiResponse<bool>.SuccessResult(true, "Ödeme zaten sonlandırılmış.");
+
+        payment.Status = PaymentStatus.Cancelled;
+        payment.ErrorMessage = "Kullanıcı 3DS akışını iptal etti.";
+        payment.UpdatedDate = DateTime.UtcNow;
+        _unitOfWork.Repository<Payment>().Update(payment);
+
+        if (payment.Rental.Status == ReservationStatus.Pending)
+        {
+            payment.Rental.Status = ReservationStatus.Cancelled;
+            payment.Rental.CancelReason = "Ödeme tamamlanmadı";
+            payment.Rental.CancelledDate = DateTime.UtcNow;
+            payment.Rental.UpdatedDate = DateTime.UtcNow;
+            _unitOfWork.Repository<Rental>().Update(payment.Rental);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        _logger.LogInformation("Payment cancelled by user. ConversationId: {Cid}, PaymentId: {Pid}, RentalId: {Rid}",
+            dto.ConversationId, payment.Id, payment.RentalId);
+
+        return ApiResponse<bool>.SuccessResult(true, "Ödeme ve rezervasyon iptal edildi.");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ⭐ EMAIL GÖNDERİM HELPER'I — KENDİ DBCONTEXT SCOPE'UNDA ÇALIŞIR
+    // ═══════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Ödeme başarılı olduktan sonra onay maili gönderir.
+    /// KENDI IServiceScope'unu oluşturur → HTTP request scope'una bağlı değil.
+    /// Bu yüzden HTTP response döndükten sonra bile güvenli çalışır.
+    /// </summary>
+    private async Task SendPaymentConfirmationEmailSafeAsync(int rentalId)
+    {
+        try
+        {
+            Console.WriteLine($"[EMAIL-PAYMENT] Rental {rentalId} için mail başladı (yeni scope)");
+
+            // ⭐ KRİTİK: Kendi scope'unu yarat, kendi DbContext'ini kullan
+            using var scope = _scopeFactory.CreateScope();
+            var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+
+            var rental = await uow.Repository<Rental>()
+                .GetWhere(r => r.Id == rentalId)
+                .Include(r => r.Car).ThenInclude(c => c.Brand)
+                .Include(r => r.PickUpLocation)
+                .Include(r => r.DropOffLocation)
+                .FirstOrDefaultAsync();
+
+            if (rental == null)
+            {
+                Console.WriteLine($"[EMAIL-PAYMENT] HATA: Rental {rentalId} bulunamadı");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(rental.DriverEmail))
+            {
+                Console.WriteLine($"[EMAIL-PAYMENT] HATA: DriverEmail boş");
+                return;
+            }
+
+            Console.WriteLine($"[EMAIL-PAYMENT] {rental.DriverEmail} adresine gönderiliyor...");
+            var success = await emailService.SendReservationConfirmationAsync(rental);
+            Console.WriteLine($"[EMAIL-PAYMENT] Sonuç: {success}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[EMAIL-PAYMENT] EXCEPTION: {ex.Message}");
         }
     }
 

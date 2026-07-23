@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 interface Campaign {
   id: number;
   title: string;
-  imageIcon: string; // Göstermelik resim yerine şık emojiler/ikonlar kullanacağız
+  imageIcon: string;
   bgColor: string;
   validUntil: string;
   description: string;
@@ -14,25 +14,33 @@ interface Campaign {
 @Component({
   selector: 'app-campaigns',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
-    <div class="bg-[#F3F4F6] py-16 border-b border-gray-200">
-      <div class="page-container mx-auto px-4 sm:px-6 lg:px-8">
-        <nav class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
-          Ana Sayfa / Kampanyalar
-        </nav>
-        <h1 class="text-4xl md:text-5xl font-black text-[#1F2937] mb-6">Kampanyalar</h1>
-        <p class="text-lg text-gray-600 max-w-3xl leading-relaxed">
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- HERO — Ofisler sayfasıyla birebir aynı desen         -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="relative bg-ink-900 overflow-hidden">
+      <div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('assets/cars/hero-1.png');"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-ink-900 to-transparent"></div>
+
+      <div class="relative page-container mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24 z-10">
+       <div class="text-sm font-bold text-avis-500 tracking-widest uppercase mb-2">
+ Ana Sayfa > Kampanyalar</div>
+        <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-4">Kampanyalar</h1>
+        <p class="text-lg text-ink-300 max-w-2xl">
           Size özel fırsatları kaçırmayın! RentACar'ın ayrıcalıklı dünyasında seyahatlerinizi daha avantajlı hale getirecek güncel kampanyalarımızı keşfedin.
         </p>
       </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- KAMPANYA GRID                                        -->
+    <!-- ═══════════════════════════════════════════════════ -->
     <div class="page-container mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-[500px]">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         @for (campaign of campaigns(); track campaign.id) {
           <div class="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full cursor-pointer">
-            
+
             <div [class]="'h-48 flex items-center justify-center relative overflow-hidden ' + campaign.bgColor">
                <div class="text-7xl group-hover:scale-110 transition-transform duration-500 shadow-sm">
                   {{ campaign.imageIcon }}
@@ -55,8 +63,7 @@ interface Campaign {
                   </svg>
                   Son Geçerlilik: {{ campaign.validUntil }}
                 </div>
-                
-                <div class="flex items-center text-brand-600 font-extrabold text-sm tracking-wider group-hover:text-avis-700 transition-colors">
+                 <div class="flex items-center text-brand-600 font-extrabold text-sm tracking-wider group-hover:text-avis-700 transition-colors">
                   DETAYLI BİLGİ
                   <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
@@ -71,7 +78,6 @@ interface Campaign {
   `
 })
 export class CampaignsComponent {
-  // Göstermelik (Mock) Kampanya Verileri
   campaigns = signal<Campaign[]>([
     {
       id: 1,

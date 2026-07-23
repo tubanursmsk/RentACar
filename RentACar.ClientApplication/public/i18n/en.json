@@ -16,10 +16,13 @@
     "no": "No",
     "all": "All",
     "showAll": "Show All",
+    "seeAll": "See All",
     "days": "Days",
     "day": "Day",
     "hour": "Hour",
-    "minute": "Minute"
+    "minute": "Minute",
+    "carsCount": "{{ count }} cars",
+    "home": "Home"
   },
 
   "header": {
@@ -37,33 +40,41 @@
     "profile": "My Profile",
     "myReservations": "My Reservations",
     "loginRequired": "Sign in to manage your reservations",
-    "language": {
-      "tr": "Turkish",
-      "en": "English"
-    }
+    "faq": "FAQ"
   },
 
   "footer": {
-    "quickLinks": "Quick Links",
-    "corporate": "Corporate",
+    "tagline": "Car rental platform serving 24/7 across Turkey. Your right address for comfortable journeys.",
     "services": "Services",
+    "carRental": "Car Rental",
+    "corporateSolutions": "Corporate Solutions",
+    "driverService": "Chauffeur Service",
+    "longTermRental": "Long-term Rental",
+    "corporate": "Corporate",
+    "about": "About Us",
+    "career": "Careers",
+    "press": "Press Room",
+    "contact": "Contact",
     "help": "Help",
-    "followUs": "Follow Us",
-    "copyright": "© {{ year }} RentACar. All rights reserved.",
+    "faq": "FAQ",
+    "rentalConditions": "Rental Terms",
     "privacy": "Privacy Policy",
     "kvkk": "Data Protection",
-    "terms": "Terms of Use"
+    "copyright": "© {{ year }} RentACar. All rights reserved.",
+    "callCenter": "24/7 Call Center:"
   },
 
   "home": {
     "heroTitle": "Car rental, redefined",
     "heroSubtitle": "Rent exactly the car you want, exactly where you need it — by day, week or month.",
-    "campaign": "🎉 Special offer for new customers! 20% off your first rental — Code: WELCOME",
+    "campaign": "🎉 Special offer for new customers! 20% off your first rental — Code:",
     "search": {
       "location": "Where",
       "locationPlaceholder": "Airport, hotel, address, city",
       "pickupDate": "From",
       "returnDate": "Until",
+      "pickupShort": "Pickup",
+      "returnShort": "Return",
       "time": "Time",
       "currentLocation": "My current location",
       "anywhere": "Anywhere",
@@ -71,11 +82,21 @@
       "airports": "Airports",
       "cities": "Cities",
       "loadingLocations": "Loading locations...",
+      "passed": " (past)",
+      "invalid": " (invalid)",
       "minPrep": "{{ min }} min preparation time",
       "minRental": "Minimum 1 day rental",
       "maxAdvance": "Max {{ days }} days ahead"
     },
     "categories": {
+      "all": "All",
+      "airports": "Airports",
+      "monthly": "Monthly",
+      "nearby": "Nearby",
+      "delivery": "Delivery",
+      "cities": "Cities"
+    },
+    "sections": {
       "featured": "Featured Cars",
       "featuredSubtitle": "Our most popular vehicles",
       "airport": "Cars Available at Airports",
@@ -109,6 +130,18 @@
       "monthly": "Monthly",
       "seats": "seats"
     },
+    "fuel": {
+      "gasoline": "Gasoline",
+      "diesel": "Diesel",
+      "electric": "Electric",
+      "hybrid": "Hybrid",
+      "lpg": "LPG"
+    },
+    "transmission": {
+      "manual": "Manual",
+      "automatic": "Automatic",
+      "semiAutomatic": "Semi-Auto"
+    },
     "errors": {
       "selectLocation": "Please select a location.",
       "selectDates": "Please select pickup and return dates.",
@@ -118,6 +151,217 @@
       "returnBeforePickup": "Return time must be after pickup time.",
       "minRentalDays": "Minimum rental period is {{ days }} days.",
       "maxAdvance": "Reservations can be made up to {{ days }} days in advance."
+    }
+  },
+
+  "cars": {
+    "list": {
+      "pageTitle": "Our Cars",
+      "pageSubtitle": "Choose from {{ count }} cars",
+      "found": "cars found",
+      "filter": "Filter",
+      "filterCars": "Show {{ count }} Cars",
+      "clear": "Clear",
+      "searchBrandModel": "Search Brand/Model",
+      "searchPlaceholder": "Toyota, Audi...",
+      "brands": "Brands",
+      "location": "Location",
+      "allLocations": "All locations",
+      "fuelType": "Fuel Type",
+      "transmissionType": "Transmission",
+      "dailyPriceRange": "Daily Price (₺)",
+      "min": "Min",
+      "max": "Max",
+      "sortBy": {
+        "default": "Default",
+        "priceAsc": "Price (low to high)",
+        "priceDesc": "Price (high to low)",
+        "yearDesc": "Model year (newest first)"
+      },
+      "emptyTitle": "No cars found",
+      "emptyDescription": "Try adjusting your filter criteria.",
+      "clearFilters": "Clear Filters",
+      "daily": "Daily",
+      "rentNow": "RENT NOW",
+      "previous": "‹ Previous",
+      "nextPage": "Next ›"
+    },
+    "detail": {
+      "orSimilar": "or similar",
+      "status": {
+        "available": "Available",
+        "rented": "Rented",
+        "maintenance": "Maintenance",
+        "inactive": "Inactive"
+      },
+      "currentBranch": "Current Branch",
+      "branchDescription": "You can pick up and return the car at this branch.",
+      "features": "Vehicle Features",
+      "conditions": "Rental Conditions",
+      "about": "About the Vehicle",
+      "adults": "{{ count }} Adults",
+      "largeLuggage": "{{ count }} Large Suitcases",
+      "airbag": "Passenger Airbag",
+      "abs": "ABS",
+      "airConditioning": "Air Conditioning",
+      "bluetooth": "Bluetooth",
+      "navigation": "Navigation",
+      "doors": "{{ count }} Doors",
+      "kilometers": "{{ km }} km",
+      "ageLimit": "{{ age }} Years and Older",
+      "licenseYears": "License Age {{ years }} and Above",
+      "findeksScore": "Min. Findeks Score: {{ score }}",
+      "creditCard": "1 Credit Card",
+      "idCard": "National ID Card",
+      "driverLicense": "Valid Driver's License",
+      "rentalTerms": "Rental terms:",
+      "term1": "The vehicle can only be driven by the reservation holder.",
+      "term2": "Company approval is required for international travel.",
+      "term3": "Mandatory traffic insurance is included in the price.",
+      "term4": "The vehicle is delivered with a full tank and must be returned at the same level.",
+      "dailyPrice": "Daily Price",
+      "totalDays": "{{ days }} days total",
+      "pickup": "Pickup",
+      "return": "Return",
+      "office": "Office",
+      "editDateOffice": "✏️ Edit dates and office",
+      "selectDatesFirst": "Please select pickup and return dates to continue.",
+      "carNotAvailable": "CAR NOT AVAILABLE",
+      "clickToRent": "CLICK TO RENT",
+      "makeReservation": "MAKE RESERVATION",
+      "loginRequired": "You need to sign in to make a reservation.",
+      "freeCancellation": "Free cancellation (up to 24 hours before)",
+      "securePayment": "256-bit SSL secure payment",
+      "support247": "24/7 customer support",
+      "notFoundTitle": "Car not found",
+      "backToList": "Back to car list",
+      "modal": {
+        "title": "Select Your Rental Options",
+        "selectedCar": "Selected Car",
+        "pickupOffice": "Pickup Office",
+        "selectLocation": "Select location",
+        "pickupDate": "Pickup Date",
+        "returnDate": "Return Date",
+        "info": "{{ min }} min preparation time • Minimum 1 day rental",
+        "dailyLabel": "Daily ₺{{ price }}",
+        "rentDays": "RENT {{ days }} DAYS ›",
+        "makeReservation": "MAKE RESERVATION ›"
+      }
+    }
+  },
+
+  "wizard": {
+    "common": {
+      "back": "‹ BACK",
+      "next": "NEXT STEP ›",
+      "continue": "CONTINUE",
+      "processing": "Processing...",
+      "priceCalculating": "Calculating price...",
+      "days": "Days",
+      "detailedInfo": "MORE INFO"
+    },
+   
+"summary": {
+  "title": "Your Reservation Summary",
+  "loadingCar": "Loading car info...",
+  "plate": "Plate:",
+  "daily": "Daily:",
+  "pickup": "Pickup",
+  "return": "Return",
+  "branchNumber": "Branch #{{ id }}",
+  "unknownBranch": "Loading branch info...",
+  "nextStep": "Next Step",
+  "nextStepDesc": "Next, you'll choose the insurance package that suits you best.",
+  "edit": "✏️ Edit",
+  "editModal": {
+    "title": "Edit Reservation Details",
+    "pickupOffice": "Pickup Office",
+    "dropoffOffice": "Drop-off Office",
+    "selectLocation": "Select location",
+    "pickupDate": "Pickup Date",
+    "returnDate": "Return Date",
+    "sameLocation": "Pick up and return at the same office",
+    "save": "SAVE",
+    "cancel": "CANCEL",
+    "info": "Minimum 1 day rental"
+  }
+},
+    "insurance": {
+      "title": "Insurance Packages",
+      "info": "By default, all our cars include Mandatory Traffic Insurance.",
+      "mostPopular": "Most Popular",
+      "selected": "SELECTED",
+      "addPackage": "ADD PACKAGE",
+      "skip": "Continue without insurance (mandatory traffic insurance still applies)"
+    },
+    "extras": {
+      "title": "Additional Products",
+      "winterTireInfo": "For our cars with winter tires, the winter tire fee will be charged at our offices during pickup, based on the vehicle segment."
+    },
+    "driver": {
+      "title": "Driver Information",
+      "description": "Even if your driver's license is registered in the new Chip ID application, we kindly ask you to bring your license with you during rental, or present the 'Driver Penalty Information Barcode Document' that you can download from e-Government after a 5-Year Query.",
+      "firstName": "First Name *",
+      "firstNamePlaceholder": "John",
+      "lastName": "Last Name *",
+      "lastNamePlaceholder": "Doe",
+      "tcNumber": "National ID *",
+      "tcPlaceholder": "12345678901",
+      "licenseNumber": "License No * (Only new-type licenses accepted)",
+      "licensePlaceholder": "Your license number",
+      "birthDate": "Date of Birth *",
+      "phone": "Phone *",
+      "phonePlaceholder": "0545 123 45 67",
+      "email": "Email *",
+      "emailPlaceholder": "example@email.com",
+      "address": "Address *",
+      "addressPlaceholder": "Enter your neighborhood, street and other details.",
+      "acceptTermsPre": "I have read and accept the",
+      "acceptTermsLink": "Rental Terms",
+      "acceptTermsPost": ". *",
+      "dataSecurity": "Data Security",
+      "dataSecurityDesc": "Your information is protected under GDPR/KVKK. Driver information is only used during the rental process and is not shared with third parties.",
+      "ageLimitTitle": "Age Limit",
+      "ageLimitDesc": "Standard age limit: <b>21+</b><br>With Young Driver Package: <b>19+</b>",
+      "errors": {
+        "tcLength": "National ID must be 11 digits.",
+        "tcOnlyDigits": "National ID must contain only digits.",
+        "tcCannotStartWithZero": "National ID cannot start with 0.",
+        "tcInvalid": "Invalid National ID number.",
+        "minAge18": "You must be at least 18 years old to rent a car.",
+        "youngDriverRequired": "Drivers under 21 must add the 'Young Driver Package'. (Go back to Step 3)",
+        "fillAllFields": "Please fill in all fields correctly."
+      }
+    },
+    "payment": {
+      "onlineTitle": "Online Payment",
+      "onlineSavings": "✓ You save: ₺{{ amount }}",
+      "officeTitle": "Pay at Office",
+      "officeSubtitle": "Pay when you pick up the car",
+      "cardInfo": "Card Information",
+      "sandboxInfo": "🔒 <b>Iyzico Sandbox</b> — Ready for testing:",
+      "cardHolder": "Name on Card",
+      "cardHolderPlaceholder": "FIRST LAST",
+      "cardNumber": "Card Number",
+      "expiry": "Expiry (MM/YY)",
+      "cvc": "CVC",
+      "sslInfo": "256-bit SSL • Protected with 3D Secure",
+      "officeInfo": "When your reservation is confirmed, you can pay by credit card or cash at the office where you pick up the car.",
+      "officePending": "ℹ️ Your reservation will remain 'Pending' and will be confirmed when you pick up the car.",
+      "completeReservation": "COMPLETE RESERVATION ✓",
+      "orderSummary": "Order Summary",
+      "total": "Total",
+      "driver": "Driver",
+      "threeDSTitle": "3D Secure Verification",
+      "threeDSSubtitle": "Enter the SMS code from your bank",
+      "errors": {
+        "missingInfo": "Reservation information is missing.",
+        "createFailed": "Reservation could not be created.",
+        "generalError": "An error occurred.",
+        "paymentInitFailed": "Payment could not be initiated.",
+        "paymentSystemDown": "Payment system not responding. Your reservation will appear in 'My Reservations'.",
+        "paymentCancelled": "Payment cancelled. Confirm to re-enter your card details."
+      }
     }
   }
 }

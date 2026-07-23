@@ -1,161 +1,106 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReservationService } from '../../core/services/reservation.service';
-import { ReservationDetail } from '../../core/models/reservation.model';
+import { TranslatePipe } from '@ngx-translate/core';
+import { ReservationWizardService } from '../../core/services/reservation-wizard.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
-  selector: 'app-reservation-success',
+  selector: 'app-step-summary',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, TranslatePipe],
   template: `
-    <div class="bg-ink-100/30 min-h-screen py-12">
-      <div class="max-w-3xl mx-auto px-4">
-        @if (loading()) {
-          <div class="card p-8 text-center animate-pulse">
-            <div class="w-16 h-16 mx-auto bg-ink-100 rounded-full"></div>
-            <div class="h-6 bg-ink-100 rounded mt-4 mx-auto w-1/2"></div>
-          </div>
-        } @else if (reservation(); as r) {
-          <!-- ✓ Başarı Banner -->
-          <div class="card p-8 text-center">
-            <div class="w-20 h-20 mx-auto bg-success/10 rounded-full flex items-center justify-center mb-4">
-              <svg class="w-12 h-12 text-success" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
-              </svg>
-            </div>
-            <h1 class="text-3xl font-extrabold text-ink-900 mb-2">
-              Rezervasyonunuz Alındı!
-            </h1>
-            <p class="text-ink-700">
-              Rezervasyon numaranız: <b class="text-brand-600">#{{ r.id }}</b>
-            </p>
-            <p class="text-sm text-ink-500 mt-2">
-              E-posta adresinize onay maili gönderilecektir.
-            </p>
-          </div>
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+      <!-- Sol: Özet -->
+      <div class="card p-6 lg:p-8">
+        <h2 class="text-2xl font-bold mb-6">{{ 'wizard.summary.title' | translate }}</h2>
 
-          <!-- Detay -->
-          <div class="card p-6 mt-4">
-            <h2 class="text-xl font-bold mb-4 pb-3 border-b border-ink-100">
-              Rezervasyon Detayları
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-4 mb-6">
-              <div class="aspect-video bg-ink-100 rounded-lg overflow-hidden flex items-center justify-center">
-                @if (r.carImageUrl) {
-                  <img [src]="apiBaseUrl + r.carImageUrl" [alt]="r.carInfo" class="w-full h-full object-cover">
-                } @else {
-                  <span class="text-4xl">🚗</span>
-                }
-              </div>
-              <div>
-                <h3 class="font-bold text-lg">{{ r.carInfo }}</h3>
-                <p class="text-sm text-ink-500">{{ r.totalDays }} gün</p>
-                <div class="mt-2 text-xs inline-flex items-center px-2 py-1 rounded-full"
-                     [class.bg-yellow-100]="r.status === 'Pending'"
-                     [class.text-yellow-800]="r.status === 'Pending'"
-                     [class.bg-blue-100]="r.status === 'Approved'"
-                     [class.text-blue-800]="r.status === 'Approved'">
-                  {{ statusLabel(r.status) }}
-                </div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mb-6 text-sm">
-              <div class="bg-ink-100/30 rounded-lg p-3">
-                <div class="text-xs text-ink-500 uppercase">Alış</div>
-                <div class="font-semibold">{{ r.rentStartDate | date:'dd MMMM yyyy':'':'tr' }}</div>
-                <div class="text-xs text-ink-500">{{ r.pickUpLocationName }}</div>
-              </div>
-              <div class="bg-ink-100/30 rounded-lg p-3">
-                <div class="text-xs text-ink-500 uppercase">İade</div>
-                <div class="font-semibold">{{ r.rentEndDate | date:'dd MMMM yyyy':'':'tr' }}</div>
-                <div class="text-xs text-ink-500">{{ r.dropOffLocationName }}</div>
-              </div>
-            </div>
-
-            <!-- Fiyat Detayı -->
-            <div class="space-y-2 pb-4 border-b border-ink-100">
-              <div class="flex justify-between text-sm">
-                <span class="text-ink-700">Araç Kira Bedeli</span>
-                <span class="font-semibold">₺{{ r.subTotal | number:'1.0-0' }}</span>
-              </div>
-              @if (r.insuranceTotal > 0) {
-                <div class="flex justify-between text-sm">
-                  <span class="text-ink-700">{{ r.insurancePackage?.name }}</span>
-                  <span class="font-semibold">₺{{ r.insuranceTotal | number:'1.0-0' }}</span>
-                </div>
-              }
-              @for (p of r.additionalProducts; track p.name) {
-                <div class="flex justify-between text-sm">
-                  <span class="text-ink-700">{{ p.name }} (×{{ p.quantity }})</span>
-                  <span class="font-semibold">₺{{ p.totalPrice | number:'1.0-0' }}</span>
-                </div>
+        @if (wizard.state().car; as car) {
+          <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6">
+            <div class="aspect-video bg-ink-100 rounded-lg overflow-hidden flex items-center justify-center">
+              @if (car.imageUrl) {
+                <img [src]="apiBaseUrl + car.imageUrl"
+                     [alt]="car.brandName + ' ' + car.model"
+                     class="w-full h-full object-cover">
+              } @else {
+                <span class="text-5xl">🚗</span>
               }
             </div>
-
-            <div class="flex items-baseline justify-between pt-3">
-              <span class="font-bold text-lg">Toplam</span>
-              <span class="text-3xl font-extrabold text-brand-600">
-                ₺{{ r.totalAmount | number:'1.2-2' }}
-              </span>
+            <div>
+              <h3 class="text-xl font-bold">{{ car.brandName }} {{ car.model }}</h3>
+              <p class="text-ink-500">{{ car.modelYear }} • {{ car.color }}</p>
+              <div class="mt-3 space-y-1 text-sm">
+                <div><span class="text-ink-500">{{ 'wizard.summary.plate' | translate }}</span> <b>{{ car.plate }}</b></div>
+                <div><span class="text-ink-500">{{ 'wizard.summary.daily' | translate }}</span> <b class="text-brand-600">₺{{ car.dailyPrice | number:'1.0-0' }}</b></div>
+              </div>
             </div>
           </div>
 
-          <!-- Aksiyon Butonları -->
-          <div class="mt-6 flex flex-col sm:flex-row gap-3">
-            <a routerLink="/" class="btn-secondary flex-1 text-center">
-              ANA SAYFA
-            </a>
-            <a routerLink="/araclar" class="btn-primary flex-1 text-center">
-              YENİ KİRALAMA
-            </a>
+          <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-ink-100/40 rounded-lg p-4">
+              <div class="text-xs text-ink-500 font-bold uppercase mb-1">
+                {{ 'wizard.summary.pickup' | translate }}
+              </div>
+              <div class="font-semibold">{{ wizard.state().rentStartDate | date:'dd MMMM yyyy' }}</div>
+              <div class="text-sm text-ink-500">{{ getPickupLocation() }}</div>
+            </div>
+            <div class="bg-ink-100/40 rounded-lg p-4">
+              <div class="text-xs text-ink-500 font-bold uppercase mb-1">
+                {{ 'wizard.summary.return' | translate }}
+              </div>
+              <div class="font-semibold">{{ wizard.state().rentEndDate | date:'dd MMMM yyyy' }}</div>
+              <div class="text-sm text-ink-500">{{ getDropoffLocation() }}</div>
+            </div>
+          </div>
+
+          <div class="mt-6 p-4 bg-avis-50 border border-avis-100 rounded-lg flex items-center justify-between">
+            <span class="text-sm">{{ wizard.totalDays() }} × ₺{{ car.dailyPrice | number:'1.0-0' }}</span>
+            <span class="text-xl font-extrabold text-brand-600">
+              ₺{{ (wizard.totalDays() * car.dailyPrice) | number:'1.2-2' }}
+            </span>
           </div>
         } @else {
-          <div class="card p-8 text-center">
-            <h2 class="font-bold text-xl">Rezervasyon bulunamadı</h2>
-            <a routerLink="/" class="btn-primary mt-4 inline-flex">Ana sayfaya dön</a>
-          </div>
+          <p class="text-ink-500">{{ 'wizard.summary.loadingCar' | translate }}</p>
         }
       </div>
+
+      <!-- Sağ: Bilgi paneli -->
+      <aside class="card p-6">
+        <h3 class="font-bold text-lg mb-4">{{ 'wizard.summary.nextStep' | translate }}</h3>
+        <p class="text-sm text-ink-700 mb-6">
+          {{ 'wizard.summary.nextStepDesc' | translate }}
+        </p>
+
+        <button (click)="next()"
+                class="btn-primary w-full"
+                [disabled]="!wizard.canProceedFromStep1()">
+          {{ 'wizard.common.continue' | translate }}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </aside>
     </div>
   `
 })
-export class ReservationSuccessComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private reservationService = inject(ReservationService);
-
-  protected reservation = signal<ReservationDetail | null>(null);
-  protected loading = signal(true);
+export class StepSummaryComponent implements OnInit {
+  protected wizard = inject(ReservationWizardService);
   protected apiBaseUrl = environment.apiBaseUrl;
 
   ngOnInit(): void {
-    const id = +this.route.snapshot.params['id'];
-    if (!id) {
-      this.router.navigate(['/']);
-      return;
-    }
-
-    this.reservationService.getDetail(id).subscribe({
-      next: (res) => {
-        if (res.success && res.data) {
-          this.reservation.set(res.data);
-        }
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false)
-    });
+    this.wizard.goToStep(1);
   }
 
-  statusLabel(status: string): string {
-    return ({
-      'Pending': 'Onay Bekliyor',
-      'Approved': 'Onaylandı',
-      'Completed': 'Tamamlandı',
-      'Cancelled': 'İptal Edildi'
-    } as any)[status] ?? status;
+  next(): void {
+    this.wizard.nextStep();
+  }
+
+  getPickupLocation(): string {
+    const id = this.wizard.state().pickUpLocationId;
+    return id ? `#${id}` : '';
+  }
+
+  getDropoffLocation(): string {
+    const id = this.wizard.state().dropOffLocationId;
+    return id ? `#${id}` : '';
   }
 }

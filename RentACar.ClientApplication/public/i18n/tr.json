@@ -16,12 +16,14 @@
     "no": "Hayır",
     "all": "Tümü",
     "showAll": "Tümünü Göster",
+    "seeAll": "Tümünü Gör",
     "days": "Gün",
     "day": "Gün",
     "hour": "Saat",
-    "minute": "Dakika"
+    "minute": "Dakika",
+    "carsCount": "{{ count }} araç",
+    "home": "Ana Sayfa"
   },
-
   "header": {
     "reservationManagement": "Rezervasyon Yönetimi",
     "cars": "Araçlar",
@@ -37,33 +39,39 @@
     "profile": "Profilim",
     "myReservations": "Rezervasyonlarım",
     "loginRequired": "Rezervasyonlarınızı yönetmek için giriş yapın",
-    "language": {
-      "tr": "Türkçe",
-      "en": "İngilizce"
-    }
+    "faq": "Sıkça Sorulan Sorular"
   },
-
   "footer": {
-    "quickLinks": "Hızlı Bağlantılar",
-    "corporate": "Kurumsal",
+    "tagline": "Türkiye'nin dört bir yanında 7/24 hizmet veren araç kiralama platformu. Konforlu yolculuklar için doğru adres.",
     "services": "Hizmetler",
+    "carRental": "Araç Kiralama",
+    "corporateSolutions": "Kurumsal Çözümler",
+    "driverService": "Şoförlü Hizmet",
+    "longTermRental": "Uzun Dönem Kiralama",
+    "corporate": "Kurumsal",
+    "about": "Hakkımızda",
+    "career": "Kariyer",
+    "press": "Basın Odası",
+    "contact": "İletişim",
     "help": "Yardım",
-    "followUs": "Bizi Takip Edin",
-    "copyright": "© {{ year }} RentACar. Tüm hakları saklıdır.",
+    "faq": "Sıkça Sorulan Sorular",
+    "rentalConditions": "Kiralama Koşulları",
     "privacy": "Gizlilik Politikası",
     "kvkk": "KVKK",
-    "terms": "Kullanım Koşulları"
+    "copyright": "© {{ year }} RentACar. Tüm hakları saklıdır.",
+    "callCenter": "7/24 Çağrı Merkezi:"
   },
-
   "home": {
     "heroTitle": "Araç kiralama yeniden tanımlandı",
     "heroSubtitle": "Tam istediğiniz aracı, tam ihtiyacınız olan yerde, günlerce, haftalarca veya aylarca kiralayın.",
-    "campaign": "🎉 Yeni müşterilere özel! İlk kiralamanızda %20 indirim — Kod: HOSGELDIN",
+    "campaign": "🎉 Yeni müşterilere özel! İlk kiralamanızda %20 indirim — Kod:",
     "search": {
       "location": "Nerede",
       "locationPlaceholder": "Havalimanı, otel, adres, şehir",
       "pickupDate": "İtibaren",
       "returnDate": "Değin",
+      "pickupShort": "Alış",
+      "returnShort": "İade",
       "time": "Saat",
       "currentLocation": "Mevcut konumum",
       "anywhere": "Herhangi bir yer",
@@ -71,11 +79,21 @@
       "airports": "Havalimanları",
       "cities": "Şehirler",
       "loadingLocations": "Konumlar yükleniyor...",
+      "passed": " (geçti)",
+      "invalid": " (geçersiz)",
       "minPrep": "{{ min }} dakikalık hazırlık süresi",
       "minRental": "Minimum 1 gün kiralama",
       "maxAdvance": "Maks. {{ days }} gün ileri"
     },
     "categories": {
+      "all": "Tümü",
+      "airports": "Havalimanları",
+      "monthly": "Aylık",
+      "nearby": "Yakında",
+      "delivery": "Teslim Edilen",
+      "cities": "Şehirler"
+    },
+    "sections": {
       "featured": "Öne Çıkan Araçlar",
       "featuredSubtitle": "En çok tercih edilen araçlar",
       "airport": "Havalimanlarında Müsait Araçlar",
@@ -109,6 +127,18 @@
       "monthly": "Aylık",
       "seats": "kişi"
     },
+    "fuel": {
+      "gasoline": "Benzin",
+      "diesel": "Dizel",
+      "electric": "Elektrik",
+      "hybrid": "Hibrit",
+      "lpg": "LPG"
+    },
+    "transmission": {
+      "manual": "Manuel",
+      "automatic": "Otomatik",
+      "semiAutomatic": "Yarı Otomatik"
+    },
     "errors": {
       "selectLocation": "Lütfen bir konum seçin.",
       "selectDates": "Lütfen alış ve iade tarihlerini seçin.",
@@ -118,6 +148,214 @@
       "returnBeforePickup": "İade zamanı alış zamanından sonra olmalı.",
       "minRentalDays": "Minimum kiralama süresi {{ days }} gün.",
       "maxAdvance": "En fazla {{ days }} gün ileri rezervasyon yapılabilir."
+    }
+  },
+  "cars": {
+    "list": {
+      "pageTitle": "Araçlarımız",
+      "pageSubtitle": "{{ count }} araç arasından seçim yapın",
+      "found": "araç bulundu",
+      "filter": "Filtrele",
+      "filterCars": "{{ count }} Aracı Göster",
+      "clear": "Temizle",
+      "searchBrandModel": "Marka/Model Ara",
+      "searchPlaceholder": "Toyota, Audi...",
+      "brands": "Markalar",
+      "location": "Şube",
+      "allLocations": "Tüm şubeler",
+      "fuelType": "Yakıt Tipi",
+      "transmissionType": "Vites",
+      "dailyPriceRange": "Günlük Fiyat (₺)",
+      "min": "Min",
+      "max": "Max",
+      "sortBy": {
+        "default": "Varsayılan",
+        "priceAsc": "Fiyat (düşükten yükseğe)",
+        "priceDesc": "Fiyat (yüksekten düşüğe)",
+        "yearDesc": "Model yılı (yeniden eskiye)"
+      },
+      "emptyTitle": "Araç bulunamadı",
+      "emptyDescription": "Filtre kriterlerinizi değiştirip tekrar deneyin.",
+      "clearFilters": "Filtreleri Temizle",
+      "daily": "Günlük",
+      "rentNow": "HEMEN KİRALA",
+      "previous": "‹ Önceki",
+      "nextPage": "Sonraki ›"
+    },
+    "detail": {
+      "orSimilar": "ya da benzeri",
+      "status": {
+        "available": "Müsait",
+        "rented": "Kirada",
+        "maintenance": "Bakımda",
+        "inactive": "Pasif"
+      },
+      "currentBranch": "Aracın Mevcut Şubesi",
+      "branchDescription": "Aracı bu şubeden teslim alabilir ve iade edebilirsiniz.",
+      "features": "Araç Özellikleri",
+      "conditions": "Kiralama Koşulları",
+      "about": "Araç Hakkında",
+      "adults": "{{ count }} Yetişkin",
+      "largeLuggage": "{{ count }} Büyük Bavul",
+      "airbag": "Yolcu Airbag",
+      "abs": "ABS",
+      "airConditioning": "Klima",
+      "bluetooth": "Bluetooth",
+      "navigation": "Navigasyon",
+      "doors": "{{ count }} Kapı",
+      "kilometers": "{{ km }} km",
+      "ageLimit": "{{ age }} Yaş Ve Üstü",
+      "licenseYears": "Ehliyet Yaşı {{ years }} Ve Üzeri",
+      "findeksScore": "Min. Findeks Skoru: {{ score }}",
+      "creditCard": "1 Kredi Kartı",
+      "idCard": "TC Kimlik Belgesi",
+      "driverLicense": "Geçerli Sürücü Belgesi",
+      "rentalTerms": "Kiralama şartları:",
+      "term1": "Aracın kullanımı sadece rezervasyon sahibi sürücü tarafından yapılabilir.",
+      "term2": "Yurt dışı çıkışı için firma onayı gereklidir.",
+      "term3": "Zorunlu trafik sigortası fiyata dahildir.",
+      "term4": "Yakıt tam depo teslim edilir, aynı seviyede iade edilmelidir.",
+      "dailyPrice": "Günlük Fiyat",
+      "totalDays": "{{ days }} gün toplam",
+      "pickup": "Alış",
+      "return": "İade",
+      "office": "Ofis",
+      "editDateOffice": "✏️ Tarih ve ofisi düzenle",
+      "selectDatesFirst": "Devam etmek için önce alış ve iade tarihlerini seçin.",
+      "carNotAvailable": "ARAÇ MÜSAİT DEĞİL",
+      "clickToRent": "KİRALAMA İÇİN TIKLAYIN",
+      "makeReservation": "REZERVASYON YAP",
+      "loginRequired": "Rezervasyon için giriş yapmanız gerekir.",
+      "freeCancellation": "Ücretsiz iptal (24 saat öncesine kadar)",
+      "securePayment": "256-bit SSL güvenli ödeme",
+      "support247": "7/24 müşteri desteği",
+      "notFoundTitle": "Araç bulunamadı",
+      "backToList": "Araç listesine dön",
+      "modal": {
+        "title": "Kiralama İçin Seçim Yapınız",
+        "selectedCar": "Seçili Araç",
+        "pickupOffice": "Alış Ofisi",
+        "selectLocation": "Konum seçin",
+        "pickupDate": "Alış Tarihi",
+        "returnDate": "İade Tarihi",
+        "info": "{{ min }} dakikalık hazırlık süresi • Minimum 1 gün kiralama",
+        "dailyLabel": "Günlük ₺{{ price }}",
+        "rentDays": "{{ days }} GÜN KİRALA ›",
+        "makeReservation": "REZERVASYON YAP ›"
+      }
+    }
+  },
+  "wizard": {
+    "common": {
+      "back": "‹ GERİ",
+      "next": "SONRAKİ ADIM ›",
+      "continue": "DEVAM ET",
+      "processing": "İşleniyor...",
+      "priceCalculating": "Fiyat hesaplanıyor...",
+      "days": "Gün İçin",
+      "detailedInfo": "DETAYLI BİLGİ"
+    },
+    "summary": {
+      "title": "Rezervasyon Özetiniz",
+      "loadingCar": "Araç bilgisi yükleniyor...",
+      "plate": "Plaka:",
+      "daily": "Günlük:",
+      "pickup": "Alış",
+      "return": "İade",
+      "branchNumber": "Şube #{{ id }}",
+      "unknownBranch": "Şube bilgisi yükleniyor...",
+      "nextStep": "Sıradaki Adım",
+      "nextStepDesc": "Devam ettiğinizde size uygun güvence paketini seçeceksiniz.",
+      "edit": "✏️ Düzenle",
+      "editModal": {
+        "title": "Rezervasyon Bilgilerini Düzenle",
+        "pickupOffice": "Alış Ofisi",
+        "dropoffOffice": "İade Ofisi",
+        "selectLocation": "Konum seçin",
+        "pickupDate": "Alış Tarihi",
+        "returnDate": "İade Tarihi",
+        "sameLocation": "Aynı ofisten teslim al ve iade et",
+        "save": "KAYDET",
+        "cancel": "İPTAL",
+        "info": "Minimum 1 gün kiralama"
+      }
+    },
+    "insurance": {
+      "title": "Güvence Paketleri",
+      "info": "Standart olarak, bütün araçlarımız Zorunlu Trafik Sigortası kapsamındadır.",
+      "mostPopular": "En Popüler Güvence",
+      "selected": "SEÇİLDİ",
+      "addPackage": "PAKETİ EKLE",
+      "skip": "Sigortasız devam et (zorunlu trafik sigortası yine geçerlidir)"
+    },
+    "extras": {
+      "title": "Ek Ürünler",
+      "winterTireInfo": "Kış lastikli araçlarımızda, araç segmentine göre kış lastiği bedeli kiralama sırasında ofislerimizde ücretlendirilecektir."
+    },
+    "driver": {
+      "title": "Sürücü Bilgileri",
+      "description": "Yeni Çipli Kimlik uygulamasında ehliyetiniz tanımlı olsa dahi, kiralama işleminde ehliyetinizi yanınızda bulundurmanız veya e-Devlet sisteminden 5 Yıl Sorgulaması yaparak indirebileceğiniz \"Sürücü Ceza Bilgisi Barkodlu Belgesi\"'ni kiralama yapacağınız ofise ibraz etmeniz önemle rica olunur.",
+      "firstName": "Adınız *",
+      "firstNamePlaceholder": "Tuba",
+      "lastName": "Soyadınız *",
+      "lastNamePlaceholder": "Şimşek",
+      "tcNumber": "T.C. No *",
+      "tcPlaceholder": "12345678901",
+      "licenseNumber": "Ehliyet No * (Sadece yeni tip ehliyetler geçerlidir)",
+      "licensePlaceholder": "Ehliyet numaranız",
+      "birthDate": "Doğum Tarihi *",
+      "phone": "Telefon *",
+      "phonePlaceholder": "0545 123 45 67",
+      "email": "E-Posta *",
+      "emailPlaceholder": "ornek@email.com",
+      "address": "Adres *",
+      "addressPlaceholder": "Mahalle, sokak, cadde ve diğer bilgilerinizi giriniz.",
+      "acceptTermsPre": "",
+      "acceptTermsLink": "Kiralama Şartlarını",
+      "acceptTermsPost": "okudum kabul ediyorum. *",
+      "dataSecurity": "Veri Güvenliği",
+      "dataSecurityDesc": "Bilgileriniz KVKK kapsamında korunur. Sürücü bilgileriniz sadece kiralama işlemi sırasında kullanılır ve üçüncü taraflarla paylaşılmaz.",
+      "ageLimitTitle": "Yaş Sınırı",
+      "ageLimitDesc": "Standart yaş sınırı: <b>21+</b><br>Genç Sürücü Paketi ile: <b>19+</b>",
+      "errors": {
+        "tcLength": "TC kimlik numarası 11 haneli olmalıdır.",
+        "tcOnlyDigits": "TC sadece rakam içermelidir.",
+        "tcCannotStartWithZero": "TC kimlik 0 ile başlayamaz.",
+        "tcInvalid": "Geçersiz TC kimlik numarası.",
+        "minAge18": "Araç kiralayabilmek için en az 18 yaşında olmalısınız.",
+        "youngDriverRequired": "21 yaş altı sürücüler için \"Genç Sürücü Paketi\" eklenmelidir. (Adım 3'e dön)",
+        "fillAllFields": "Lütfen tüm alanları eksiksiz ve doğru doldurun."
+      }
+    },
+    "payment": {
+      "onlineTitle": "Online Ödeme",
+      "onlineSavings": "✓ Kazancınız: ₺{{ amount }}",
+      "officeTitle": "Ofiste Ödeme",
+      "officeSubtitle": "Aracı teslim alırken ödeyin",
+      "cardInfo": "Kart Bilgileri",
+      "sandboxInfo": "🔒 <b>Iyzico Sandbox</b> — Test için hazır:",
+      "cardHolder": "Kart Üzerindeki İsim",
+      "cardHolderPlaceholder": "AD SOYAD",
+      "cardNumber": "Kart Numarası",
+      "expiry": "Son Kullanma (AA/YY)",
+      "cvc": "CVC",
+      "sslInfo": "256-bit SSL • 3D Secure ile korumalı",
+      "officeInfo": "Rezervasyonunuz onaylandığında, aracı teslim aldığınız ofiste kredi kartı veya nakit ile ödemenizi yapabilirsiniz.",
+      "officePending": "ℹ️ Rezervasyonunuz \"Beklemede\" durumunda kalacak ve aracı teslim aldığınızda onaylanacaktır.",
+      "completeReservation": "REZERVASYONU TAMAMLA ✓",
+      "orderSummary": "Sipariş Özeti",
+      "total": "Toplam",
+      "driver": "Sürücü",
+      "threeDSTitle": "3D Secure Doğrulama",
+      "threeDSSubtitle": "Bankanızdan gelen SMS kodunu girin",
+      "errors": {
+        "missingInfo": "Rezervasyon bilgileri eksik.",
+        "createFailed": "Rezervasyon oluşturulamadı.",
+        "generalError": "Bir hata oluştu.",
+        "paymentInitFailed": "Ödeme başlatılamadı.",
+        "paymentSystemDown": "Ödeme sistemi cevap vermiyor. Rezervasyon \"Rezervasyonlarım\" sayfanızda görünecek.",
+        "paymentCancelled": "Ödeme iptal edildi. Kart bilgilerinizi tekrar girmek isterseniz onaylayın."
+      }
     }
   }
 }

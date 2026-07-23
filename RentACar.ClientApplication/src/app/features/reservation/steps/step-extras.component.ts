@@ -1,5 +1,6 @@
 import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, EMPTY } from 'rxjs';
 import { debounceTime, switchMap, catchError } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -11,18 +12,17 @@ import { AdditionalProduct } from '../../../core/models/reservation.model';
 @Component({
   selector: 'app-step-extras',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div>
-      <!-- Başlık -->
       <div class="mb-6">
-        <h2 class="text-2xl font-bold text-brand-600 mb-2">Ek Ürünler</h2>
+        <h2 class="text-2xl font-bold text-brand-600 mb-2">{{ 'wizard.extras.title' | translate }}</h2>
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3 text-sm">
           <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
           <span class="text-blue-900">
-            Kış lastikli araçlarımızda, araç segmentine göre kış lastiği bedeli kiralama sırasında ofislerimizde ücretlendirilecektir.
+            {{ 'wizard.extras.winterTireInfo' | translate }}
           </span>
         </div>
       </div>
@@ -38,32 +38,27 @@ import { AdditionalProduct } from '../../../core/models/reservation.model';
           }
         </div>
       } @else {
-        <!-- ═══ Ek Ürün Kartları ═══ -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           @for (product of products(); track product.id) {
             <div class="card p-5">
-              <!-- Başlık -->
               <div class="flex items-start justify-between mb-2">
                 <div class="flex items-center gap-2">
                   <i class="fa-solid {{ product.iconName }} text-brand-600"></i>
                   <h3 class="text-lg font-bold text-brand-600">{{ product.name }}</h3>
                 </div>
                 <button class="text-xs font-bold text-ink-700 hover:text-brand-600 flex items-center gap-1">
-                  DETAYLI BİLGİ
+                  {{ 'wizard.common.detailedInfo' | translate }}
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </button>
               </div>
 
-              <!-- Açıklama -->
               <p class="text-sm text-ink-700 leading-relaxed mb-4">
                 {{ product.description }}
               </p>
 
-              <!-- Counter + Fiyat -->
               <div class="flex items-center justify-between">
-                <!-- Counter -->
                 <div class="flex items-center gap-3">
                   <button (click)="decrease(product)"
                           [disabled]="getQuantity(product.id) === 0"
@@ -86,7 +81,6 @@ import { AdditionalProduct } from '../../../core/models/reservation.model';
                   </button>
                 </div>
 
-                <!-- Fiyat -->
                 <div class="text-right">
                   <div class="text-lg font-extrabold text-ink-900">
                     @if (getQuantity(product.id) > 0) {
@@ -96,7 +90,7 @@ import { AdditionalProduct } from '../../../core/models/reservation.model';
                     }
                   </div>
                   <div class="text-xs text-ink-500">
-                    {{ wizard.totalDays() }} Gün İçin
+                    {{ wizard.totalDays() }} {{ 'wizard.common.days' | translate }}
                   </div>
                 </div>
               </div>
@@ -106,18 +100,17 @@ import { AdditionalProduct } from '../../../core/models/reservation.model';
 
         @if (priceLoading()) {
           <div class="mt-4 text-center text-sm text-ink-500">
-            <span class="inline-block animate-spin">⟳</span> Fiyat hesaplanıyor...
+            <span class="inline-block animate-spin">⟳</span> {{ 'wizard.common.priceCalculating' | translate }}
           </div>
         }
       }
 
-      <!-- Alt Navigasyon -->
       <div class="mt-8 flex justify-between">
         <button (click)="wizard.prevStep()" class="btn-secondary">
-          ‹ GERİ
+          {{ 'wizard.common.back' | translate }}
         </button>
         <button (click)="continue()" class="btn-primary">
-          SONRAKİ ADIM ›
+          {{ 'wizard.common.next' | translate }}
         </button>
       </div>
     </div>
@@ -136,7 +129,6 @@ export class StepExtrasComponent implements OnInit {
   private priceSubject = new Subject<void>();
 
   constructor() {
-    // +/- butonlarına hızlı tıklamada her seferinde API çağrısı yapma
     this.priceSubject.pipe(
       debounceTime(350),
       switchMap(() => {

@@ -1,16 +1,17 @@
 import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 
 interface Category {
   id: string;
-  label: string;
+  labelKey: string;   // Translation key
   icon: string;
 }
 
 @Component({
   selector: 'app-category-chips',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-5">
       <div class="flex items-center justify-center gap-6 lg:gap-8 overflow-x-auto scroll-hide">
@@ -66,7 +67,7 @@ interface Category {
                 </svg>
               }
             }
-            <span class="text-sm">{{ cat.label }}</span>
+            <span class="text-sm">{{ cat.labelKey | translate }}</span>
 
             @if (isActive(cat.id)) {
               <span class="absolute -bottom-0 left-0 right-0 h-0.5 bg-ink-900 rounded-full"></span>
@@ -83,12 +84,12 @@ export class CategoryChipsComponent {
   protected activeCategory = signal<string>('all');
 
   protected categories: Category[] = [
-    { id: 'all',      label: 'Tümü',          icon: 'all' },
-    { id: 'airport',  label: 'Havalimanları', icon: 'plane' },
-    { id: 'monthly',  label: 'Aylık',         icon: 'calendar' },
-    { id: 'nearby',   label: 'Yakında',       icon: 'pin' },
-    { id: 'delivery', label: 'Teslim Edilen', icon: 'delivery' },
-    { id: 'cities',   label: 'Şehirler',      icon: 'city' },
+    { id: 'all',      labelKey: 'home.categories.all',       icon: 'all' },
+    { id: 'airport',  labelKey: 'home.categories.airports',  icon: 'plane' },
+    { id: 'monthly',  labelKey: 'home.categories.monthly',   icon: 'calendar' },
+    { id: 'nearby',   labelKey: 'home.categories.nearby',    icon: 'pin' },
+    { id: 'delivery', labelKey: 'home.categories.delivery',  icon: 'delivery' },
+    { id: 'cities',   labelKey: 'home.categories.cities',    icon: 'city' },
   ];
 
   isActive(id: string): boolean {
@@ -96,7 +97,6 @@ export class CategoryChipsComponent {
   }
 
   selectCategory(id: string): void {
-    // Aynı chip'e tekrar tıklanırsa iptal edilmesin (Turo davranışı)
     if (this.activeCategory() === id) return;
     this.activeCategory.set(id);
     this.categoryChanged.emit(id);

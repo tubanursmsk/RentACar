@@ -35,6 +35,13 @@ const EMPTY_DRIVER: DriverInfo = {
 
 @Injectable({ providedIn: 'root' })
 export class ReservationWizardService {
+  setLocations(arg0: number, arg1: number) {
+    throw new Error('Method not implemented.');
+  }
+  
+  setDates(pickup: Date, ret: Date) {
+    throw new Error('Method not implemented.');
+  }
   private readonly _state = signal<WizardState>(this.loadFromStorage());
   private readonly _currentStep = signal(1);
 
@@ -95,6 +102,31 @@ export class ReservationWizardService {
       dropOffLocationId,
       rentStartDate,
       rentEndDate
+    }));
+    this.persist();
+  }
+
+
+
+  /**
+   * ⭐ YENİ: Adım 1'deki "Düzenle" modalından çağrılır.
+   * Sadece tarih ve şube bilgilerini günceller.
+   * Fiyat cache'i temizlenir ki bir sonraki adımda tekrar hesaplansın.
+   */
+  updateReservationDetails(
+    pickUpLocationId: number,
+    dropOffLocationId: number,
+    rentStartDate: Date,
+    rentEndDate: Date
+  ): void {
+    this._state.update(s => ({
+      ...s,
+      pickUpLocationId,
+      dropOffLocationId,
+      rentStartDate,
+      rentEndDate,
+      // Tarih değişince fiyat da değişir → cache'i temizle
+      pricePreview: null
     }));
     this.persist();
   }

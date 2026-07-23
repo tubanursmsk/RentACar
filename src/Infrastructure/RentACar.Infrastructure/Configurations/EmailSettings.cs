@@ -12,4 +12,7 @@ public class EmailSettings
 
     // Test için: email'leri gerçekten göndermeyip loglara yazan mod
     public bool EnableInDevelopment { get; set; } = true;
+    
+    public string AdminEmail { get; set; } = string.Empty;
+
 }

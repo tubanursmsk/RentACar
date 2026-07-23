@@ -18,4 +18,16 @@ public interface IEmailService
     /// Yeni kayıt olan kullanıcıya hoş geldin maili gönderir.
     /// </summary>
     Task<bool> SendWelcomeEmailAsync(User user);
+
+
+    // ⭐ YENİ: İletişim formundan gelen mesajı firmaya iletir
+    Task<bool> SendContactFormAsync(
+        string senderName,
+        string senderEmail,
+        string senderPhone,
+        string subject,
+        string message);
+
+    // ⭐ YENİ: Yeni rezervasyon oluştuğunda firmaya bildirim
+    Task<bool> SendReservationNotificationToAdminAsync(Rental rental);
 }

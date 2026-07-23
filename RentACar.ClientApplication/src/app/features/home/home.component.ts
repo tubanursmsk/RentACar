@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CarService } from '../../core/services/car.service';
 import { LocationService } from '../../core/services/location.service';
 import { Car } from '../../core/models/car.model';
@@ -9,14 +10,15 @@ import { CategoryChipsComponent } from './components/category-chips/category-chi
 import { environment } from '../../../environments/environment';
 
 interface CategoryInfo {
-  title: string;
-  subtitle: string;
+  titleKey: string;
+  subtitleKey: string;
+  params?: any;
 }
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, HeroSearchComponent, CategoryChipsComponent],
+  imports: [CommonModule, RouterLink, HeroSearchComponent, CategoryChipsComponent, TranslatePipe],
   template: `
     <app-hero-search />
 
@@ -27,15 +29,19 @@ interface CategoryInfo {
     <section class="py-10 lg:py-12">
       <div class="max-w-[1400px] mx-auto px-4 sm:px-6">
 
-        <!-- Başlık + alt yazı (kategoriye göre) -->
+        <!-- Başlık + alt yazı -->
         <div class="flex items-end justify-between mb-6">
           <div>
-            <h2 class="text-2xl font-bold text-ink-900">{{ categoryInfo().title }}</h2>
-            <p class="text-ink-500 text-sm mt-1">{{ categoryInfo().subtitle }}</p>
+            <h2 class="text-2xl font-bold text-ink-900">
+              {{ categoryInfo().titleKey | translate: categoryInfo().params }}
+            </h2>
+            <p class="text-ink-500 text-sm mt-1">
+              {{ categoryInfo().subtitleKey | translate: categoryInfo().params }}
+            </p>
           </div>
           <a routerLink="/araclar"
              class="hidden md:inline-flex items-center gap-1 text-sm font-semibold text-ink-900 hover:text-brand-600 transition">
-            Tümünü Gör
+            {{ 'common.seeAll' | translate }}
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
             </svg>
@@ -53,7 +59,7 @@ interface CategoryInfo {
             }
           </div>
         } @else if (activeCategory() === 'cities') {
-          <!-- ═══ ŞEHİRLER: Şehir başlıklarıyla gruplu grid ═══ -->
+          <!-- ═══ ŞEHİRLER ═══ -->
           @for (cityGroup of carsByCity(); track cityGroup.city) {
             <div class="mb-10">
               <h3 class="text-xl font-bold text-ink-900 mb-4 flex items-center gap-2">
@@ -63,7 +69,9 @@ interface CategoryInfo {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 {{ cityGroup.city }}
-                <span class="text-sm font-normal text-ink-500">({{ cityGroup.cars.length }} araç)</span>
+                <span class="text-sm font-normal text-ink-500">
+                  ({{ 'common.carsCount' | translate: { count: cityGroup.cars.length } }})
+                </span>
               </h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 @for (car of cityGroup.cars.slice(0, 4); track car.id) {
@@ -73,7 +81,7 @@ interface CategoryInfo {
             </div>
           }
         } @else if (filteredCars().length > 0) {
-          <!-- ═══ NORMAL GRID (Tümü, Havalimanları, Aylık, Yakında, Teslim Edilen) ═══ -->
+          <!-- ═══ NORMAL GRID ═══ -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             @for (car of filteredCars(); track car.id) {
               <ng-container *ngTemplateOutlet="carCard; context: { $implicit: car }"></ng-container>
@@ -83,10 +91,10 @@ interface CategoryInfo {
           <!-- ═══ Boş Durum ═══ -->
           <div class="text-center py-16">
             <div class="text-5xl mb-3">😔</div>
-            <h3 class="text-lg font-bold text-ink-900">Bu kategoride araç bulunamadı</h3>
-            <p class="text-ink-500 text-sm mt-2">Farklı bir kategori deneyin veya tüm araçları görün.</p>
+            <h3 class="text-lg font-bold text-ink-900">{{ 'home.sections.empty' | translate }}</h3>
+            <p class="text-ink-500 text-sm mt-2">{{ 'home.sections.emptyDescription' | translate }}</p>
             <button (click)="onCategoryChanged('all')" class="btn-primary mt-4">
-              Tüm Araçları Göster
+              {{ 'home.sections.showAll' | translate }}
             </button>
           </div>
         }
@@ -97,8 +105,8 @@ interface CategoryInfo {
     <section class="py-14 bg-ink-50">
       <div class="max-w-[1400px] mx-auto px-4 sm:px-6">
         <div class="text-center max-w-2xl mx-auto mb-10">
-          <h2 class="text-2xl font-bold text-ink-900 mb-2">Neden RentACar?</h2>
-          <p class="text-ink-600">Türkiye'nin en güvenilir araç kiralama deneyimi</p>
+          <h2 class="text-2xl font-bold text-ink-900 mb-2">{{ 'home.whyUs.title' | translate }}</h2>
+          <p class="text-ink-600">{{ 'home.whyUs.subtitle' | translate }}</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div class="text-center p-6">
@@ -107,8 +115,8 @@ interface CategoryInfo {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
             </div>
-            <h3 class="font-bold text-lg mt-4">Anında Rezervasyon</h3>
-            <p class="text-ink-600 text-sm mt-2">3 dakikada rezervasyonunu tamamla, anında onay al.</p>
+            <h3 class="font-bold text-lg mt-4">{{ 'home.whyUs.instantTitle' | translate }}</h3>
+            <p class="text-ink-600 text-sm mt-2">{{ 'home.whyUs.instantDesc' | translate }}</p>
           </div>
           <div class="text-center p-6">
             <div class="w-14 h-14 mx-auto bg-accent-success/10 rounded-2xl flex items-center justify-center text-accent-success">
@@ -117,8 +125,8 @@ interface CategoryInfo {
                       d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
               </svg>
             </div>
-            <h3 class="font-bold text-lg mt-4">Güvenli Sürüş</h3>
-            <p class="text-ink-600 text-sm mt-2">Tüm araçlarımız tam sigortalı ve düzenli bakımlıdır.</p>
+            <h3 class="font-bold text-lg mt-4">{{ 'home.whyUs.secureTitle' | translate }}</h3>
+            <p class="text-ink-600 text-sm mt-2">{{ 'home.whyUs.secureDesc' | translate }}</p>
           </div>
           <div class="text-center p-6">
             <div class="w-14 h-14 mx-auto bg-accent-warning/10 rounded-2xl flex items-center justify-center text-accent-warning">
@@ -127,14 +135,14 @@ interface CategoryInfo {
                       d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
               </svg>
             </div>
-            <h3 class="font-bold text-lg mt-4">7/24 Destek</h3>
-            <p class="text-ink-600 text-sm mt-2">Yol yardım ve müşteri hizmetleri her an yanında.</p>
+            <h3 class="font-bold text-lg mt-4">{{ 'home.whyUs.supportTitle' | translate }}</h3>
+            <p class="text-ink-600 text-sm mt-2">{{ 'home.whyUs.supportDesc' | translate }}</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ═══ Araç Kartı Template'i (yeniden kullanılabilir) ═══ -->
+    <!-- ═══ Araç Kartı Template'i ═══ -->
     <ng-template #carCard let-car>
       <a [routerLink]="['/araclar', car.id]" class="card overflow-hidden group cursor-pointer">
         <div class="aspect-[4/3] bg-ink-100 relative overflow-hidden">
@@ -155,14 +163,12 @@ interface CategoryInfo {
             </svg>
           </button>
 
-          <!-- Şube badge -->
           @if (car.locationName) {
             <div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded-full text-xs font-semibold text-ink-700 shadow-card">
               📍 {{ car.locationName }}
             </div>
           }
         </div>
-
         <div class="p-4">
           <div class="flex items-start justify-between gap-2">
             <div class="flex-1 min-w-0">
@@ -178,21 +184,21 @@ interface CategoryInfo {
           </div>
 
           <div class="flex items-center gap-3 mt-3 text-xs text-ink-500">
-            <span>{{ getFuelLabel(car.fuelType) }}</span>
+            <span>{{ getFuelLabel(car.fuelType) | translate }}</span>
             <span>•</span>
-            <span>{{ getTransLabel(car.transmissionType) }}</span>
+            <span>{{ getTransLabel(car.transmissionType) | translate }}</span>
             <span>•</span>
-            <span>{{ car.seatCount }} kişi</span>
+            <span>{{ car.seatCount }} {{ 'home.car.seats' | translate }}</span>
           </div>
 
           <div class="mt-4 pt-4 border-t border-ink-100 flex items-baseline justify-between">
             <div class="text-lg font-extrabold text-ink-900">
               ₺{{ car.dailyPrice | number:'1.0-0' }}
-              <span class="text-xs font-normal text-ink-500">/ gün</span>
+              <span class="text-xs font-normal text-ink-500">{{ 'home.car.perDay' | translate }}</span>
             </div>
             @if (activeCategory() === 'monthly') {
               <div class="text-xs text-accent-success font-semibold">
-                Aylık: ₺{{ (car.dailyPrice * 30 * 0.85) | number:'1.0-0' }}
+                {{ 'home.car.monthly' | translate }}: ₺{{ (car.dailyPrice * 30 * 0.85) | number:'1.0-0' }}
               </div>
             }
           </div>
@@ -204,53 +210,45 @@ interface CategoryInfo {
 export class HomeComponent implements OnInit {
   private carService = inject(CarService);
   private locationService = inject(LocationService);
+  private translate = inject(TranslateService);
 
   protected allCars = signal<Car[]>([]);
   protected loading = signal(true);
   protected activeCategory = signal<string>('all');
   protected apiBaseUrl = environment.apiBaseUrl;
 
-  // Kullanıcı şehri (nearby için browser geolocation → şehir tahmin)
   protected userCity = signal<string | null>(null);
 
-  // ═══ Filtrelenmiş araç listesi (computed — kategori değişince otomatik) ═══
   protected filteredCars = computed(() => {
     const cars = this.allCars();
     const cat = this.activeCategory();
 
     switch (cat) {
       case 'all':
-        // İlk 4 tanesini göster
         return cars.slice(0, 4);
 
       case 'airport':
-        // Sadece havalimanı şubelerindeki araçlar
         return cars.filter(c =>
           c.locationName?.toLowerCase().includes('havaliman') ||
           c.locationName?.toLowerCase().includes('airport')
         ).slice(0, 4);
 
       case 'monthly':
-        // En ucuz araçlar (aylık kiralama için ideal) — fiyata göre sort
         return [...cars]
           .sort((a, b) => a.dailyPrice - b.dailyPrice)
           .slice(0, 4);
 
       case 'nearby':
-        // Kullanıcının şehrindeki araçlar
         const city = this.userCity();
-        if (!city) return cars.slice(0, 4); // Şehir yoksa hepsini göster
+        if (!city) return cars.slice(0, 4);
         return cars.filter(c =>
           c.locationName?.toLowerCase().includes(city.toLowerCase())
         ).slice(0, 4);
 
       case 'delivery':
-        // Şu an tüm araçlar teslim edilebilir varsayıyoruz
-        // İleride Car.HasDelivery alanı eklenebilir
         return cars.slice(0, 4);
 
       case 'cities':
-        // Şehirler için ayrı render yolu var (carsByCity computed)
         return [];
 
       default:
@@ -258,26 +256,22 @@ export class HomeComponent implements OnInit {
     }
   });
 
-  // ═══ Şehir bazlı gruplama ═══
   protected carsByCity = computed(() => {
     const groups = new Map<string, Car[]>();
     for (const car of this.allCars()) {
       if (!car.locationName) continue;
-      // Location name içinden şehir çıkart (basit strategy)
-      // Örn: "Antalya Havalimanı" → "Antalya", "İstanbul Ataşehir" → "İstanbul"
       const city = this.extractCity(car.locationName);
       if (!city) continue;
 
       if (!groups.has(city)) groups.set(city, []);
       groups.get(city)!.push(car);
     }
-    // Şehirleri araç sayısına göre sırala (çoktan aza)
     return Array.from(groups.entries())
       .map(([city, cars]) => ({ city, cars }))
       .sort((a, b) => b.cars.length - a.cars.length);
   });
 
-  // ═══ Kategoriye göre başlık + alt yazı ═══
+  // ⭐ Kategori info — translation KEY döndürür (pipe render eder, dile göre değişir)
   protected categoryInfo = computed<CategoryInfo>(() => {
     const cat = this.activeCategory();
     const count = this.filteredCars().length;
@@ -285,34 +279,39 @@ export class HomeComponent implements OnInit {
     switch (cat) {
       case 'airport':
         return {
-          title: 'Havalimanlarında Müsait Araçlar',
-          subtitle: `${count} araç • Uçağınıza indiğinizde teslim`
+          titleKey: 'home.sections.airport',
+          subtitleKey: 'home.sections.airportSubtitle',
+          params: { count }
         };
       case 'monthly':
         return {
-          title: 'Aylık Kiralamalar',
-          subtitle: 'Uzun dönem için en avantajlı fiyatlar — %15 indirim'
+          titleKey: 'home.sections.monthly',
+          subtitleKey: 'home.sections.monthlySubtitle'
         };
       case 'nearby':
         const city = this.userCity();
-        return {
-          title: city ? `${city}'da Müsait Araçlar` : 'Yakınındaki Araçlar',
-          subtitle: city ? 'Konumunuza en yakın şubeler' : 'Konum bilgisi bekleniyor...'
+        return city ? {
+          titleKey: 'home.sections.nearbyLocated',
+          subtitleKey: 'home.sections.nearbySubtitle',
+          params: { city }
+        } : {
+          titleKey: 'home.sections.nearby',
+          subtitleKey: 'home.sections.nearbyLoading'
         };
       case 'delivery':
         return {
-          title: 'Adrese Teslim Araçlar',
-          subtitle: 'İstediğiniz adrese getirelim'
+          titleKey: 'home.sections.delivery',
+          subtitleKey: 'home.sections.deliverySubtitle'
         };
       case 'cities':
         return {
-          title: 'Şehirlere Göre Araçlar',
-          subtitle: 'Türkiye\'nin dört bir yanında müsait araçlar'
+          titleKey: 'home.sections.cities',
+          subtitleKey: 'home.sections.citiesSubtitle'
         };
       default:
         return {
-          title: 'Öne Çıkan Araçlar',
-          subtitle: 'En çok tercih edilen araçlar'
+          titleKey: 'home.sections.featured',
+          subtitleKey: 'home.sections.featuredSubtitle'
         };
     }
   });
@@ -320,7 +319,6 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.loadCars();
 
-    // Locations'ı da yükle (kategori filtresi için gerekli)
     if (this.locationService.locations().length === 0) {
       this.locationService.getAll().subscribe();
     }
@@ -329,7 +327,6 @@ export class HomeComponent implements OnInit {
   onCategoryChanged(category: string): void {
     this.activeCategory.set(category);
 
-    // Nearby seçilirse browser geolocation başlat
     if (category === 'nearby' && !this.userCity()) {
       this.detectUserCity();
     }
@@ -337,8 +334,6 @@ export class HomeComponent implements OnInit {
 
   private loadCars(): void {
     this.loading.set(true);
-    // Anasayfada tüm araçları çekiyoruz (küçük filo, ~50 araç)
-    // Böylece kategori filtreleri client-side hızlı çalışır
     this.carService.searchCars({ pageNumber: 1, pageSize: 100 }).subscribe({
       next: res => {
         if (res.success && res.data) {
@@ -350,9 +345,7 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // ═══ Basit şehir çıkarma ═══
   private extractCity(locationName: string): string | null {
-    // Bilinen büyük şehirler
     const cities = [
       'İstanbul', 'Istanbul', 'Ankara', 'İzmir', 'Izmir', 'Antalya',
       'Bursa', 'Adana', 'Konya', 'Gaziantep', 'Muğla', 'Mugla',
@@ -361,7 +354,6 @@ export class HomeComponent implements OnInit {
 
     for (const city of cities) {
       if (locationName.toLowerCase().includes(city.toLowerCase())) {
-        // Türkçe karakterli versiyonu normalize et
         if (city === 'Istanbul') return 'İstanbul';
         if (city === 'Izmir') return 'İzmir';
         if (city === 'Mugla') return 'Muğla';
@@ -372,17 +364,16 @@ export class HomeComponent implements OnInit {
     return null;
   }
 
-  // ═══ Kullanıcının şehrini tespit et ═══
   private detectUserCity(): void {
     if (!navigator.geolocation) return;
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          // Ücretsiz reverse geocoding: OpenStreetMap Nominatim
           const { latitude, longitude } = position.coords;
+          const currentLang = this.translate.getCurrentLang() || 'tr';
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=tr`
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=${currentLang}`
           );
           const data = await response.json();
           const city = data.address?.province || data.address?.city || data.address?.town;
@@ -400,11 +391,24 @@ export class HomeComponent implements OnInit {
     );
   }
 
+  // ⭐ Artık translation key döndürüyor, pipe render ediyor
   protected getFuelLabel(fuel: number): string {
-    return ({ 1: 'Benzin', 2: 'Dizel', 3: 'Elektrik', 4: 'Hibrit', 5: 'LPG' } as any)[fuel] ?? '—';
+    const keys = ({
+      1: 'home.fuel.gasoline',
+      2: 'home.fuel.diesel',
+      3: 'home.fuel.electric',
+      4: 'home.fuel.hybrid',
+      5: 'home.fuel.lpg'
+    } as any)[fuel];
+    return keys ?? '—';
   }
 
   protected getTransLabel(trans: number): string {
-    return ({ 1: 'Manuel', 2: 'Otomatik', 3: 'Yarı Otomatik' } as any)[trans] ?? '—';
+    const keys = ({
+      1: 'home.transmission.manual',
+      2: 'home.transmission.automatic',
+      3: 'home.transmission.semiAutomatic'
+    } as any)[trans];
+    return keys ?? '—';
   }
 }

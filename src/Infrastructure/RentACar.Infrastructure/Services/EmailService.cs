@@ -96,6 +96,335 @@ public class EmailService : IEmailService
         return await SendEmailAsync(user.Email, toName, subject, html);
     }
 
+
+
+    // ═══════════════════════════════════════════════════════════════════
+    // İLETİŞİM FORMU MAİLİ (Müşteri → Firma)
+    // ═══════════════════════════════════════════════════════════════════
+    public async Task<bool> SendContactFormAsync(
+        string senderName,
+        string senderEmail,
+        string senderPhone,
+        string subject,
+        string message)
+    {
+        // Firmanın kendi mail adresi — appsettings'ten okunur
+        var adminEmail = _settings.AdminEmail;
+        if (string.IsNullOrWhiteSpace(adminEmail))
+        {
+            _logger.LogWarning("AdminEmail not configured. Contact form email skipped.");
+            return false;
+        }
+
+        var mailSubject = $"📧 Yeni İletişim Talebi: {subject}";
+        var htmlBody = BuildContactFormHtml(senderName, senderEmail, senderPhone, subject, message);
+
+        // 1) Firmaya (admin) bildirim gönder
+        var adminResult = await SendEmailAsync(adminEmail, _settings.FromName, mailSubject, htmlBody);
+
+        // 2) Müşteriye otomatik yanıt gönder (auto-reply)
+        if (!string.IsNullOrWhiteSpace(senderEmail))
+        {
+            var autoReplyHtml = BuildContactAutoReplyHtml(senderName);
+            // Fire-and-forget — auto-reply başarısız olursa admin mail yine gitti
+            _ = SendEmailAsync(senderEmail, senderName, "Talebiniz alındı — RentACar", autoReplyHtml);
+        }
+
+        return adminResult;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ⭐ YENİ: REZERVASYON BİLDİRİMİ (Firmaya)
+    // ═══════════════════════════════════════════════════════════════════
+    public async Task<bool> SendReservationNotificationToAdminAsync(Rental rental)
+    {
+        var adminEmail = _settings.AdminEmail;
+        if (string.IsNullOrWhiteSpace(adminEmail))
+        {
+            _logger.LogWarning("AdminEmail not configured. Admin notification skipped.");
+            return false;
+        }
+
+        var code = rental.ReservationCode ?? $"RNT-{rental.Id}";
+        var subject = $"🎫 Yeni Rezervasyon: {code}";
+        var htmlBody = BuildReservationAdminNotificationHtml(rental);
+
+        return await SendEmailAsync(adminEmail, _settings.FromName, subject, htmlBody);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ⭐ YENİ: HTML BUILDER — İletişim Formu (Firmaya)
+    // ═══════════════════════════════════════════════════════════════════
+    private string BuildContactFormHtml(
+        string senderName,
+        string senderEmail,
+        string senderPhone,
+        string subject,
+        string message)
+    {
+        // XSS koruması — kullanıcı girdisini HTML-escape ediyoruz
+        var safeName = System.Net.WebUtility.HtmlEncode(senderName);
+        var safeEmail = System.Net.WebUtility.HtmlEncode(senderEmail);
+        var safePhone = System.Net.WebUtility.HtmlEncode(senderPhone);
+        var safeSubject = System.Net.WebUtility.HtmlEncode(subject);
+        var safeMessage = System.Net.WebUtility.HtmlEncode(message).Replace("\n", "<br>");
+
+        var receivedAt = DateTime.Now.ToString("dd MMMM yyyy HH:mm", TrCulture);
+
+        return $@"
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <style>
+    body {{ font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f4f7; margin: 0; padding: 20px; color: #333; }}
+    .container {{ max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }}
+    .header {{ background: linear-gradient(135deg, #e2091d 0%, #b8071a 100%); color: white; padding: 30px; text-align: center; }}
+    .header h1 {{ margin: 0; font-size: 22px; }}
+    .header p {{ margin: 8px 0 0; opacity: 0.9; font-size: 14px; }}
+    .content {{ padding: 30px; }}
+    .info-row {{ display: table; width: 100%; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }}
+    .info-label {{ display: table-cell; width: 100px; font-weight: 600; color: #666; font-size: 13px; }}
+    .info-value {{ display: table-cell; color: #333; font-size: 14px; }}
+    .message-box {{ background: #f9f9f9; border-left: 4px solid #e2091d; padding: 16px; margin-top: 20px; border-radius: 4px; }}
+    .message-box p {{ margin: 0; color: #444; line-height: 1.6; }}
+    .footer {{ background: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #999; }}
+    .btn {{ display: inline-block; padding: 12px 24px; background: #e2091d; color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 20px; }}
+  </style>
+</head>
+<body>
+  <div class='container'>
+    <div class='header'>
+      <h1>📧 Yeni İletişim Talebi</h1>
+      <p>Web sitesi iletişim formundan yeni bir mesaj alındı</p>
+    </div>
+ 
+    <div class='content'>
+      <div class='info-row'>
+        <div class='info-label'>👤 Ad Soyad</div>
+        <div class='info-value'>{safeName}</div>
+      </div>
+      <div class='info-row'>
+        <div class='info-label'>✉️ E-posta</div>
+        <div class='info-value'><a href='mailto:{safeEmail}' style='color: #e2091d;'>{safeEmail}</a></div>
+      </div>
+      <div class='info-row'>
+        <div class='info-label'>📱 Telefon</div>
+        <div class='info-value'><a href='tel:{safePhone}' style='color: #e2091d;'>{safePhone}</a></div>
+      </div>
+      <div class='info-row'>
+        <div class='info-label'>📌 Konu</div>
+        <div class='info-value'><strong>{safeSubject}</strong></div>
+      </div>
+      <div class='info-row'>
+        <div class='info-label'>🕐 Zaman</div>
+        <div class='info-value'>{receivedAt}</div>
+      </div>
+ 
+      <div class='message-box'>
+        <p><strong>Mesaj:</strong></p>
+        <p>{safeMessage}</p>
+      </div>
+ 
+      <div style='text-align: center;'>
+        <a href='mailto:{safeEmail}?subject=RE: {safeSubject}' class='btn'>Yanıtla</a>
+      </div>
+    </div>
+ 
+    <div class='footer'>
+      <p>Bu mail RentACar iletişim formundan otomatik olarak oluşturulmuştur.</p>
+      <p>© {DateTime.Now.Year} RentACar. Tüm hakları saklıdır.</p>
+    </div>
+  </div>
+</body>
+</html>";
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ⭐ YENİ: HTML BUILDER — Otomatik Yanıt (Müşteriye)
+    // ═══════════════════════════════════════════════════════════════════
+    private string BuildContactAutoReplyHtml(string senderName)
+    {
+        var safeName = System.Net.WebUtility.HtmlEncode(senderName);
+
+        return $@"
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <style>
+    body {{ font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f4f7; margin: 0; padding: 20px; color: #333; }}
+    .container {{ max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }}
+    .header {{ background: linear-gradient(135deg, #e2091d 0%, #b8071a 100%); color: white; padding: 40px 30px; text-align: center; }}
+    .header .icon {{ font-size: 48px; margin-bottom: 12px; }}
+    .header h1 {{ margin: 0; font-size: 24px; }}
+    .content {{ padding: 30px; line-height: 1.7; color: #444; }}
+    .content p {{ margin: 0 0 16px; }}
+    .info-box {{ background: #fef5f6; border: 1px solid #f7c5cb; border-radius: 8px; padding: 16px; margin: 20px 0; }}
+    .info-box p {{ margin: 0; font-size: 14px; color: #666; }}
+    .footer {{ background: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #999; }}
+  </style>
+</head>
+<body>
+  <div class='container'>
+    <div class='header'>
+      <div class='icon'>✓</div>
+      <h1>Mesajınız alındı!</h1>
+    </div>
+ 
+    <div class='content'>
+      <p>Merhaba <strong>{safeName}</strong>,</p>
+      <p>RentACar ile iletişime geçtiğiniz için teşekkür ederiz. Mesajınız ekibimize başarıyla iletilmiştir.</p>
+      <p>En kısa sürede size dönüş yapacağız — genellikle <strong>iş günlerinde 4 saat içinde</strong> yanıtlıyoruz.</p>
+ 
+      <div class='info-box'>
+        <p><strong>💡 Acil bir durumsa:</strong></p>
+        <p>7/24 çağrı merkezimizi arayabilirsiniz: <strong>0850 XXX XX XX</strong></p>
+      </div>
+ 
+      <p>Rezervasyonlarınızı incelemek veya yeni bir araç kiralamak için sitemizi ziyaret edebilirsiniz.</p>
+      <p>Saygılarımızla,<br><strong>RentACar Ekibi</strong></p>
+    </div>
+ 
+    <div class='footer'>
+      <p>Bu e-posta otomatik olarak gönderilmiştir. Lütfen bu adrese yanıt vermeyin.</p>
+      <p>© {DateTime.Now.Year} RentACar. Tüm hakları saklıdır.</p>
+    </div>
+  </div>
+</body>
+</html>";
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ⭐ YENİ: HTML BUILDER — Firmaya Rezervasyon Bildirimi
+    // ═══════════════════════════════════════════════════════════════════
+    private string BuildReservationAdminNotificationHtml(Rental rental)
+    {
+        var code = rental.ReservationCode ?? $"RNT-{rental.Id}";
+        var carName = rental.Car != null
+            ? $"{rental.Car.Brand?.Name} {rental.Car.Model}"
+            : "-";
+        var carPlate = rental.Car?.Plate ?? "-";
+        var pickupLocation = rental.PickUpLocation?.Name ?? "-";
+        var dropoffLocation = rental.DropOffLocation?.Name ?? "-";
+        var pickupDate = rental.RentStartDate.ToString("dd MMMM yyyy HH:mm", TrCulture);
+        var returnDate = rental.RentEndDate.ToString("dd MMMM yyyy HH:mm", TrCulture);
+        var totalDays = Math.Max(1, (int)Math.Ceiling((rental.RentEndDate - rental.RentStartDate).TotalDays));
+        var totalAmount = rental.TotalAmount.ToString("N2", TrCulture);
+        var paymentStatus = rental.IsPaid ? "✅ Online Ödenmiş" : "⏳ Ofiste Ödenecek";
+        var driverName = $"{rental.DriverFirstName} {rental.DriverLastName}".Trim();
+
+        return $@"
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <style>
+    body {{ font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f4f7; margin: 0; padding: 20px; color: #333; }}
+    .container {{ max-width: 620px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }}
+    .header {{ background: linear-gradient(135deg, #e2091d 0%, #b8071a 100%); color: white; padding: 30px; text-align: center; }}
+    .header h1 {{ margin: 0; font-size: 22px; }}
+    .header .code {{ display: inline-block; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; margin-top: 10px; font-family: monospace; letter-spacing: 1px; }}
+    .content {{ padding: 30px; }}
+    .section {{ margin-bottom: 24px; }}
+    .section h3 {{ font-size: 14px; text-transform: uppercase; color: #999; margin: 0 0 12px; letter-spacing: 1px; }}
+    .info-grid {{ background: #f9f9f9; border-radius: 8px; padding: 16px; }}
+    .info-row {{ display: table; width: 100%; padding: 8px 0; }}
+    .info-label {{ display: table-cell; width: 130px; font-weight: 600; color: #666; font-size: 13px; }}
+    .info-value {{ display: table-cell; color: #333; font-size: 14px; }}
+    .payment-badge {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }}
+    .payment-paid {{ background: #d1fae5; color: #065f46; }}
+    .payment-pending {{ background: #fef3c7; color: #92400e; }}
+    .amount-box {{ background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #e2091d; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }}
+    .amount-box .label {{ font-size: 12px; text-transform: uppercase; color: #666; letter-spacing: 1px; }}
+    .amount-box .value {{ font-size: 28px; font-weight: 900; color: #e2091d; margin-top: 4px; }}
+    .footer {{ background: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #999; }}
+  </style>
+</head>
+<body>
+  <div class='container'>
+    <div class='header'>
+      <h1>🎫 Yeni Rezervasyon Alındı</h1>
+      <div class='code'>{code}</div>
+    </div>
+ 
+    <div class='content'>
+      <div class='section'>
+        <h3>👤 Sürücü Bilgileri</h3>
+        <div class='info-grid'>
+          <div class='info-row'>
+            <div class='info-label'>Ad Soyad</div>
+            <div class='info-value'><strong>{driverName}</strong></div>
+          </div>
+          <div class='info-row'>
+            <div class='info-label'>E-posta</div>
+            <div class='info-value'><a href='mailto:{rental.DriverEmail}' style='color: #e2091d;'>{rental.DriverEmail}</a></div>
+          </div>
+          <div class='info-row'>
+            <div class='info-label'>Telefon</div>
+            <div class='info-value'><a href='tel:{rental.DriverPhone}' style='color: #e2091d;'>{rental.DriverPhone}</a></div>
+          </div>
+          <div class='info-row'>
+            <div class='info-label'>T.C. No</div>
+            <div class='info-value'>{rental.DriverIdentityNumber}</div>
+          </div>
+        </div>
+      </div>
+ 
+      <div class='section'>
+        <h3>🚗 Araç</h3>
+        <div class='info-grid'>
+          <div class='info-row'>
+            <div class='info-label'>Model</div>
+            <div class='info-value'><strong>{carName}</strong></div>
+          </div>
+          <div class='info-row'>
+            <div class='info-label'>Plaka</div>
+            <div class='info-value' style='font-family: monospace; font-weight: 700;'>{carPlate}</div>
+          </div>
+        </div>
+      </div>
+ 
+      <div class='section'>
+        <h3>📅 Rezervasyon Detayı</h3>
+        <div class='info-grid'>
+          <div class='info-row'>
+            <div class='info-label'>Alış</div>
+            <div class='info-value'>{pickupDate}<br><span style='color: #999; font-size: 12px;'>📍 {pickupLocation}</span></div>
+          </div>
+          <div class='info-row'>
+            <div class='info-label'>İade</div>
+            <div class='info-value'>{returnDate}<br><span style='color: #999; font-size: 12px;'>📍 {dropoffLocation}</span></div>
+          </div>
+          <div class='info-row'>
+            <div class='info-label'>Toplam Gün</div>
+            <div class='info-value'>{totalDays} gün</div>
+          </div>
+          <div class='info-row'>
+            <div class='info-label'>Ödeme Durumu</div>
+            <div class='info-value'>
+              <span class='payment-badge {(rental.IsPaid ? "payment-paid" : "payment-pending")}'>{paymentStatus}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      <div class='amount-box'>
+        <div class='label'>Toplam Tutar</div>
+        <div class='value'>₺{totalAmount}</div>
+      </div>
+    </div>
+ 
+    <div class='footer'>
+      <p>Bu bildirim yeni bir rezervasyon oluştuğunda otomatik olarak gönderilir.</p>
+      <p>© {DateTime.Now.Year} RentACar Admin Notification System</p>
+    </div>
+  </div>
+</body>
+</html>";
+    }
+
+
     // ═══════════════════════════════════════════════════════════════════
     // HTML TEMPLATE — REZERVASYON ONAY
     // ═══════════════════════════════════════════════════════════════════

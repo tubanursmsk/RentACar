@@ -2,37 +2,52 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { INFO_PAGES, InfoPage } from './info-pages.data';
+import { ContactBarComponent } from '../../shared/components/contact-bar.component';
 
 @Component({
   selector: 'app-info-page',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ContactBarComponent],
   template: `
     <div class="bg-ink-100/30 min-h-screen">
       @if (page(); as p) {
-        <!-- ═══ Hero ═══ -->
-        <div class="bg-gradient-to-br from-brand-600 to-brand-700 text-white">
-          <div class="max-w-[1200px] mx-auto px-4 sm:px-6 py-12 lg:py-16">
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- HERO — Ofisler sayfasıyla birebir aynı desen         -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <div class="relative bg-ink-900 overflow-hidden">
+          <div class="absolute inset-0 opacity-20 bg-cover bg-center"
+               style="background-image: url('assets/cars/hero-1.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-r from-ink-900 to-transparent"></div>
+
+          <div class="relative page-container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 z-10">
             <!-- Breadcrumb -->
-            <nav class="text-sm text-white/70 mb-4 flex items-center gap-2 flex-wrap">
-              <a routerLink="/" class="hover:text-white">Ana Sayfa</a>
-              <span>/</span>
-              <span class="hover:text-white">{{ p.breadcrumbGroup }}</span>
-              <span>/</span>
-              <span class="text-white font-semibold">{{ p.title }}</span>
+            
+            <nav class="text-sm font-bold text-white/80 tracking-widest uppercase mb-2 flex items-center gap-2 flex-wrap">
+              <a routerLink="/" class="hover:text-white transition">Ana Sayfa</a>
+              <span>></span>
+              <span>{{ p.breadcrumbGroup }}</span>
+              <span>></span>
+              <span class="text-white">{{ p.title }}</span>
             </nav>
 
-            <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div class="text-6xl lg:text-7xl">{{ p.heroIcon }}</div>
+            <!-- Başlık + Icon -->
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+              <div class="text-5xl lg:text-6xl"></div>
               <div>
-                <h1 class="text-3xl lg:text-4xl font-extrabold mb-3">{{ p.title }}</h1>
+                <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-3">{{ p.title }}</h1>
                 @if (p.subtitle) {
-                  <p class="text-white/90 text-base lg:text-lg max-w-2xl">{{ p.subtitle }}</p>
+                  <p class="text-lg text-ink-300 max-w-2xl leading-relaxed">{{ p.subtitle }}</p>
                 }
               </div>
             </div>
           </div>
         </div>
+
+        <!-- SADECE /iletisim slug'ında formu göster -->
+        @if (p.slug === 'iletisim') {
+          <app-contact-bar />
+        }
 
         <!-- ═══ İçerik ═══ -->
         <div class="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 lg:py-12">
@@ -102,7 +117,6 @@ import { INFO_PAGES, InfoPage } from './info-pages.data';
                        [class.font-semibold]="relatedPage.slug === p.slug"
                        [class.text-ink-700]="relatedPage.slug !== p.slug"
                        [class.hover:bg-ink-50]="relatedPage.slug !== p.slug">
-                      <span>{{ relatedPage.heroIcon }}</span>
                       <span>{{ relatedPage.title }}</span>
                     </a>
                   }
@@ -151,12 +165,10 @@ export class InfoPageComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    // URL değişikliklerini dinle (aynı component farklı slug'lar için kullanılıyor)
     this.route.data.subscribe(data => {
       const slug = data['slug'] as string;
       const found = INFO_PAGES.find(p => p.slug === slug);
       this.page.set(found ?? null);
-      // Scroll top
       window.scrollTo({ top: 0, behavior: 'instant' });
     });
   }

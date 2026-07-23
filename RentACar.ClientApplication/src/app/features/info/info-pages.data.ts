@@ -9,7 +9,7 @@ export interface InfoPage {
   title: string;
   subtitle?: string;
   breadcrumbGroup: 'Hizmetler' | 'Kurumsal' | 'Yardım';
-  heroIcon: string;
+  
   sections: InfoSection[];
   cta?: {
     text: string;
@@ -25,7 +25,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'Kurumsal Çözümler',
     subtitle: 'Şirketiniz için özel filo ve kiralama çözümleri',
     breadcrumbGroup: 'Hizmetler',
-    heroIcon: '🏢',
     sections: [
       {
         paragraphs: [
@@ -70,7 +69,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'Şoförlü Hizmet',
     subtitle: 'Profesyonel şoförlerimizle konforlu ve güvenli yolculuk',
     breadcrumbGroup: 'Hizmetler',
-    heroIcon: '🚙',
     sections: [
       {
         paragraphs: [
@@ -113,7 +111,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'Uzun Dönem Kiralama',
     subtitle: 'Aylık ve yıllık kiralama ile maksimum tasarruf',
     breadcrumbGroup: 'Hizmetler',
-    heroIcon: '📅',
     sections: [
       {
         paragraphs: [
@@ -156,7 +153,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'Hakkımızda',
     subtitle: 'Türkiye\'nin güvenilir araç kiralama markası',
     breadcrumbGroup: 'Kurumsal',
-    heroIcon: '🏆',
     sections: [
       {
         paragraphs: [
@@ -204,7 +200,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'Kariyer',
     subtitle: 'RentACar ailesine katılın',
     breadcrumbGroup: 'Kurumsal',
-    heroIcon: '💼',
     sections: [
       {
         paragraphs: [
@@ -256,7 +251,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'Basın Odası',
     subtitle: 'RentACar hakkında güncel haberler ve basın bültenleri',
     breadcrumbGroup: 'Kurumsal',
-    heroIcon: '📰',
     sections: [
       {
         paragraphs: [
@@ -296,7 +290,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'İletişim',
     subtitle: 'Bize ulaşın, size yardımcı olmaktan mutluluk duyarız',
     breadcrumbGroup: 'Kurumsal',
-    heroIcon: '📞',
     sections: [
       {
         title: '7/24 Çağrı Merkezi',
@@ -359,7 +352,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'Sıkça Sorulan Sorular',
     subtitle: 'Merak ettiğiniz her şey burada',
     breadcrumbGroup: 'Yardım',
-    heroIcon: '❓',
     sections: [
       {
         title: 'Rezervasyon',
@@ -412,7 +404,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'Kiralama Koşulları',
     subtitle: 'Genel kiralama şartları ve gereksinimleri',
     breadcrumbGroup: 'Yardım',
-    heroIcon: '📋',
     sections: [
       {
         title: 'Genel Şartlar',
@@ -488,7 +479,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'Gizlilik Politikası',
     subtitle: 'Kişisel verilerinizin gizliliği bizim için önemli',
     breadcrumbGroup: 'Yardım',
-    heroIcon: '🔒',
     sections: [
       {
         paragraphs: [
@@ -571,7 +561,6 @@ export const INFO_PAGES: InfoPage[] = [
     title: 'KVKK Aydınlatma Metni',
     subtitle: '6698 Sayılı Kişisel Verilerin Korunması Kanunu kapsamında bilgilendirme',
     breadcrumbGroup: 'Yardım',
-    heroIcon: '⚖️',
     sections: [
       {
         title: 'Veri Sorumlusu',

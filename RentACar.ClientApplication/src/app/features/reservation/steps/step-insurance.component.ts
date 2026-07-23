@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ReservationWizardService } from '../../../core/services/reservation-wizard.service';
 import { InsuranceService } from '../../../core/services/insurance.service';
 import { ReservationService } from '../../../core/services/reservation.service';
@@ -8,21 +9,19 @@ import { InsurancePackage } from '../../../core/models/reservation.model';
 @Component({
   selector: 'app-step-insurance',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div>
-      <!-- Başlık -->
       <div class="mb-6">
-        <h2 class="text-2xl font-bold text-brand-600 mb-2">Güvence Paketleri</h2>
+        <h2 class="text-2xl font-bold text-brand-600 mb-2">{{ 'wizard.insurance.title' | translate }}</h2>
         <div class="flex items-center gap-2 text-sm text-ink-700">
           <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
           </svg>
-          <span>Standart olarak, bütün araçlarımız Zorunlu Trafik Sigortası kapsamındadır.</span>
+          <span>{{ 'wizard.insurance.info' | translate }}</span>
         </div>
       </div>
 
-      <!-- Loading -->
       @if (loading()) {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           @for (i of [1,2,3]; track i) {
@@ -34,7 +33,6 @@ import { InsurancePackage } from '../../../core/models/reservation.model';
           }
         </div>
       } @else {
-        <!-- ═══ 3 Paket Kartı ═══ -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           @for (pkg of packages(); track pkg.id) {
             <div class="card relative flex flex-col transition-all duration-200"
@@ -42,18 +40,16 @@ import { InsurancePackage } from '../../../core/models/reservation.model';
                  [class.ring-avis-600]="isSelected(pkg.id)"
                  [class.shadow-card-hover]="isSelected(pkg.id)">
 
-              <!-- "En Popüler" rozeti -->
               @if (pkg.isRecommended) {
                 <div class="absolute -top-3 right-4 px-3 py-1 bg-success text-white text-xs font-bold rounded-full shadow-md flex items-center gap-1">
                   <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                   </svg>
-                  En Popüler Güvence
+                  {{ 'wizard.insurance.mostPopular' | translate }}
                 </div>
               }
 
               <div class="p-5">
-                <!-- Başlık + Fiyat -->
                 <div class="flex items-baseline justify-between mb-1">
                   <h3 class="text-lg font-bold text-brand-600">{{ pkg.name }}</h3>
                 </div>
@@ -61,11 +57,10 @@ import { InsurancePackage } from '../../../core/models/reservation.model';
                   <span class="text-2xl font-extrabold text-ink-900">
                     ₺{{ (pkg.dailyPrice * wizard.totalDays()) | number:'1.0-0' }}
                   </span>
-                  <span class="text-xs text-ink-500">/ {{ wizard.totalDays() }} Gün İçin</span>
+                  <span class="text-xs text-ink-500">/ {{ wizard.totalDays() }} {{ 'wizard.common.days' | translate }}</span>
                 </div>
               </div>
 
-              <!-- Özellikler -->
               <div class="px-5 flex-1 max-h-[280px] overflow-y-auto">
                 @for (feature of pkg.features; track feature.name) {
                   <div class="py-2 border-t border-ink-100 flex items-center justify-between gap-2 text-sm">
@@ -83,10 +78,9 @@ import { InsurancePackage } from '../../../core/models/reservation.model';
                 }
               </div>
 
-              <!-- Alt CTA -->
               <div class="p-5 pt-3 border-t border-ink-100 flex items-center justify-between">
                 <button class="text-xs font-bold text-ink-700 hover:text-brand-600 flex items-center gap-1">
-                  DETAYLI BİLGİ
+                  {{ 'wizard.common.detailedInfo' | translate }}
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                   </svg>
@@ -103,9 +97,9 @@ import { InsurancePackage } from '../../../core/models/reservation.model';
                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
                     </svg>
-                    SEÇİLDİ
+                    {{ 'wizard.insurance.selected' | translate }}
                   } @else {
-                    PAKETİ EKLE
+                    {{ 'wizard.insurance.addPackage' | translate }}
                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"/>
                     </svg>
@@ -116,30 +110,28 @@ import { InsurancePackage } from '../../../core/models/reservation.model';
           }
         </div>
 
-        <!-- "Pas Geç" seçeneği -->
         <div class="mt-6 text-center">
           <button (click)="skipInsurance()"
                   class="text-sm text-ink-500 hover:text-brand-600 underline">
-            Sigortasız devam et (zorunlu trafik sigortası yine geçerlidir)
+            {{ 'wizard.insurance.skip' | translate }}
           </button>
         </div>
 
         @if (priceLoading()) {
           <div class="mt-4 text-center text-sm text-ink-500">
-            <span class="inline-block animate-spin">⟳</span> Fiyat hesaplanıyor...
+            <span class="inline-block animate-spin">⟳</span> {{ 'wizard.common.priceCalculating' | translate }}
           </div>
         }
       }
 
-      <!-- Alt Navigasyon -->
       <div class="mt-8 flex justify-between">
         <button (click)="wizard.prevStep()" class="btn-secondary">
-          ‹ GERİ
+          {{ 'wizard.common.back' | translate }}
         </button>
         <button (click)="continue()"
                 [disabled]="!hasSelection()"
                 class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
-          SONRAKİ ADIM ›
+          {{ 'wizard.common.next' | translate }}
         </button>
       </div>
     </div>
@@ -155,7 +147,6 @@ export class StepInsuranceComponent implements OnInit {
   protected priceLoading = signal(false);
 
   protected hasSelection = computed(() => {
-    // Seçtiği bir paket var VEYA bilinçli "pas geç" demiş
     return this.wizard.state().selectedInsurance !== null || this.skippedExplicitly();
   });
 
@@ -173,7 +164,6 @@ export class StepInsuranceComponent implements OnInit {
       this.loading.set(false);
     }
 
-    // İlk yüklenmede mevcut fiyatı hesapla
     this.recalculatePrice();
   }
 
@@ -182,7 +172,6 @@ export class StepInsuranceComponent implements OnInit {
   }
 
   selectPackage(pkg: InsurancePackage): void {
-    // Eğer zaten seçiliyse, kaldır
     if (this.isSelected(pkg.id)) {
       this.wizard.setInsurance(null);
     } else {

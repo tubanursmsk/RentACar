@@ -3,21 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ReservationWizardService } from '../../../core/services/reservation-wizard.service';
 import { ReservationService } from '../../../core/services/reservation.service';
 import { PaymentService } from '../../../core/services/payment.service';
+import { BookingStateService } from '../../../core/services/booking-state.service';
 import { CreateReservationRequest } from '../../../core/models/reservation.model';
 
 @Component({
   selector: 'app-step-payment',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-      <!-- ═══ Sol: Ödeme ═══ -->
+      <!-- Sol: Ödeme -->
       <div class="space-y-4">
 
-        <!-- ═══ Ödeme Seçenekleri ═══ -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button (click)="selectPayment('online')"
                   class="card p-5 text-left transition-all"
@@ -28,13 +29,13 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
               </svg>
-              <h3 class="font-bold text-lg">Online Ödeme</h3>
+              <h3 class="font-bold text-lg">{{ 'wizard.payment.onlineTitle' | translate }}</h3>
             </div>
             <div class="text-2xl font-extrabold text-brand-600 mb-1">
               ₺{{ getOnlinePrice() | number:'1.2-2' }}
             </div>
             <div class="text-xs text-accent-success font-semibold">
-              ✓ Kazancınız: ₺{{ getOnlineSavings() | number:'1.2-2' }}
+              {{ 'wizard.payment.onlineSavings' | translate: { amount: (getOnlineSavings() | number:'1.2-2') } }}
             </div>
           </button>
 
@@ -47,38 +48,39 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
               </svg>
-              <h3 class="font-bold text-lg">Ofiste Ödeme</h3>
+              <h3 class="font-bold text-lg">{{ 'wizard.payment.officeTitle' | translate }}</h3>
             </div>
             <div class="text-2xl font-extrabold text-ink-700 mb-1">
               ₺{{ getOfficePrice() | number:'1.2-2' }}
             </div>
-            <div class="text-xs text-ink-500">Aracı teslim alırken ödeyin</div>
+            <div class="text-xs text-ink-500">{{ 'wizard.payment.officeSubtitle' | translate }}</div>
           </button>
         </div>
 
-        <!-- ═══ Online Kart Formu ═══ -->
         @if (paymentMethod() === 'online') {
           <div class="card p-6 animate-fade-in">
-            <h3 class="font-bold text-lg mb-2">Kart Bilgileri</h3>
+            <h3 class="font-bold text-lg mb-2">{{ 'wizard.payment.cardInfo' | translate }}</h3>
 
             <div class="bg-brand-50 border border-brand-100 rounded-lg p-3 mb-4 text-sm text-ink-700">
-              🔒 <b>Iyzico Sandbox</b> — Test için hazır: Kart <code class="bg-white px-1 rounded">5528790000000008</code>,
-              CVC <code class="bg-white px-1 rounded">123</code>, Son kul. <code class="bg-white px-1 rounded">12/30</code>,
+              <span [innerHTML]="'wizard.payment.sandboxInfo' | translate"></span>
+              Card <code class="bg-white px-1 rounded">5528790000000008</code>,
+              CVC <code class="bg-white px-1 rounded">123</code>,
+              Exp <code class="bg-white px-1 rounded">12/30</code>,
               SMS <code class="bg-white px-1 rounded">283126</code>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2">
-                <label class="label">Kart Üzerindeki İsim</label>
+                <label class="label">{{ 'wizard.payment.cardHolder' | translate }}</label>
                 <input type="text"
                        [(ngModel)]="cardData.holderName"
                        maxlength="200"
                        class="input-field"
-                       placeholder="AD SOYAD">
+                       [placeholder]="'wizard.payment.cardHolderPlaceholder' | translate">
               </div>
 
               <div class="md:col-span-2">
-                <label class="label">Kart Numarası</label>
+                <label class="label">{{ 'wizard.payment.cardNumber' | translate }}</label>
                 <input type="text"
                        [ngModel]="cardData.number"
                        (ngModelChange)="onCardNumberChange($event)"
@@ -88,7 +90,7 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
               </div>
 
               <div>
-                <label class="label">Son Kullanma (AA/YY)</label>
+                <label class="label">{{ 'wizard.payment.expiry' | translate }}</label>
                 <input type="text"
                        [ngModel]="cardData.expiry"
                        (ngModelChange)="onExpiryChange($event)"
@@ -98,7 +100,7 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
               </div>
 
               <div>
-                <label class="label">CVC</label>
+                <label class="label">{{ 'wizard.payment.cvc' | translate }}</label>
                 <input type="text"
                        [(ngModel)]="cardData.cvc"
                        maxlength="4"
@@ -113,20 +115,19 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
               </svg>
-              <span>256-bit SSL • 3D Secure ile korumalı</span>
+              <span>{{ 'wizard.payment.sslInfo' | translate }}</span>
             </div>
           </div>
         }
 
         @if (paymentMethod() === 'office') {
           <div class="card p-6 animate-fade-in">
-            <h3 class="font-bold text-lg mb-2">Ofiste Ödeme</h3>
+            <h3 class="font-bold text-lg mb-2">{{ 'wizard.payment.officeTitle' | translate }}</h3>
             <p class="text-sm text-ink-700">
-              Rezervasyonunuz onaylandığında, aracı teslim aldığınız ofiste
-              kredi kartı veya nakit ile ödemenizi yapabilirsiniz.
+              {{ 'wizard.payment.officeInfo' | translate }}
             </p>
             <div class="mt-4 bg-brand-50 border border-brand-100 rounded-lg p-3 text-sm text-ink-700">
-              ℹ️ Rezervasyonunuz "Beklemede" durumunda kalacak ve aracı teslim aldığınızda onaylanacaktır.
+              {{ 'wizard.payment.officePending' | translate }}
             </div>
           </div>
         }
@@ -137,30 +138,31 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
           </div>
         }
 
-        <!-- Alt Navigasyon -->
         <div class="flex justify-between">
           <button (click)="wizard.prevStep()"
-                  [disabled]="submitting()"
+                  [disabled]="submitting() || cancelling()"
                   class="btn-secondary disabled:opacity-50">
-            ‹ GERİ
+            {{ 'wizard.common.back' | translate }}
           </button>
           <button (click)="submitReservation()"
-                  [disabled]="!canSubmit() || submitting()"
+                  [disabled]="!canSubmit() || submitting() || cancelling()"
                   class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
             @if (submitting()) {
               <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              İşleniyor...
+              {{ 'wizard.common.processing' | translate }}
             } @else {
-              REZERVASYONU TAMAMLA ✓
+              {{ 'wizard.payment.completeReservation' | translate }}
             }
           </button>
         </div>
       </div>
 
-      <!-- ═══ Sağ: Sipariş Özeti ═══ -->
+      <!-- Sağ: Sipariş Özeti -->
       <aside class="space-y-4 lg:sticky lg:top-32 lg:self-start">
         <div class="card p-6">
-          <h3 class="font-bold text-lg mb-4 pb-3 border-b border-ink-100">Sipariş Özeti</h3>
+          <h3 class="font-bold text-lg mb-4 pb-3 border-b border-ink-100">
+            {{ 'wizard.payment.orderSummary' | translate }}
+          </h3>
           @if (wizard.state().pricePreview; as price) {
             <div class="space-y-2 text-sm mb-4">
               @for (line of price.lines; track line.label) {
@@ -176,7 +178,7 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
               }
             </div>
             <div class="pt-3 border-t border-ink-100 flex items-baseline justify-between">
-              <span class="font-bold">Toplam</span>
+              <span class="font-bold">{{ 'wizard.payment.total' | translate }}</span>
               <span class="text-2xl font-extrabold text-brand-600">
                 ₺{{ price.grandTotal | number:'1.2-2' }}
               </span>
@@ -185,7 +187,7 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
         </div>
 
         <div class="card p-5 text-sm">
-          <h4 class="font-bold mb-2">Sürücü</h4>
+          <h4 class="font-bold mb-2">{{ 'wizard.payment.driver' | translate }}</h4>
           <p class="text-ink-700">
             {{ wizard.state().driverInfo.firstName }} {{ wizard.state().driverInfo.lastName }}
           </p>
@@ -194,9 +196,7 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
       </aside>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════ -->
-    <!-- 3DS IFRAME MODAL — Iyzico banka sayfası               -->
-    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- 3DS IFRAME MODAL -->
     @if (threeDSHtml()) {
       <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -209,15 +209,20 @@ import { CreateReservationRequest } from '../../../core/models/reservation.model
                 </svg>
               </div>
               <div>
-                <div class="font-bold text-ink-900">3D Secure Doğrulama</div>
-                <div class="text-xs text-ink-500">Bankanızdan gelen SMS kodunu girin</div>
+                <div class="font-bold text-ink-900">{{ 'wizard.payment.threeDSTitle' | translate }}</div>
+                <div class="text-xs text-ink-500">{{ 'wizard.payment.threeDSSubtitle' | translate }}</div>
               </div>
             </div>
             <button (click)="cancelThreeDS()"
-                    class="w-9 h-9 rounded-full hover:bg-ink-100 flex items-center justify-center">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
+                    [disabled]="cancelling()"
+                    class="w-9 h-9 rounded-full hover:bg-ink-100 flex items-center justify-center disabled:opacity-50">
+              @if (cancelling()) {
+                <div class="w-4 h-4 border-2 border-ink-500 border-t-transparent rounded-full animate-spin"></div>
+              } @else {
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              }
             </button>
           </div>
 
@@ -235,13 +240,17 @@ export class StepPaymentComponent implements OnInit {
   protected wizard = inject(ReservationWizardService);
   private reservationService = inject(ReservationService);
   private paymentService = inject(PaymentService);
+  private bookingState = inject(BookingStateService);
   private router = inject(Router);
   private sanitizer = inject(DomSanitizer);
+  private translate = inject(TranslateService);
 
   protected paymentMethod = signal<'online' | 'office' | null>(null);
   protected submitting = signal(false);
+  protected cancelling = signal(false);
   protected submitError = signal<string | null>(null);
   protected threeDSHtml = signal<string | null>(null);
+  protected currentConversationId = signal<string | null>(null);
 
   protected cardData = {
     holderName: '',
@@ -251,20 +260,20 @@ export class StepPaymentComponent implements OnInit {
   };
 
   protected canSubmit(): boolean {
-  const method = this.paymentMethod();
-  if (method === 'office') return true;
-  if (method === 'online') {
-    const c = this.cardData;
-    const numDigits = c.number.replace(/\s/g, '');
-    return !!(
-      c.holderName.trim().length >= 3 &&
-      numDigits.length === 16 &&
-      /^\d{2}\/\d{2}$/.test(c.expiry) &&
-      c.cvc.length >= 3
-    );
+    const method = this.paymentMethod();
+    if (method === 'office') return true;
+    if (method === 'online') {
+      const c = this.cardData;
+      const numDigits = c.number.replace(/\s/g, '');
+      return !!(
+        c.holderName.trim().length >= 3 &&
+        numDigits.length === 16 &&
+        /^\d{2}\/\d{2}$/.test(c.expiry) &&
+        c.cvc.length >= 3
+      );
+    }
+    return false;
   }
-  return false;
-}
 
   protected threeDSHtmlSafe = computed((): SafeHtml =>
     this.sanitizer.bypassSecurityTrustHtml(this.threeDSHtml() ?? '')
@@ -292,7 +301,6 @@ export class StepPaymentComponent implements OnInit {
     return this.wizard.state().pricePreview?.grandTotal ?? 0;
   }
 
-  // Kart no formatlaması: 1234 5678 9012 3456
   onCardNumberChange(value: string): void {
     const digits = value.replace(/\D/g, '').slice(0, 16);
     this.cardData.number = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
@@ -309,26 +317,48 @@ export class StepPaymentComponent implements OnInit {
 
   @HostListener('window:message', ['$event'])
   onIframeMessage(event: MessageEvent): void {
-    // Iyzico callback iframe içinden top-level navigation yaparsa buraya düşer
-    // Kullanıcı ödeme sonuç sayfasına yönlenir — iframe kapanır
     if (event.data === 'payment-completed') {
       this.threeDSHtml.set(null);
+      this.currentConversationId.set(null);
     }
   }
 
   cancelThreeDS(): void {
+    const conversationId = this.currentConversationId();
     this.threeDSHtml.set(null);
-    this.submitError.set('Ödeme iptal edildi. Kart bilgilerinizi tekrar girmek isterseniz onaylayın.');
+
+    if (!conversationId) {
+      this.wizard.reset();
+      this.bookingState.clear();
+      this.router.navigate(['/rezervasyonlarim']);
+      return;
+    }
+
+    this.cancelling.set(true);
+
+    this.paymentService.cancelPending(conversationId).subscribe({
+      next: () => {
+        this.cancelling.set(false);
+        this.currentConversationId.set(null);
+        this.wizard.reset();
+        this.bookingState.clear();
+        this.router.navigate(['/rezervasyonlarim']);
+      },
+      error: () => {
+        this.cancelling.set(false);
+        this.currentConversationId.set(null);
+        this.wizard.reset();
+        this.bookingState.clear();
+        this.router.navigate(['/rezervasyonlarim']);
+      }
+    });
   }
 
-  // ═══════════════════════════════════════════════════
-  // Ana submit metodu
-  // ═══════════════════════════════════════════════════
   submitReservation(): void {
     const state = this.wizard.state();
     if (!state.car || !state.rentStartDate || !state.rentEndDate ||
         !state.pickUpLocationId || !state.dropOffLocationId) {
-      this.submitError.set('Rezervasyon bilgileri eksik.');
+      this.submitError.set(this.translate.instant('wizard.payment.errors.missingInfo'));
       return;
     }
 
@@ -339,7 +369,6 @@ export class StepPaymentComponent implements OnInit {
     }
   }
 
-  // Ofiste ödeme akışı - eskisi gibi
   private createReservationForOffice(state: any): void {
     this.submitting.set(true);
     this.submitError.set(null);
@@ -352,37 +381,35 @@ export class StepPaymentComponent implements OnInit {
         if (res.success && res.data) {
           const reservationId = res.data;
           this.wizard.reset();
+          this.bookingState.clear();
           this.router.navigate(['/rezervasyon-basarili', reservationId]);
         } else {
-          this.submitError.set(res.message || 'Rezervasyon oluşturulamadı.');
+          this.submitError.set(res.message || this.translate.instant('wizard.payment.errors.createFailed'));
         }
       },
       error: (err) => {
         this.submitting.set(false);
-        this.submitError.set(err.error?.message || 'Bir hata oluştu.');
+        this.submitError.set(err.error?.message || this.translate.instant('wizard.payment.errors.generalError'));
       }
     });
   }
 
-  // Online ödeme akışı - iki adım: create + payment init
   private createAndInitPayment(state: any): void {
     this.submitting.set(true);
     this.submitError.set(null);
 
     const request = this.buildCreateRequest(state);
 
-    // Adım 1: Rezervasyonu oluştur
     this.reservationService.create(request).subscribe({
       next: (createRes) => {
         if (!createRes.success || !createRes.data) {
           this.submitting.set(false);
-          this.submitError.set(createRes.message || 'Rezervasyon oluşturulamadı.');
+          this.submitError.set(createRes.message || this.translate.instant('wizard.payment.errors.createFailed'));
           return;
         }
 
         const rentalId = createRes.data;
 
-        // Adım 2: Iyzico 3DS başlat
         const [expMonth, expYearShort] = this.cardData.expiry.split('/');
         const expYear = '20' + expYearShort;
 
@@ -397,25 +424,24 @@ export class StepPaymentComponent implements OnInit {
           next: (paymentRes) => {
             this.submitting.set(false);
             if (paymentRes.success && paymentRes.data) {
-              // 3DS iframe'i aç
+              this.currentConversationId.set(paymentRes.data.conversationId);
               this.threeDSHtml.set(paymentRes.data.threeDSHtmlContent);
-              // Wizard'ı temizleme — kullanıcı 3DS'ten geri dönebilir
             } else {
-              this.submitError.set(paymentRes.message || 'Ödeme başlatılamadı.');
+              this.submitError.set(paymentRes.message || this.translate.instant('wizard.payment.errors.paymentInitFailed'));
             }
           },
           error: (err) => {
             this.submitting.set(false);
             this.submitError.set(
               err.error?.message ||
-              'Ödeme sistemi cevap vermiyor. Rezervasyon "Rezervasyonlarım" sayfanızda ofiste ödeme olarak bekliyor.'
+              this.translate.instant('wizard.payment.errors.paymentSystemDown')
             );
           }
         });
       },
       error: (err) => {
         this.submitting.set(false);
-        this.submitError.set(err.error?.message || 'Rezervasyon oluşturulamadı.');
+        this.submitError.set(err.error?.message || this.translate.instant('wizard.payment.errors.createFailed'));
       }
     });
   }

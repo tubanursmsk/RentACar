@@ -482,13 +482,11 @@ public class ReservationService : IReservationService
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // ⭐ YENİ: EMAIL GÖNDERİM HELPER
+    //  EMAIL GÖNDERİM HELPER
     // ═══════════════════════════════════════════════════════════════════
-
-    /// <summary>
     /// Rezervasyon onay mailini fire-and-forget ile gönderir.
     /// Email hatası rezervasyonu iptal etmez, kullanıcı akışını geciktirmez.
-    /// </summary>
+
     private async Task SendConfirmationEmailSafeAsync(int rentalId)
     {
         try
@@ -502,7 +500,13 @@ public class ReservationService : IReservationService
                 .FirstOrDefaultAsync();
 
             if (rental != null)
+            {
+                // 1) Müşteriye onay maili (mevcut)
                 await _emailService.SendReservationConfirmationAsync(rental);
+
+                // ⭐ YENİ: 2) Firmaya bildirim maili (fire-and-forget)
+                _ = _emailService.SendReservationNotificationToAdminAsync(rental);
+            }
         }
         catch
         {

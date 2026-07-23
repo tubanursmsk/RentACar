@@ -8,13 +8,15 @@ import { ApiResponse } from '../../core/models/api-response.model';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="bg-[#F3F4F6] py-16 border-b border-gray-200">
-      <div class="page-container mx-auto px-4 sm:px-6 lg:px-8">
-        <nav class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
-          Ana Sayfa / Ek Hizmetler ve Güvenceler
-        </nav>
-        <h1 class="text-4xl md:text-5xl font-black text-[#1F2937] mb-6">Ek Hizmetler ve Güvenceler</h1>
-        <p class="text-lg text-gray-600 max-w-3xl leading-relaxed">
+    <div class="relative bg-ink-900 overflow-hidden">
+      <div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('assets/cars/hero-1.png');"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-ink-900 to-transparent"></div>
+ 
+      <div class="relative page-container mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24 z-10">
+       <div class="text-sm font-bold text-avis-500 tracking-widest uppercase mb-2">
+ Ana Sayfa > Ek Hizmetler ve Güvenceler</div>
+        <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-4">Ek Hizmetler ve Güvenceler</h1>
+        <p class="text-lg text-ink-300 max-w-2xl">
           Kiralama deneyiminizi daha konforlu ve güvenli hale getirmek için sunduğumuz ek ürün ve güvence paketlerimizi inceleyebilirsiniz.
         </p>
       </div>
@@ -106,7 +108,7 @@ export class ServicesComponent implements OnInit {
     if (category === 'protections') {
       return list.filter(s => s.name.toLowerCase().includes('sigorta') || s.name.toLowerCase().includes('güvence'));
     } else if (category === 'corporate') {
-       return [];
+      return [];
     } else {
       return list.filter(s => !s.name.toLowerCase().includes('sigorta') && !s.name.toLowerCase().includes('güvence'));
     }

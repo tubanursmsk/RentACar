@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslatePipe],
   template: `
     <footer class="bg-ink-900 text-white">
       <div class="page-container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -14,8 +15,7 @@ import { RouterLink } from '@angular/router';
           <div class="space-y-4">
             <div class="text-2xl font-extrabold">RentACar<sup class="text-xs">®</sup></div>
             <p class="text-ink-300 text-sm leading-relaxed">
-              Türkiye'nin dört bir yanında 7/24 hizmet veren araç kiralama platformu.
-              Konforlu yolculuklar için doğru adres.
+              {{ 'footer.tagline' | translate }}
             </p>
             <div class="flex gap-3">
               <a href="#" class="w-9 h-9 bg-brand-600 hover:bg-avis-700 rounded-full flex items-center justify-center transition">
@@ -32,44 +32,41 @@ import { RouterLink } from '@angular/router';
 
           <!-- Hizmetler -->
           <div>
-            <h4 class="font-bold mb-4">Hizmetler</h4>
+            <h4 class="font-bold mb-4">{{ 'footer.services' | translate }}</h4>
             <ul class="space-y-2 text-sm text-ink-300">
-              <li><a routerLink="/araclar" class="hover:text-white transition">Araç Kiralama</a></li>
-               <li><a routerLink="/kurumsal-cozumler" class="hover:text-brand-600 transition">Kurumsal Çözümler</a></li>
-               <li><a routerLink="/soforlu-hizmet" class="hover:text-brand-600 transition">Şoförlü Hizmet</a></li>
-               <li><a routerLink="/uzun-donem-kiralama" class="hover:text-brand-600 transition">Uzun Dönem Kiralama</a></li>
- 
+              <li><a routerLink="/araclar" class="hover:text-white transition">{{ 'footer.carRental' | translate }}</a></li>
+              <li><a routerLink="/kurumsal-cozumler" class="hover:text-brand-600 transition">{{ 'footer.corporateSolutions' | translate }}</a></li>
+              <li><a routerLink="/soforlu-hizmet" class="hover:text-brand-600 transition">{{ 'footer.driverService' | translate }}</a></li>
+              <li><a routerLink="/uzun-donem-kiralama" class="hover:text-brand-600 transition">{{ 'footer.longTermRental' | translate }}</a></li>
             </ul>
           </div>
 
           <!-- Kurumsal -->
           <div>
-            <h4 class="font-bold mb-4">Kurumsal</h4>
+            <h4 class="font-bold mb-4">{{ 'footer.corporate' | translate }}</h4>
             <ul class="space-y-2 text-sm text-ink-300">
-              <li><a routerLink="/hakkimizda" class="hover:text-brand-600 transition">Hakkımızda</a></li>
-             <li> <a routerLink="/kariyer" class="hover:text-brand-600 transition">Kariyer</a></li>
-             <li> <a routerLink="/basin-odasi" class="hover:text-brand-600 transition">Basın Odası</a></li>
-             <li> <a routerLink="/iletisim" class="hover:text-brand-600 transition">İletişim</a></li>
- 
+              <li><a routerLink="/hakkimizda" class="hover:text-brand-600 transition">{{ 'footer.about' | translate }}</a></li>
+              <li><a routerLink="/kariyer" class="hover:text-brand-600 transition">{{ 'footer.career' | translate }}</a></li>
+              <li><a routerLink="/basin-odasi" class="hover:text-brand-600 transition">{{ 'footer.press' | translate }}</a></li>
+              <li><a routerLink="/iletisim" class="hover:text-brand-600 transition">{{ 'footer.contact' | translate }}</a></li>
             </ul>
           </div>
 
           <!-- Yardım -->
           <div>
-            <h4 class="font-bold mb-4">Yardım</h4>
+            <h4 class="font-bold mb-4">{{ 'footer.help' | translate }}</h4>
             <ul class="space-y-2 text-sm text-ink-300">
-             <li><a routerLink="/sikca-sorulan-sorular" class="hover:text-brand-600 transition">Sıkça Sorulan Sorular</a></li>
-             <li> <a routerLink="/kiralama-kosullari" class="hover:text-brand-600 transition">Kiralama Koşulları</a></li>
-              <li><a routerLink="/gizlilik-politikasi" class="hover:text-brand-600 transition">Gizlilik Politikası</a></li>
-             <li> <a routerLink="/kvkk" class="hover:text-brand-600 transition">KVKK</a></li>
-              
+              <li><a routerLink="/sikca-sorulan-sorular" class="hover:text-brand-600 transition">{{ 'footer.faq' | translate }}</a></li>
+              <li><a routerLink="/kiralama-kosullari" class="hover:text-brand-600 transition">{{ 'footer.rentalConditions' | translate }}</a></li>
+              <li><a routerLink="/gizlilik-politikasi" class="hover:text-brand-600 transition">{{ 'footer.privacy' | translate }}</a></li>
+              <li><a routerLink="/kvkk" class="hover:text-brand-600 transition">{{ 'footer.kvkk' | translate }}</a></li>
             </ul>
           </div>
         </div>
 
         <div class="border-t border-ink-700 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-ink-300">
-          <p>© {{ currentYear }} RentACar. Tüm hakları saklıdır.</p>
-          <p class="mt-2 md:mt-0">7/24 Çağrı Merkezi: <span class="text-white font-semibold">444 4 999</span></p>
+          <p>{{ 'footer.copyright' | translate: { year: currentYear } }}</p>
+          <p class="mt-2 md:mt-0">{{ 'footer.callCenter' | translate }} <span class="text-white font-semibold">444 4 999</span></p>
         </div>
       </div>
     </footer>

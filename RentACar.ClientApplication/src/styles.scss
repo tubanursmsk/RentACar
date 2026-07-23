@@ -17,6 +17,17 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+
+/* Sticky positioning'in düzgün çalışması için */
+html, body {
+  overflow-x: hidden;
+  /* overflow-y KESİNLİKLE hidden veya scroll OLMAMALI */
+}
+ 
+html {
+  scroll-behavior: smooth;
+}
+
 /* ═══ Component Utilities — Turo Style ═══ */
 @layer components {
   /* Butonlar */

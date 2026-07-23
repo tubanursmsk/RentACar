@@ -15,7 +15,8 @@ import { Location } from '../../core/models/brand-location.model';
       <div class="absolute inset-0 bg-gradient-to-r from-ink-900 to-transparent"></div>
       
       <div class="relative page-container mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24 z-10">
-        <div class="text-sm font-bold text-avis-500 tracking-widest uppercase mb-2">Ana Sayfa > RentACar Ofisleri</div>
+       <div class="text-sm font-bold text-avis-500 tracking-widest uppercase mb-2">
+ Ana Sayfa > RentACar Ofisleri</div>
         <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-4">Araç Kiralama Ofisleri</h1>
         <p class="text-lg text-ink-300 max-w-2xl">
           Türkiye'nin dört bir yanındaki şehir ve havalimanı ofislerimizle, yola çıkmak istediğiniz her an yanınızdayız.

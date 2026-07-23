@@ -2,6 +2,7 @@ import { Component, OnInit, computed, ElementRef, inject, signal, effect } from 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { LocationService } from '../../../../core/services/location.service';
 import { BookingStateService } from '../../../../core/services/booking-state.service';
 import { Location } from '../../../../core/models/brand-location.model';
@@ -9,7 +10,7 @@ import { Location } from '../../../../core/models/brand-location.model';
 @Component({
   selector: 'app-hero-search',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   template: `
     <section id="hero-search" class="relative bg-white">
       <div class="max-w-[1600px] mx-auto px-6 lg:px-8 py-8 lg:py-12">
@@ -17,13 +18,12 @@ import { Location } from '../../../../core/models/brand-location.model';
         <!-- ═══ Kampanya Bar ═══ -->
         <div class="bg-ink-900 text-white text-center py-3 rounded-t-card">
           <p class="text-sm font-medium">
-            🎉 Yeni müşterilere özel! İlk kiralamanızda %20 indirim — Kod: <span class="font-bold">HOSGELDIN</span>
+            {{ 'home.campaign' | translate }} <span class="font-bold">HOSGELDIN</span>
           </p>
         </div>
 
         <!-- ═══ Hero Card ═══ -->
         <div class="relative rounded-b-card">
-          <!-- Arkaplan görseli -->
           <div class="absolute inset-0 rounded-b-card overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-br from-brand-800 via-brand-700 to-brand-900">
               <img src="assets/cars/hero-1.png" alt="Kiralanabilir araç"
@@ -33,19 +33,17 @@ import { Location } from '../../../../core/models/brand-location.model';
             </div>
           </div>
 
-          <!-- İçerik -->
           <div class="relative z-10 px-6 lg:px-16 py-12 lg:py-20 text-center">
             <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
-              Araç kiralama yeniden tanımlandı
+              {{ 'home.heroTitle' | translate }}
             </h1>
             <p class="mt-3 text-base lg:text-lg text-white/90 max-w-2xl mx-auto">
-              Tam istediğiniz aracı, tam ihtiyacınız olan yerde, günlerce, haftalarca veya aylarca kiralayın.
+              {{ 'home.heroSubtitle' | translate }}
             </p>
 
             <!-- Arama Kutusu -->
             <div class="mt-6 max-w-5xl mx-auto relative" style="overflow: visible;">
 
-              <!-- Ana arama çubuğu -->
               <div class="bg-white rounded-full shadow-card-hover flex items-center p-1.5 relative"
                    style="z-index: 20;">
 
@@ -54,20 +52,24 @@ import { Location } from '../../../../core/models/brand-location.model';
                   <button type="button"
                           (click)="toggleLocationDropdown($event)"
                           class="w-full px-5 py-3 rounded-full text-left hover:bg-ink-50 transition">
-                    <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">Nerede</div>
+                    <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">
+                      {{ 'home.search.location' | translate }}
+                    </div>
                     <div class="mt-0.5 text-sm truncate"
                          [class.text-ink-400]="!selectedLocationLabel()"
                          [class.text-ink-900]="selectedLocationLabel()">
-                      {{ selectedLocationLabel() || 'Havalimanı, otel, adres, şehir' }}
+                      {{ selectedLocationLabel() || ('home.search.locationPlaceholder' | translate) }}
                     </div>
                   </button>
                 </div>
 
                 <div class="w-px h-10 bg-ink-200"></div>
 
-                <!-- 2. ALIŞ TARİHİ (min=bugün) -->
+                <!-- 2. ALIŞ TARİHİ -->
                 <div class="hidden md:block flex-1 min-w-0 px-5 py-2">
-                  <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">İtibaren</div>
+                  <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">
+                    {{ 'home.search.pickupDate' | translate }}
+                  </div>
                   <input type="date"
                          [(ngModel)]="pickupDate"
                          [min]="todayString"
@@ -80,14 +82,16 @@ import { Location } from '../../../../core/models/brand-location.model';
 
                 <!-- 3. ALIŞ SAATİ -->
                 <div class="hidden md:block flex-1 min-w-0 px-5 py-2 border-l border-ink-200">
-                  <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">Saat</div>
+                  <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">
+                    {{ 'home.search.time' | translate }}
+                  </div>
                   <select [(ngModel)]="pickupTime"
                           (change)="onPickupTimeChange()"
                           class="mt-0.5 w-full text-sm text-ink-900 bg-transparent outline-none cursor-pointer
                                  border-none p-0 font-sans appearance-none">
                     @for (t of pickupTimeOptions(); track t.value) {
                       <option [value]="t.value" [disabled]="t.disabled">
-                        {{ t.value }}{{ t.disabled ? ' (geçti)' : '' }}
+                        {{ t.value }}{{ t.disabled ? (' home.search.passed' | translate) : '' }}
                       </option>
                     }
                   </select>
@@ -97,7 +101,9 @@ import { Location } from '../../../../core/models/brand-location.model';
 
                 <!-- 4. İADE TARİHİ -->
                 <div class="hidden md:block flex-1 min-w-0 px-5 py-2">
-                  <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">Değin</div>
+                  <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">
+                    {{ 'home.search.returnDate' | translate }}
+                  </div>
                   <input type="date"
                          [(ngModel)]="returnDate"
                          [min]="minReturnDate()"
@@ -110,20 +116,21 @@ import { Location } from '../../../../core/models/brand-location.model';
 
                 <!-- 5. İADE SAATİ -->
                 <div class="hidden md:block flex-1 min-w-0 px-5 py-2 border-l border-ink-200">
-                  <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">Saat</div>
+                  <div class="text-[10px] font-bold text-ink-700 uppercase tracking-wide">
+                    {{ 'home.search.time' | translate }}
+                  </div>
                   <select [(ngModel)]="returnTime"
                           (change)="onReturnTimeChange()"
                           class="mt-0.5 w-full text-sm text-ink-900 bg-transparent outline-none cursor-pointer
                                  border-none p-0 font-sans appearance-none">
                     @for (t of returnTimeOptions(); track t.value) {
                       <option [value]="t.value" [disabled]="t.disabled">
-                        {{ t.value }}{{ t.disabled ? ' (geçersiz)' : '' }}
+                        {{ t.value }}{{ t.disabled ? ('home.search.invalid' | translate) : '' }}
                       </option>
                     }
                   </select>
                 </div>
 
-                <!-- Ara Butonu -->
                 <button (click)="search()"
                         class="w-12 h-12 lg:w-14 lg:h-14 ml-2 bg-brand-600 hover:bg-brand-700
                                text-white rounded-full flex items-center justify-center transition
@@ -146,12 +153,12 @@ import { Location } from '../../../../core/models/brand-location.model';
                   <button type="button" (click)="useCurrentLocation()"
                           class="w-full px-5 py-3.5 flex items-center gap-4 hover:bg-ink-50 transition text-left">
                     <div class="w-6 h-6 flex items-center justify-center text-brand-600 flex-shrink-0">
-                      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
-                      </svg>
+                      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"></svg>
                     </div>
                     <div class="text-left flex-1 min-w-0">
-                      <div class="font-semibold text-sm text-brand-600">Mevcut konumum</div>
+                      <div class="font-semibold text-sm text-brand-600">
+                        {{ 'home.search.currentLocation' | translate }}
+                      </div>
                     </div>
                   </button>
 
@@ -164,14 +171,20 @@ import { Location } from '../../../../core/models/brand-location.model';
                       </svg>
                     </div>
                     <div class="text-left flex-1 min-w-0">
-                      <div class="font-semibold text-sm text-ink-900">Herhangi bir yer</div>
-                      <div class="text-xs text-ink-500">Tüm araçları gör</div>
+                      <div class="font-semibold text-sm text-ink-900">
+                        {{ 'home.search.anywhere' | translate }}
+                      </div>
+                      <div class="text-xs text-ink-500">
+                        {{ 'home.search.seeAllCars' | translate }}
+                      </div>
                     </div>
                   </button>
 
                   @if (airportLocations().length > 0) {
                     <div class="border-t border-ink-100 my-1"></div>
-                    <div class="px-5 py-2 text-[10px] font-bold text-ink-500 uppercase tracking-wide">Havalimanları</div>
+                    <div class="px-5 py-2 text-[10px] font-bold text-ink-500 uppercase tracking-wide">
+                      {{ 'home.search.airports' | translate }}
+                    </div>
                     @for (loc of airportLocations(); track loc.id) {
                       <button type="button" (click)="selectLocation(loc)"
                               class="w-full px-5 py-2.5 flex items-center gap-4 hover:bg-ink-50 transition text-left">
@@ -190,7 +203,9 @@ import { Location } from '../../../../core/models/brand-location.model';
 
                   @if (cityGroups().length > 0) {
                     <div class="border-t border-ink-100 my-1"></div>
-                    <div class="px-5 py-2 text-[10px] font-bold text-ink-500 uppercase tracking-wide">Şehirler</div>
+                    <div class="px-5 py-2 text-[10px] font-bold text-ink-500 uppercase tracking-wide">
+                      {{ 'home.search.cities' | translate }}
+                    </div>
                     @for (city of cityGroups(); track city.name) {
                       <button type="button" (click)="selectLocation(city.location)"
                               class="w-full px-5 py-2.5 flex items-center gap-4 hover:bg-ink-50 transition text-left">
@@ -208,7 +223,7 @@ import { Location } from '../../../../core/models/brand-location.model';
 
                   @if (locations().length === 0) {
                     <div class="px-5 py-8 text-center">
-                      <div class="text-sm text-ink-500">Konumlar yükleniyor...</div>
+                      <div class="text-sm text-ink-500">{{ 'home.search.loadingLocations' | translate }}</div>
                     </div>
                   }
                 </div>
@@ -217,13 +232,17 @@ import { Location } from '../../../../core/models/brand-location.model';
               <!-- Mobil tarih satırı -->
               <div class="md:hidden mt-3 grid grid-cols-2 gap-2">
                 <div class="bg-white rounded-lg p-3 shadow-card">
-                  <div class="text-[10px] font-bold text-ink-700 uppercase">Alış</div>
+                  <div class="text-[10px] font-bold text-ink-700 uppercase">
+                    {{ 'home.search.pickupShort' | translate }}
+                  </div>
                   <input type="date" [(ngModel)]="pickupDate" [min]="todayString" [max]="maxPickupDate"
                          (change)="onPickupDateChange()"
                          class="mt-1 w-full outline-none text-sm bg-transparent">
                 </div>
                 <div class="bg-white rounded-lg p-3 shadow-card">
-                  <div class="text-[10px] font-bold text-ink-700 uppercase">İade</div>
+                  <div class="text-[10px] font-bold text-ink-700 uppercase">
+                    {{ 'home.search.returnShort' | translate }}
+                  </div>
                   <input type="date" [(ngModel)]="returnDate" [min]="minReturnDate()" [max]="maxReturnDate"
                          (change)="onReturnDateChange()"
                          class="mt-1 w-full outline-none text-sm bg-transparent">
@@ -244,12 +263,12 @@ import { Location } from '../../../../core/models/brand-location.model';
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                   </svg>
-                  {{ MIN_ADVANCE_MINUTES }} dakikalık hazırlık süresi
+                  {{ 'home.search.minPrep' | translate: { min: MIN_ADVANCE_MINUTES } }}
                 </span>
                 <span>•</span>
-                <span>Minimum 1 gün kiralama</span>
+                <span>{{ 'home.search.minRental' | translate }}</span>
                 <span>•</span>
-                <span>Maks. {{ MAX_ADVANCE_DAYS }} gün ileri</span>
+                <span>{{ 'home.search.maxAdvance' | translate: { days: MAX_ADVANCE_DAYS } }}</span>
               </div>
             </div>
           </div>
@@ -263,14 +282,15 @@ export class HeroSearchComponent implements OnInit {
   private bookingState = inject(BookingStateService);
   private router = inject(Router);
   private el = inject(ElementRef);
+  private translate = inject(TranslateService);
 
   // ═══════════════════════════════════════════════════
-  // İŞ KURALLARI (Business Rules)
+  // İŞ KURALLARI
   // ═══════════════════════════════════════════════════
-  protected readonly MIN_ADVANCE_MINUTES = 30;      // Minimum 30 dakika hazırlık süresi
-  protected readonly MIN_RENTAL_DAYS = 1;           // Minimum 1 gün kiralama
-  protected readonly MAX_ADVANCE_DAYS = 365;        // Maksimum 1 yıl ileri
-  protected readonly TIME_SLOT_MINUTES = 30;        // 30 dakikalık slotlar
+  protected readonly MIN_ADVANCE_MINUTES = 30;
+  protected readonly MIN_RENTAL_DAYS = 1;
+  protected readonly MAX_ADVANCE_DAYS = 365;
+  protected readonly TIME_SLOT_MINUTES = 30;
 
   protected locations = this.locationService.locations;
 
@@ -283,13 +303,9 @@ export class HeroSearchComponent implements OnInit {
   protected error = signal<string | null>(null);
   protected isLocationOpen = signal(false);
 
-  // Şu anki zamanı takip eden signal (her dakika güncellenir)
   private currentTime = signal(new Date());
 
-  // Türkçe formatlanmış "bugün" tarihi (YYYY-MM-DD)
   protected todayString = this.formatDateForInput(new Date());
-
-  // Maksimum tarihler
   protected readonly maxPickupDate = this.getMaxDateString();
   protected readonly maxReturnDate = this.getMaxDateString();
 
@@ -317,7 +333,6 @@ export class HeroSearchComponent implements OnInit {
     return `${l.name} — ${l.city}`;
   });
 
-  // İade tarihi minimum → alış tarihi + 1 gün
   protected minReturnDate = computed(() => {
     const pd = this.pickupDate();
     if (!pd) return this.todayString;
@@ -326,9 +341,6 @@ export class HeroSearchComponent implements OnInit {
     return this.formatDateForInput(d);
   });
 
-  // ═══════════════════════════════════════════════════
-  // SAAT SEÇENEKLERİ (dinamik — geçmiş saatler devre dışı)
-  // ═══════════════════════════════════════════════════
   protected pickupTimeOptions = computed(() => {
     const pd = this.pickupDate();
     if (!pd) return this.generateAllTimeSlots();
@@ -337,12 +349,8 @@ export class HeroSearchComponent implements OnInit {
     const selectedDate = new Date(pd);
     const isToday = this.isSameDay(selectedDate, now);
 
-    if (!isToday) {
-      // Bugün değilse tüm saatler açık
-      return this.generateAllTimeSlots();
-    }
+    if (!isToday) return this.generateAllTimeSlots();
 
-    // Bugün ise → şu andan MIN_ADVANCE_MINUTES sonrasından itibaren
     const minTime = new Date(now.getTime() + this.MIN_ADVANCE_MINUTES * 60 * 1000);
     const minHour = minTime.getHours();
     const minMinute = minTime.getMinutes();
@@ -368,11 +376,7 @@ export class HeroSearchComponent implements OnInit {
       const [h, m] = slot.value.split(':').map(Number);
       let disabled = false;
 
-      // İade aynı gün ise → alış saatinden en az MIN_RENTAL_DAYS × 24 saat sonra olmalı
-      // Ama MIN_RENTAL_DAYS = 1 gün olduğu için aslında farklı gün olmalı
       if (isSameAsPickup && pt) {
-        const [ph, pm] = pt.split(':').map(Number);
-        // Aynı gün seçilirse tüm saatler geçersiz (min 1 gün kural)
         disabled = true;
       }
 
@@ -381,47 +385,40 @@ export class HeroSearchComponent implements OnInit {
   });
 
   constructor() {
-    // Her dakikada bir "şu an" güncellensin — geçmiş saatler dinamik olarak devre dışı kalsın
     effect((onCleanup) => {
       const timer = setInterval(() => {
         this.currentTime.set(new Date());
-        // Kullanıcı geçmişe kalan bir saat seçmişse otomatik düzelt
         this.validateAndCorrectPickupTime();
-      }, 60_000); // her 1 dakika
+      }, 60_000);
       onCleanup(() => clearInterval(timer));
     });
 
-    // Alış tarihi değişince alış saati de yeniden validate edilsin
     effect(() => {
       const _ = this.pickupDate();
       this.validateAndCorrectPickupTime();
     }, { allowSignalWrites: true });
   }
 
-   ngOnInit(): void {
+  ngOnInit(): void {
     if (this.locations().length === 0) {
       this.locationService.getAll().subscribe();
     }
- 
-    // İlk açılışta varsayılan saatleri hesapla
+
     this.setDefaultTimes();
- 
-    // ⭐ Sadece TAZE seçimi (son 30 dk) geri yükle
-    // Eski seçimler taze değil → form boş kalır, kullanıcı yeni tercih yapar
+
     if (!this.bookingState.isFresh()) {
-      // Eski seçim varsa temizle
       this.bookingState.clear();
       return;
     }
- 
+
     const prev = this.bookingState.selection();
- 
+
     if (prev.pickupLocationId) {
       this.pickupLocationId.set(prev.pickupLocationId);
       const loc = this.locations().find(l => l.id === prev.pickupLocationId);
       if (loc) this.selectedLocation.set(loc);
     }
- 
+
     if (prev.pickupDate && this.isFutureDate(prev.pickupDate)) {
       this.pickupDate.set(this.formatDateForInput(prev.pickupDate));
       if (prev.pickupTime) this.pickupTime.set(prev.pickupTime);
@@ -432,15 +429,9 @@ export class HeroSearchComponent implements OnInit {
     }
   }
 
-  // ═══════════════════════════════════════════════════
-  // VALIDATION HELPERS
-  // ═══════════════════════════════════════════════════
-
   private setDefaultTimes(): void {
     if (!this.pickupTime()) {
-      // Şu andan 30 dk sonra, en yakın 30 dk slotu
-      const nextSlot = this.getNextAvailablePickupSlot();
-      this.pickupTime.set(nextSlot);
+      this.pickupTime.set(this.getNextAvailablePickupSlot());
     }
     if (!this.returnTime()) {
       this.returnTime.set('09:00');
@@ -449,23 +440,13 @@ export class HeroSearchComponent implements OnInit {
 
   private getNextAvailablePickupSlot(): string {
     const now = new Date();
-    // Şu an + 30 dakika (min hazırlık süresi)
     const minTime = new Date(now.getTime() + this.MIN_ADVANCE_MINUTES * 60 * 1000);
     let hour = minTime.getHours();
     let minute = minTime.getMinutes();
 
-    // 30 dakikalık slota yuvarla (yukarı)
-    // Örn: 11:08 + 30 dk = 11:38 → 12:00
-    // Örn: 11:00 + 30 dk = 11:30 → 11:30
-    if (minute > 0 && minute <= 30) {
-      minute = 30;
-    } else if (minute > 30) {
-      minute = 0;
-      hour++;
-    }
-    if (hour >= 24) {
-      hour = 9; // Ertesi gün 09:00
-    }
+    if (minute > 0 && minute <= 30) minute = 30;
+    else if (minute > 30) { minute = 0; hour++; }
+    if (hour >= 24) hour = 9;
 
     return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
   }
@@ -479,7 +460,6 @@ export class HeroSearchComponent implements OnInit {
     const selectedDate = new Date(pd);
     if (!this.isSameDay(selectedDate, now)) return;
 
-    // Bugün seçili — alış saati şu andan MIN_ADVANCE_MINUTES sonrasında olmalı
     const [h, m] = pt.split(':').map(Number);
     const pickupDateTime = new Date(selectedDate);
     pickupDateTime.setHours(h, m, 0, 0);
@@ -487,7 +467,6 @@ export class HeroSearchComponent implements OnInit {
     const minPickupDateTime = new Date(now.getTime() + this.MIN_ADVANCE_MINUTES * 60 * 1000);
 
     if (pickupDateTime < minPickupDateTime) {
-      // Saati otomatik olarak en yakın uygun slota çek
       this.pickupTime.set(this.getNextAvailablePickupSlot());
     }
   }
@@ -507,7 +486,6 @@ export class HeroSearchComponent implements OnInit {
   }
 
   private formatDateForInput(d: Date): string {
-    // Timezone kaçırma sorunu için manuel formatla
     const y = d.getFullYear();
     const m = (d.getMonth() + 1).toString().padStart(2, '0');
     const day = d.getDate().toString().padStart(2, '0');
@@ -533,13 +511,8 @@ export class HeroSearchComponent implements OnInit {
     return slots;
   }
 
-  // ═══════════════════════════════════════════════════
-  // EVENT HANDLERS
-  // ═══════════════════════════════════════════════════
-
   onPickupDateChange(): void {
     this.error.set(null);
-    // Eğer iade tarihi alış tarihinden önce veya aynı ise, otomatik +1 gün ayarla
     const pd = this.pickupDate();
     const rd = this.returnDate();
     if (pd && rd) {
@@ -566,10 +539,6 @@ export class HeroSearchComponent implements OnInit {
   onReturnTimeChange(): void {
     this.error.set(null);
   }
-
-  // ═══════════════════════════════════════════════════
-  // LOCATION DROPDOWN
-  // ═══════════════════════════════════════════════════
 
   toggleLocationDropdown(event: MouseEvent): void {
     event.stopPropagation();
@@ -601,70 +570,56 @@ export class HeroSearchComponent implements OnInit {
     this.selectAnywhere();
   }
 
-  // ═══════════════════════════════════════════════════
-  // ARAMA — TAM VALIDATION
-  // ═══════════════════════════════════════════════════
-
   search(): void {
-    // 1. Konum kontrolü
     if (!this.pickupLocationId()) {
-      this.error.set('Lütfen bir konum seçin.');
+      this.error.set(this.translate.instant('home.errors.selectLocation'));
       return;
     }
 
-    // 2. Tarih dolu mu?
     if (!this.pickupDate() || !this.returnDate()) {
-      this.error.set('Lütfen alış ve iade tarihlerini seçin.');
+      this.error.set(this.translate.instant('home.errors.selectDates'));
       return;
     }
 
-    // 3. Saat dolu mu?
     if (!this.pickupTime() || !this.returnTime()) {
-      this.error.set('Lütfen alış ve iade saatlerini seçin.');
+      this.error.set(this.translate.instant('home.errors.selectTimes'));
       return;
     }
 
-    // 4. Tam tarihleri oluştur
     const pickupDateTime = this.combineDateAndTime(this.pickupDate(), this.pickupTime());
     const returnDateTime = this.combineDateAndTime(this.returnDate(), this.returnTime());
     const now = new Date();
 
-    // 5. Alış zamanı geçmişte mi?
     if (pickupDateTime <= now) {
-      this.error.set('Alış tarihi ve saati geçmişte olamaz.');
+      this.error.set(this.translate.instant('home.errors.pastDateTime'));
       return;
     }
 
-    // 6. Minimum ilerideki zaman kontrolü (30 dakika hazırlık süresi)
     const minPickup = new Date(now.getTime() + this.MIN_ADVANCE_MINUTES * 60 * 1000);
     if (pickupDateTime < minPickup) {
-      this.error.set(`Alış zamanı şu andan en az ${this.MIN_ADVANCE_MINUTES} dakika sonra olmalı.`);
+      this.error.set(this.translate.instant('home.errors.minAdvance', { min: this.MIN_ADVANCE_MINUTES }));
       return;
     }
 
-    // 7. İade, alıştan sonra mı?
     if (returnDateTime <= pickupDateTime) {
-      this.error.set('İade zamanı alış zamanından sonra olmalı.');
+      this.error.set(this.translate.instant('home.errors.returnBeforePickup'));
       return;
     }
 
-    // 8. Minimum kiralama süresi
     const rentalMs = returnDateTime.getTime() - pickupDateTime.getTime();
     const rentalDays = rentalMs / (1000 * 60 * 60 * 24);
     if (rentalDays < this.MIN_RENTAL_DAYS) {
-      this.error.set(`Minimum kiralama süresi ${this.MIN_RENTAL_DAYS} gün.`);
+      this.error.set(this.translate.instant('home.errors.minRentalDays', { days: this.MIN_RENTAL_DAYS }));
       return;
     }
 
-    // 9. Maksimum ileri tarih kontrolü
     const maxDate = new Date();
     maxDate.setDate(maxDate.getDate() + this.MAX_ADVANCE_DAYS);
     if (pickupDateTime > maxDate) {
-      this.error.set(`En fazla ${this.MAX_ADVANCE_DAYS} gün ileri rezervasyon yapılabilir.`);
+      this.error.set(this.translate.instant('home.errors.maxAdvance', { days: this.MAX_ADVANCE_DAYS }));
       return;
     }
 
-    // ✅ Tüm kontroller geçti
     const loc = this.selectedLocation();
     this.bookingState.setSelection({
       pickupLocationId: this.pickupLocationId(),

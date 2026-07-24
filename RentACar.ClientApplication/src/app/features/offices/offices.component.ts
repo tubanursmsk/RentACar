@@ -4,6 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LocationService } from '../../core/services/location.service';
 import { Location } from '../../core/models/brand-location.model';
+import { environment } from '../../../environments/environment';
+import { SeoService } from '../../core/services/seo.service';
+import { SEO_CONFIG } from '../../core/services/seo.config';
+
 
 @Component({
   selector: 'app-offices',
@@ -106,8 +110,11 @@ export class OfficesComponent implements OnInit {
   
   // Servisteki veriyi alıyoruz
   private locations = this.locationService.locations;
+  seo: any;
 
   ngOnInit(): void {
+    this.seo.updateSeo(SEO_CONFIG['offices']);
+    
     if (this.locations().length === 0) {
       this.locationService.getAll().subscribe({
         next: () => this.loading.set(false),

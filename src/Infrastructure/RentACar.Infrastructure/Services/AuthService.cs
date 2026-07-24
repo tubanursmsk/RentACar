@@ -23,14 +23,15 @@ public class AuthService : IAuthService
         IJwtTokenHelper jwtTokenHelper,
         IIdentityValidationService identityService,
         IFindeksService findeksService,
-        IEmailService emailService)   // ⭐ YENİ parametre
+        IEmailService emailService)   
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _jwtTokenHelper = jwtTokenHelper;
         _identityService = identityService;
         _findeksService = findeksService;
-        _emailService = emailService;   // ⭐ YENİ
+        _emailService = emailService; 
+        
     }
 
     public async Task<ApiResponse<string>> LoginAsync(LoginDto dto)
@@ -197,4 +198,143 @@ public class AuthService : IAuthService
             // Kayıt işlemini etkilemesin
         }
     }
+
+    
+ 
+    // ═══════════════════════════════════════════════════════════════════
+    // ⭐ YENİ: ŞİFREMİ UNUTTUM — Mail'e reset linki gönderir
+    // ═══════════════════════════════════════════════════════════════════
+    public async Task<ApiResponse<bool>> ForgotPasswordAsync(ForgotPasswordDto dto, string? ipAddress)
+    {
+        // Kullanıcıyı bul
+        var user = await _unitOfWork.Repository<User>()
+            .GetWhere(u => u.Email == dto.Email && !u.IsDeleted)
+            .FirstOrDefaultAsync();
+ 
+        // ⚠️ GÜVENLİK: Kullanıcı yoksa bile SUCCESS dön.
+        // "Email varsa mail gitti" — email enumeration saldırısına karşı koruma
+        if (user == null)
+            return ApiResponse<bool>.SuccessResult(true,
+                "E-posta adresiniz sistemde kayıtlıysa şifre sıfırlama linki gönderilecektir.");
+ 
+        // Rate limit: Son 1 dakikada 3'ten fazla talep varsa reddet
+        var oneMinuteAgo = DateTime.UtcNow.AddMinutes(-1);
+        var recentRequests = await _unitOfWork.Repository<PasswordReset>()
+            .GetWhere(r => r.UserId == user.Id && r.CreatedDate > oneMinuteAgo)
+            .CountAsync();
+ 
+        if (recentRequests >= 3)
+            return ApiResponse<bool>.ErrorResult(
+                "Çok fazla istek yaptınız. Lütfen 1 dakika sonra tekrar deneyin.");
+ 
+        // Kullanıcının önceki kullanılmamış token'larını iptal et (birden fazla aktif olmasın)
+        var oldTokens = await _unitOfWork.Repository<PasswordReset>()
+            .GetWhere(r => r.UserId == user.Id && !r.IsUsed && r.ExpiresAt > DateTime.UtcNow)
+            .ToListAsync();
+ 
+        foreach (var oldToken in oldTokens)
+        {
+            oldToken.IsUsed = true;
+            oldToken.UsedAt = DateTime.UtcNow;
+            _unitOfWork.Repository<PasswordReset>().Update(oldToken);
+        }
+ 
+        // Yeni güvenli token oluştur (URL-safe base64)
+        var tokenBytes = new byte[32];
+        using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(tokenBytes);
+        }
+        var token = Convert.ToBase64String(tokenBytes)
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .TrimEnd('=');
+ 
+        var reset = new PasswordReset
+        {
+            UserId = user.Id,
+            Token = token,
+            ExpiresAt = DateTime.UtcNow.AddHours(1),   // 1 saat geçerli
+            RequestedFromIp = ipAddress
+        };
+ 
+        await _unitOfWork.Repository<PasswordReset>().AddAsync(reset);
+        await _unitOfWork.SaveChangesAsync();
+ 
+        // Mail gönder (fire-and-forget — kullanıcı akışı geçmesin)
+        _ = SendPasswordResetEmailSafeAsync(user.Id, token);
+ 
+        return ApiResponse<bool>.SuccessResult(true,
+            "E-posta adresiniz sistemde kayıtlıysa şifre sıfırlama linki gönderilecektir.");
+    }
+ 
+    // ═══════════════════════════════════════════════════════════════════
+    // ⭐ YENİ: ŞİFRE SIFIRLA — Token ile yeni şifre ayarlar, JWT döner
+    // ═══════════════════════════════════════════════════════════════════
+    public async Task<ApiResponse<string>> ResetPasswordAsync(ResetPasswordDto dto)
+    {
+        // Token'ı bul (aktif ve süresi dolmamış)
+        var reset = await _unitOfWork.Repository<PasswordReset>()
+            .GetWhere(r => r.Token == dto.Token
+                        && !r.IsUsed
+                        && r.ExpiresAt > DateTime.UtcNow)
+            .Include(r => r.User)
+            .FirstOrDefaultAsync();
+ 
+        if (reset == null)
+            return ApiResponse<string>.ErrorResult(
+                "Geçersiz veya süresi dolmuş bağlantı. Lütfen yeni bir şifre sıfırlama talebinde bulunun.");
+ 
+        if (reset.User == null)
+            return ApiResponse<string>.ErrorResult("Kullanıcı bulunamadı.");
+ 
+        // ⚠️ Yeni şifre eski şifre ile aynı mı? (opsiyonel güvenlik)
+        if (PasswordHasher.VerifyPassword(dto.NewPassword, reset.User.PasswordHash))
+            return ApiResponse<string>.ErrorResult(
+                "Yeni şifreniz eski şifrenizle aynı olamaz.");
+ 
+        // Şifreyi güncelle
+        reset.User.PasswordHash = PasswordHasher.HashPassword(dto.NewPassword);
+        reset.User.UpdatedDate = DateTime.UtcNow;
+        _unitOfWork.Repository<User>().Update(reset.User);
+ 
+        // Token'ı işaretle
+        reset.IsUsed = true;
+        reset.UsedAt = DateTime.UtcNow;
+        _unitOfWork.Repository<PasswordReset>().Update(reset);
+ 
+        await _unitOfWork.SaveChangesAsync();
+ 
+        // ⭐ Otomatik giriş için JWT oluştur
+        string fullName = $"{reset.User.FirstName} {reset.User.LastName}";
+        var jwt = _jwtTokenHelper.GenerateToken(
+            reset.User.Id,
+            reset.User.Email,
+            fullName,
+            reset.User.CompanyId ?? 0,
+            new List<string> { reset.User.Role }
+        );
+ 
+        return ApiResponse<string>.SuccessResult(jwt,
+            "Şifreniz başarıyla güncellendi. Otomatik olarak giriş yapıldı.");
+    }
+ 
+    // ═══════════════════════════════════════════════════════════════════
+    // ⭐ YENİ: Şifre sıfırlama mail gönderim helper (fire-and-forget)
+    // ═══════════════════════════════════════════════════════════════════
+    private async Task SendPasswordResetEmailSafeAsync(int userId, string token)
+    {
+        try
+        {
+            var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+            if (user != null)
+                await _emailService.SendPasswordResetEmailAsync(user, token);
+        }
+        catch
+        {
+            // Sessizce yut - EmailService loglar
+        }
+    }
+ 
+ 
 }

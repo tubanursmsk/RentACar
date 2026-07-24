@@ -8,6 +8,8 @@ import { Car } from '../../core/models/car.model';
 import { HeroSearchComponent } from './components/hero-search/hero-search.component';
 import { CategoryChipsComponent } from './components/category-chips/category-chips.component';
 import { environment } from '../../../environments/environment';
+import { SeoService } from '../../core/services/seo.service';
+import { SEO_CONFIG } from '../../core/services/seo.config';
 
 interface CategoryInfo {
   titleKey: string;
@@ -211,6 +213,7 @@ export class HomeComponent implements OnInit {
   private carService = inject(CarService);
   private locationService = inject(LocationService);
   private translate = inject(TranslateService);
+   private seo = inject(SeoService);
 
   protected allCars = signal<Car[]>([]);
   protected loading = signal(true);
@@ -317,6 +320,7 @@ export class HomeComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.seo.updateSeo(SEO_CONFIG['home']);
     this.loadCars();
 
     if (this.locationService.locations().length === 0) {

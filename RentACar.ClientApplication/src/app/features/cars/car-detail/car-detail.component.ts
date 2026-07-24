@@ -2,32 +2,34 @@ import { Component, OnInit, computed, HostListener, inject, signal } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CarService } from '../../../core/services/car.service';
 import { LocationService } from '../../../core/services/location.service';
 import { Car } from '../../../core/models/car.model';
 import { BookingStateService } from '../../../core/services/booking-state.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { SeoService } from '../../../core/services/seo.service';
+import { buildCarDetailSeo } from '../../../core/services/seo.config';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-car-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="bg-ink-100/30 min-h-screen py-6 lg:py-8">
       <div class="max-w-[1400px] mx-auto px-4 sm:px-6">
 
         <!-- Breadcrumb -->
         <nav class="text-sm text-ink-500 mb-4 flex items-center gap-2 flex-wrap">
-          <a routerLink="/" class="hover:text-brand-600">{{ 'common.home' | translate }}</a>
+          <a routerLink="/" class="hover:text-brand-600">Ana Sayfa</a>
           <span>/</span>
-          <a routerLink="/araclar" class="hover:text-brand-600">{{ 'header.cars' | translate }}</a>
+          <a routerLink="/araclar" class="hover:text-brand-600">Araçlar</a>
           <span>/</span>
           <span class="text-ink-900 font-semibold">{{ car()?.brandName }} {{ car()?.model }}</span>
         </nav>
 
         @if (loading()) {
+          <!-- Loading skeleton -->
           <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 animate-pulse">
             <div class="space-y-4">
               <div class="aspect-video bg-ink-100 rounded-2xl"></div>
@@ -36,13 +38,21 @@ import { environment } from '../../../../environments/environment';
             </div>
             <div class="h-96 bg-ink-100 rounded-2xl"></div>
           </div>
+        } @else if (error(); as errMsg) {
+          <div class="text-center py-20">
+            <div class="text-6xl mb-4">⚠️</div>
+            <h3 class="text-xl font-bold">{{ errMsg }}</h3>
+            <a routerLink="/araclar" class="btn-primary mt-4 inline-flex">Araç listesine dön</a>
+          </div>
         } @else if (car(); as c) {
           <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
 
-            <!-- SOL KOLON -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- SOL KOLON: Fotoğraf + Bilgiler                       -->
+            <!-- ═══════════════════════════════════════════════════ -->
             <div class="space-y-4">
 
-              <!-- Başlık Kartı -->
+              <!-- ═══ Başlık Kartı ═══ -->
               <div class="bg-white rounded-2xl shadow-card p-5 lg:p-6">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -50,16 +60,14 @@ import { environment } from '../../../../environments/environment';
                       {{ c.brandName }} {{ c.model }}
                     </h1>
                     <p class="text-ink-500 mt-1 text-sm">
-                      {{ 'cars.detail.orSimilar' | translate }}
+                      ya da benzeri
                       @if (c.year) {
                         <span>• {{ c.year }}</span>
-                      }
-                      @if (c.color) {
+                      }@if (c.color) {
                         <span>• {{ c.color }}</span>
                       }
                     </p>
                   </div>
-
                   <div class="flex gap-2">
                     <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold"
                           [class.bg-accent-success/10]="c.status === 1"
@@ -69,13 +77,13 @@ import { environment } from '../../../../environments/environment';
                       <span class="w-2 h-2 rounded-full"
                             [class.bg-accent-success]="c.status === 1"
                             [class.bg-ink-400]="c.status !== 1"></span>
-                      {{ getStatusKey(c.status) | translate }}
+                      {{ getStatusLabel(c.status) }}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <!-- Fotoğraf Galerisi -->
+              <!-- ═══ Fotoğraf Galerisi ═══ -->
               <div class="bg-white rounded-2xl shadow-card overflow-hidden">
                 <div class="aspect-[16/10] bg-ink-100 relative">
                   @if (selectedImage(); as img) {
@@ -85,6 +93,7 @@ import { environment } from '../../../../environments/environment';
                     <div class="w-full h-full flex items-center justify-center text-9xl">🚗</div>
                   }
 
+                  <!-- Görsel oku (varsa) -->
                   @if (galleryImages().length > 1) {
                     <button (click)="prevImage()"
                             class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-card hover:bg-white transition flex items-center justify-center">
@@ -108,7 +117,7 @@ import { environment } from '../../../../environments/environment';
                               class="aspect-video bg-ink-100 rounded-lg overflow-hidden border-2 transition"
                               [class.border-brand-600]="img === selectedImage()"
                               [class.border-transparent]="img !== selectedImage()">
-                        <img [src]="apiBaseUrl + img" [alt]="'Photo ' + (i+1)"
+                        <img [src]="apiBaseUrl + img" [alt]="'Foto ' + (i+1)"
                              class="w-full h-full object-cover">
                       </button>
                     }
@@ -116,7 +125,7 @@ import { environment } from '../../../../environments/environment';
                 }
               </div>
 
-              <!-- Şube Bilgisi -->
+              <!-- ═══ Şube Bilgisi ═══ -->
               @if (c.currentLocationName || c.locationName) {
                 <div class="bg-white rounded-2xl shadow-card p-5 flex items-start gap-4">
                   <div class="w-12 h-12 bg-brand-50 rounded-full flex items-center justify-center flex-shrink-0">
@@ -128,20 +137,18 @@ import { environment } from '../../../../environments/environment';
                     </svg>
                   </div>
                   <div class="flex-1">
-                    <div class="text-xs text-ink-500 font-bold uppercase tracking-wide">
-                      {{ 'cars.detail.currentBranch' | translate }}
-                    </div>
+                    <div class="text-xs text-ink-500 font-bold uppercase tracking-wide">Aracın Mevcut Şubesi</div>
                     <div class="text-lg font-bold text-ink-900 mt-0.5">
                       {{ c.currentLocationName || c.locationName }}
                     </div>
                     <p class="text-sm text-ink-500 mt-1">
-                      {{ 'cars.detail.branchDescription' | translate }}
+                      Aracı bu şubeden teslim alabilir ve iade edebilirsiniz.
                     </p>
                   </div>
                 </div>
               }
 
-              <!-- ARAÇ ÖZELLİKLERİ + KİRALAMA KOŞULLARI -->
+              <!-- ═══ ARAÇ ÖZELLİKLERİ + KİRALAMA KOŞULLARI ═══ -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <!-- Araç Özellikleri -->
@@ -151,86 +158,89 @@ import { environment } from '../../../../environments/environment';
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    <h3 class="font-bold text-ink-900">{{ 'cars.detail.features' | translate }}</h3>
+                    <h3 class="font-bold text-ink-900">Araç Özellikleri</h3>
                   </div>
 
                   <div class="space-y-3 text-sm">
-                    <div class="flex items-center gap-3">
-                      <span class="w-6 text-brand-600">👥</span>
-                      <span class="text-ink-700">
-                        {{ 'cars.detail.adults' | translate: { count: c.seatCount } }}
-                      </span>
-                    </div>
-
-                    @if (c.luggageCount > 0) {
-                      <div class="flex items-center gap-3">
-                        <span class="w-6 text-brand-600">🧳</span>
-                        <span class="text-ink-700">
-                          {{ 'cars.detail.largeLuggage' | translate: { count: c.luggageCount } }}
-                        </span>
-                      </div>
-                    }
-
-                    @if (c.hasAirbag) {
-                      <div class="flex items-center gap-3">
-                        <span class="w-6 text-brand-600">🛡️</span>
-                        <span class="text-ink-700">{{ 'cars.detail.airbag' | translate }}</span>
-                      </div>
-                    }
-
-                    @if (c.hasAbs) {
-                      <div class="flex items-center gap-3">
-                        <span class="w-6 text-brand-600">🔧</span>
-                        <span class="text-ink-700">{{ 'cars.detail.abs' | translate }}</span>
-                      </div>
-                    }
-
-                    @if (c.hasAirConditioning) {
-                      <div class="flex items-center gap-3">
-                        <span class="w-6 text-brand-600">❄️</span>
-                        <span class="text-ink-700">{{ 'cars.detail.airConditioning' | translate }}</span>
-                      </div>
-                    }
-
-                    @if (c.hasBluetooth) {
-                      <div class="flex items-center gap-3">
-                        <span class="w-6 text-brand-600">📶</span>
-                        <span class="text-ink-700">{{ 'cars.detail.bluetooth' | translate }}</span>
-                      </div>
-                    }
-
+                    <!-- Navigasyon -->
                     @if (c.hasNavigation) {
                       <div class="flex items-center gap-3">
                         <span class="w-6 text-brand-600">🧭</span>
-                        <span class="text-ink-700">{{ 'cars.detail.navigation' | translate }}</span>
+                        <span class="text-ink-700">Navigasyon</span>
                       </div>
                     }
 
+                    <!-- Yakıt -->
                     <div class="flex items-center gap-3">
                       <span class="w-6 text-brand-600">⛽</span>
-                      <span class="text-ink-700">{{ getFuelKey(c.fuelType) | translate }}</span>
+                      <span class="text-ink-700">{{ getFuelLabel(c.fuelType) }}</span>
                     </div>
 
+                    <!-- Vites -->
                     <div class="flex items-center gap-3">
                       <span class="w-6 text-brand-600">⚙️</span>
-                      <span class="text-ink-700">{{ getTransKey(c.transmissionType) | translate }}</span>
+                      <span class="text-ink-700">{{ getTransLabel(c.transmissionType) }}</span>
                     </div>
 
+                    <!-- Kapı sayısı -->
                     @if (c.doorCount > 0) {
                       <div class="flex items-center gap-3">
                         <span class="w-6 text-brand-600">🚪</span>
-                        <span class="text-ink-700">
-                          {{ 'cars.detail.doors' | translate: { count: c.doorCount } }}
-                        </span>
+                        <span class="text-ink-700">{{ c.doorCount }} Kapı</span>
                       </div>
                     }
 
+                    <!-- Kilometre -->
                     @if (c.mileage) {
                       <div class="flex items-center gap-3">
                         <span class="w-6 text-brand-600">📏</span>
-                        <span class="text-ink-700">
-                          {{ 'cars.detail.kilometers' | translate: { km: (c.mileage | number:'1.0-0') } }}
-                        </span>
+                        <span class="text-ink-700">{{ c.mileage | number:'1.0-0' }} km</span>
+                      </div>
+                    }
+
+                    <!-- Kişi kapasitesi -->
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 text-brand-600">👥</span>
+                      <span class="text-ink-700">{{ c.seatCount }} Yetişkin</span>
+                    </div>
+
+                    <!-- Bavul -->
+                    @if (c.luggageCount > 0) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">🧳</span>
+                        <span class="text-ink-700">{{ c.luggageCount }} Büyük Bavul</span>
+                      </div>
+                    }
+
+                    <!-- Airbag -->
+                    @if (c.hasAirbag) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">🛡️</span>
+                        <span class="text-ink-700">Yolcu Airbag</span>
+                      </div>
+                    }
+
+                    <!-- ABS -->
+                    @if (c.hasAbs) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">🔧</span>
+                        <span class="text-ink-700">ABS</span>
+                      </div>
+                    }
+
+                    <!-- Klima -->
+                    @if (c.hasAirConditioning) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">❄️</span>
+                        <span class="text-ink-700">Klima</span>
+                      </div>
+                    }
+
+                    <!-- Bluetooth -->
+                    @if (c.hasBluetooth) {
+                      <div class="flex items-center gap-3">
+                        <span class="w-6 text-brand-600">📶</span>
+                        <span class="text-ink-700">Bluetooth</span>
                       </div>
                     }
                   </div>
@@ -243,52 +253,56 @@ import { environment } from '../../../../environments/environment';
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                     </svg>
-                    <h3 class="font-bold text-ink-900">{{ 'cars.detail.conditions' | translate }}</h3>
+                    <h3 class="font-bold text-ink-900">Kiralama Koşulları</h3>
                   </div>
 
                   <div class="space-y-3 text-sm">
+                    <!-- Yaş sınırı -->
                     <div class="flex items-center gap-3">
                       <span class="w-6 text-brand-600">🎂</span>
-                      <span class="text-ink-700">
-                        {{ 'cars.detail.ageLimit' | translate: { age: c.minDriverAge } }}
-                      </span>
+                      <span class="text-ink-700">{{ c.minDriverAge }} Yaş Ve Üstü</span>
                     </div>
 
+                    <!-- Ehliyet yaşı -->
                     <div class="flex items-center gap-3">
                       <span class="w-6 text-brand-600">🪪</span>
                       <span class="text-ink-700">
-                        {{ 'cars.detail.licenseYears' | translate: { years: c.minLicenseYears } }}
+                        Ehliyet Yaşı {{ c.minLicenseYears }} Ve Üzeri
                       </span>
                     </div>
 
+                    <!-- Findeks (varsa) -->
                     @if (c.minFindeksScore > 0) {
                       <div class="flex items-center gap-3">
                         <span class="w-6 text-brand-600">📊</span>
                         <span class="text-ink-700">
-                          {{ 'cars.detail.findeksScore' | translate: { score: c.minFindeksScore } }}
+                          Min. Findeks Skoru: {{ c.minFindeksScore }}
                         </span>
                       </div>
                     }
 
+                    <!-- Kredi kartı zorunlu -->
                     <div class="flex items-center gap-3">
                       <span class="w-6 text-brand-600">💳</span>
-                      <span class="text-ink-700">{{ 'cars.detail.creditCard' | translate }}</span>
+                      <span class="text-ink-700">1 Kredi Kartı</span>
                     </div>
 
+                    <!-- TC kimlik zorunlu -->
                     <div class="flex items-center gap-3">
                       <span class="w-6 text-brand-600">🆔</span>
-                      <span class="text-ink-700">{{ 'cars.detail.idCard' | translate }}</span>
+                      <span class="text-ink-700">TC Kimlik Belgesi</span>
                     </div>
 
+                    <!-- Sürücü belgesi -->
                     <div class="flex items-center gap-3">
                       <span class="w-6 text-brand-600">📄</span>
-                      <span class="text-ink-700">{{ 'cars.detail.driverLicense' | translate }}</span>
+                      <span class="text-ink-700">Geçerli Sürücü Belgesi</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Açıklama -->
+              <!-- ═══ Açıklama ═══ -->
               @if (c.description) {
                 <div class="bg-white rounded-2xl shadow-card p-5">
                   <h3 class="font-bold text-ink-900 mb-3 flex items-center gap-2">
@@ -296,13 +310,13 @@ import { environment } from '../../../../environments/environment';
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
-                    {{ 'cars.detail.about' | translate }}
+                    Araç Hakkında
                   </h3>
                   <p class="text-sm text-ink-700 leading-relaxed">{{ c.description }}</p>
                 </div>
               }
 
-              <!-- Bilgilendirme Kutusu -->
+              <!-- ═══ Bilgilendirme Kutusu ═══ -->
               <div class="bg-brand-50 border border-brand-100 rounded-2xl p-5">
                 <div class="flex gap-3">
                   <svg class="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,36 +324,36 @@ import { environment } from '../../../../environments/environment';
                           d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                   </svg>
                   <div class="text-sm text-ink-700 space-y-2">
-                    <p><strong>{{ 'cars.detail.rentalTerms' | translate }}</strong></p>
+                    <p><strong>Kiralama şartları:</strong></p>
                     <ul class="list-disc list-inside space-y-1 ml-1 text-xs">
-                      <li>{{ 'cars.detail.term1' | translate }}</li>
-                      <li>{{ 'cars.detail.term2' | translate }}</li>
-                      <li>{{ 'cars.detail.term3' | translate }}</li>
-                      <li>{{ 'cars.detail.term4' | translate }}</li>
+                      <li>Aracın kullanımı sadece rezervasyon sahibi sürücü tarafından yapılabilir.</li>
+                      <li>Yurt dışı çıkışı için firma onayı gereklidir.</li>
+                      <li>Zorunlu trafik sigortası fiyata dahildir.</li>
+                      <li>Yakıt tam depo teslim edilir, aynı seviyede iade edilmelidir.</li>
                     </ul>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- SAĞ KOLON -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- SAĞ KOLON: Rezervasyon Kartı (sticky)               -->
+            <!-- ═══════════════════════════════════════════════════ -->
             <aside class="lg:sticky lg:top-24 lg:self-start space-y-4">
 
+              <!-- Rezervasyon Kartı -->
               <div class="bg-white rounded-2xl shadow-card p-5 lg:p-6">
+                <!-- Fiyat -->
                 <div class="flex items-baseline justify-between mb-4 pb-4 border-b border-ink-100">
                   <div>
-                    <div class="text-xs text-ink-500 uppercase font-bold tracking-wide">
-                      {{ 'cars.detail.dailyPrice' | translate }}
-                    </div>
+                    <div class="text-xs text-ink-500 uppercase font-bold tracking-wide">Günlük Fiyat</div>
                     <div class="text-3xl font-extrabold text-brand-600 mt-0.5">
                       ₺{{ c.dailyPrice | number:'1.0-0' }}
                     </div>
                   </div>
                   @if (rentalDays() > 0) {
                     <div class="text-right">
-                      <div class="text-xs text-ink-500">
-                        {{ 'cars.detail.totalDays' | translate: { days: rentalDays() } }}
-                      </div>
+                      <div class="text-xs text-ink-500">{{ rentalDays() }} gün toplam</div>
                       <div class="text-xl font-bold text-ink-900 mt-0.5">
                         ₺{{ totalPrice() | number:'1.0-0' }}
                       </div>
@@ -347,6 +361,7 @@ import { environment } from '../../../../environments/environment';
                   }
                 </div>
 
+                <!-- Tarih & Şube bilgisi (seçili ise) -->
                 @if (booking.hasSelection() && pickupDateFormatted() && returnDateFormatted()) {
                   <div class="space-y-3 mb-5">
                     <div class="flex items-start gap-3">
@@ -356,9 +371,7 @@ import { environment } from '../../../../environments/environment';
                         </svg>
                       </div>
                       <div class="flex-1 text-sm">
-                        <div class="text-xs text-ink-500 uppercase font-bold">
-                          {{ 'cars.detail.pickup' | translate }}
-                        </div>
+                        <div class="text-xs text-ink-500 uppercase font-bold">Alış</div>
                         <div class="font-semibold text-ink-900">
                           {{ pickupDateFormatted() }} • {{ booking.selection().pickupTime }}
                         </div>
@@ -372,9 +385,7 @@ import { environment } from '../../../../environments/environment';
                         </svg>
                       </div>
                       <div class="flex-1 text-sm">
-                        <div class="text-xs text-ink-500 uppercase font-bold">
-                          {{ 'cars.detail.return' | translate }}
-                        </div>
+                        <div class="text-xs text-ink-500 uppercase font-bold">İade</div>
                         <div class="font-semibold text-ink-900">
                           {{ returnDateFormatted() }} • {{ booking.selection().returnTime }}
                         </div>
@@ -391,9 +402,7 @@ import { environment } from '../../../../environments/environment';
                           </svg>
                         </div>
                         <div class="flex-1 text-sm">
-                          <div class="text-xs text-ink-500 uppercase font-bold">
-                            {{ 'cars.detail.office' | translate }}
-                          </div>
+                          <div class="text-xs text-ink-500 uppercase font-bold">Ofis</div>
                           <div class="font-semibold text-ink-900 truncate">
                             {{ booking.selection().pickupLocationName }}
                           </div>
@@ -403,7 +412,7 @@ import { environment } from '../../../../environments/environment';
 
                     <button (click)="openBookingModal()"
                             class="text-xs font-semibold text-brand-600 hover:underline">
-                      {{ 'cars.detail.editDateOffice' | translate }}
+                      ✏️ Tarih ve ofisi düzenle
                     </button>
                   </div>
                 } @else {
@@ -413,23 +422,24 @@ import { environment } from '../../../../environments/environment';
                             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <p class="text-sm text-ink-700">
-                      {{ 'cars.detail.selectDatesFirst' | translate }}
+                      Devam etmek için önce alış ve iade tarihlerini seçin.
                     </p>
                   </div>
                 }
 
+                <!-- CTA -->
                 <button (click)="onReserveClick()"
                         [disabled]="c.status !== 1"
                         class="btn-primary w-full text-base disabled:opacity-50 disabled:cursor-not-allowed">
                   @if (c.status !== 1) {
-                    {{ 'cars.detail.carNotAvailable' | translate }}
+                    ARAÇ MÜSAİT DEĞİL
                   } @else if (!hasValidBooking()) {
-                    {{ 'cars.detail.clickToRent' | translate }}
+                    KİRALAMA İÇİN TIKLAYIN
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
                     </svg>
                   } @else {
-                    {{ 'cars.detail.makeReservation' | translate }}
+                    REZERVASYON YAP
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
                     </svg>
@@ -438,7 +448,7 @@ import { environment } from '../../../../environments/environment';
 
                 @if (!auth.isAuthenticated() && hasValidBooking()) {
                   <p class="text-xs text-center text-ink-500 mt-3">
-                    {{ 'cars.detail.loginRequired' | translate }}
+                    Rezervasyon için giriş yapmanız gerekir.
                   </p>
                 }
               </div>
@@ -452,7 +462,7 @@ import { environment } from '../../../../environments/environment';
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
                       </svg>
                     </div>
-                    <span class="font-semibold text-ink-900">{{ 'cars.detail.freeCancellation' | translate }}</span>
+                    <span class="font-semibold text-ink-900">Ücretsiz iptal (24 saat öncesine kadar)</span>
                   </div>
                   <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-brand-50 rounded-full flex items-center justify-center flex-shrink-0">
@@ -461,7 +471,7 @@ import { environment } from '../../../../environments/environment';
                               d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                       </svg>
                     </div>
-                    <span class="font-semibold text-ink-900">{{ 'cars.detail.securePayment' | translate }}</span>
+                    <span class="font-semibold text-ink-900">256-bit SSL güvenli ödeme</span>
                   </div>
                   <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-brand-50 rounded-full flex items-center justify-center flex-shrink-0">
@@ -470,7 +480,7 @@ import { environment } from '../../../../environments/environment';
                               d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
                       </svg>
                     </div>
-                    <span class="font-semibold text-ink-900">{{ 'cars.detail.support247' | translate }}</span>
+                    <span class="font-semibold text-ink-900">7/24 müşteri desteği</span>
                   </div>
                 </div>
               </div>
@@ -479,10 +489,8 @@ import { environment } from '../../../../environments/environment';
         } @else {
           <div class="text-center py-20">
             <div class="text-6xl mb-4">😕</div>
-            <h3 class="text-xl font-bold">{{ 'cars.detail.notFoundTitle' | translate }}</h3>
-            <a routerLink="/araclar" class="btn-primary mt-4 inline-flex">
-              {{ 'cars.detail.backToList' | translate }}
-            </a>
+            <h3 class="text-xl font-bold">Araç bulunamadı</h3>
+            <a routerLink="/araclar" class="btn-primary mt-4 inline-flex">Araç listesine dön</a>
           </div>
         }
       </div>
@@ -500,7 +508,7 @@ import { environment } from '../../../../environments/environment';
              (click)="$event.stopPropagation()">
 
           <div class="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-ink-100">
-            <h3 class="text-lg font-bold text-ink-900">{{ 'cars.detail.modal.title' | translate }}</h3>
+            <h3 class="text-lg font-bold text-ink-900">Kiralama İçin Seçim Yapınız</h3>
             <button (click)="closeBookingModal()"
                     class="w-9 h-9 rounded-full hover:bg-ink-100 flex items-center justify-center transition">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -518,20 +526,16 @@ import { environment } from '../../../../environments/environment';
               }
             </div>
             <div class="flex-1 min-w-0">
-              <div class="text-xs font-bold text-brand-600 uppercase tracking-wide">
-                {{ 'cars.detail.modal.selectedCar' | translate }}
-              </div>
+              <div class="text-xs font-bold text-brand-600 uppercase tracking-wide">Seçili Araç</div>
               <div class="font-bold text-ink-900 truncate">{{ c.brandName }} {{ c.model }}</div>
-              <div class="text-xs text-ink-500">{{ 'cars.detail.orSimilar' | translate }}</div>
+              <div class="text-xs text-ink-500">ya da benzeri</div>
             </div>
           </div>
 
           <div class="p-6 space-y-4">
 
             <div>
-              <label class="text-xs font-bold text-ink-700 uppercase tracking-wide mb-2 block">
-                {{ 'cars.detail.modal.pickupOffice' | translate }}
-              </label>
+              <label class="text-xs font-bold text-ink-700 uppercase tracking-wide mb-2 block">Alış Ofisi</label>
               <div class="relative">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-600 pointer-events-none"
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -541,7 +545,7 @@ import { environment } from '../../../../environments/environment';
                 </svg>
                 <select [(ngModel)]="modalPickupLocationId"
                         class="input-field pl-10 pr-4 text-sm cursor-pointer">
-                  <option [ngValue]="null">{{ 'cars.detail.modal.selectLocation' | translate }}</option>
+                  <option [ngValue]="null">Konum seçin</option>
                   @for (loc of locations(); track loc.id) {
                     <option [ngValue]="loc.id">{{ loc.name }} — {{ loc.city }}</option>
                   }
@@ -551,9 +555,7 @@ import { environment } from '../../../../environments/environment';
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="text-xs font-bold text-ink-700 uppercase tracking-wide mb-2 block">
-                  {{ 'cars.detail.modal.pickupDate' | translate }}
-                </label>
+                <label class="text-xs font-bold text-ink-700 uppercase tracking-wide mb-2 block">Alış Tarihi</label>
                 <div class="grid grid-cols-[1fr_auto] gap-2">
                   <input type="date"
                          [(ngModel)]="modalPickupDate"
@@ -571,9 +573,7 @@ import { environment } from '../../../../environments/environment';
               </div>
 
               <div>
-                <label class="text-xs font-bold text-ink-700 uppercase tracking-wide mb-2 block">
-                  {{ 'cars.detail.modal.returnDate' | translate }}
-                </label>
+                <label class="text-xs font-bold text-ink-700 uppercase tracking-wide mb-2 block">İade Tarihi</label>
                 <div class="grid grid-cols-[1fr_auto] gap-2">
                   <input type="date"
                          [(ngModel)]="modalReturnDate"
@@ -594,7 +594,7 @@ import { environment } from '../../../../environments/environment';
               <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              <span>{{ 'cars.detail.modal.info' | translate: { min: MIN_ADVANCE_MINUTES } }}</span>
+              <span>{{ MIN_ADVANCE_MINUTES }} dakikalık hazırlık süresi • Minimum 1 gün kiralama</span>
             </div>
 
             @if (modalError()) {
@@ -606,16 +606,12 @@ import { environment } from '../../../../environments/environment';
             @if (modalRentalDays() > 0) {
               <div class="bg-brand-50 border border-brand-100 rounded-lg p-4 flex items-center justify-between">
                 <div>
-                  <div class="text-xs text-ink-500">
-                    {{ 'cars.detail.totalDays' | translate: { days: modalRentalDays() } }}
-                  </div>
+                  <div class="text-xs text-ink-500">{{ modalRentalDays() }} gün toplam</div>
                   <div class="text-2xl font-extrabold text-brand-600">
                     ₺{{ modalTotalPrice() | number:'1.0-0' }}
                   </div>
                 </div>
-                <div class="text-xs text-ink-500">
-                  {{ 'cars.detail.modal.dailyLabel' | translate: { price: (c.dailyPrice | number:'1.0-0') } }}
-                </div>
+                <div class="text-xs text-ink-500">Günlük ₺{{ c.dailyPrice | number:'1.0-0' }}</div>
               </div>
             }
 
@@ -623,9 +619,9 @@ import { environment } from '../../../../environments/environment';
                     [disabled]="!canConfirm()"
                     class="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed">
               @if (modalRentalDays() > 0) {
-                {{ 'cars.detail.modal.rentDays' | translate: { days: modalRentalDays() } }}
+                {{ modalRentalDays() }} GÜN KİRALA ›
               } @else {
-                {{ 'cars.detail.modal.makeReservation' | translate }}
+                REZERVASYON YAP ›
               }
             </button>
           </div>
@@ -635,20 +631,22 @@ import { environment } from '../../../../environments/environment';
   `
 })
 export class CarDetailComponent implements OnInit {
+  private seo = inject(SeoService);
   private carService = inject(CarService);
   private locationService = inject(LocationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private translate = inject(TranslateService);
   protected booking = inject(BookingStateService);
   protected auth = inject(AuthService);
 
   protected apiBaseUrl = environment.apiBaseUrl;
   protected car = signal<Car | null>(null);
   protected loading = signal(true);
+  protected error = signal<string | null>(null);   // ⭐ Eksik olan signal
   protected selectedImage = signal<string | null>(null);
   protected locations = this.locationService.locations;
 
+  // Modal state
   protected isModalOpen = signal(false);
   protected modalPickupLocationId = signal<number | null>(null);
   protected modalPickupDate = signal<string>('');
@@ -657,6 +655,7 @@ export class CarDetailComponent implements OnInit {
   protected modalReturnTime = signal<string>('09:00');
   protected modalError = signal<string | null>(null);
 
+  // İş kuralları
   protected readonly MIN_ADVANCE_MINUTES = 30;
   protected readonly MIN_RENTAL_DAYS = 1;
 
@@ -773,17 +772,49 @@ export class CarDetailComponent implements OnInit {
 
   private loadCar(id: number): void {
     this.loading.set(true);
+    this.error.set(null);
+
     this.carService.getById(id).subscribe({
       next: res => {
         if (res.success && res.data) {
           this.car.set(res.data);
-          if (res.data.imageUrl) this.selectedImage.set(res.data.imageUrl);
+
+          // ⭐ SEO — Aracın bilgileriyle dinamik meta tags
+          const brandName = res.data.brandName ?? '';
+          const model = res.data.model ?? '';
+          const dailyPrice = res.data.dailyPrice ?? 0;
+
+          this.seo.updateSeo(buildCarDetailSeo(brandName, model, dailyPrice));
+
+          // ⭐ Schema.org Product markup
+          this.seo.setJsonLd({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            'name': `${brandName} ${model}`.trim(),
+            'image': res.data.imageUrl
+              ? `${environment.apiBaseUrl}${res.data.imageUrl}`
+              : `${this.seo.baseUrl}/assets/og-default.jpg`,
+            'description': `${brandName} ${model} kiralayın! Günlük ₺${dailyPrice.toLocaleString('tr-TR')} fiyattan başlayan avantajlı fiyatlarla.`,
+            'brand': {
+              '@type': 'Brand',
+              'name': brandName
+            },
+            'offers': {
+              '@type': 'Offer',
+              'price': dailyPrice,
+              'priceCurrency': 'TRY',
+              'availability': 'https://schema.org/InStock'
+            }
+          });
+        } else {
+          this.error.set(res.message || 'Araç bulunamadı.');
         }
         this.loading.set(false);
       },
-      error: () => {
-        this.car.set(null);
+      error: err => {
+        this.error.set('Araç yüklenirken hata oluştu.');
         this.loading.set(false);
+        console.error('loadCar error:', err);
       }
     });
   }
@@ -838,6 +869,7 @@ export class CarDetailComponent implements OnInit {
     if (s.pickupTime) this.modalPickupTime.set(s.pickupTime);
     if (s.returnTime) this.modalReturnTime.set(s.returnTime);
 
+    // Aracın kendi şubesi varsayılan
     const c = this.car();
     if (c && !this.modalPickupLocationId()) {
       const locName = c.currentLocationName || c.locationName;
@@ -894,16 +926,16 @@ export class CarDetailComponent implements OnInit {
     const now = new Date();
 
     if (pickupDT <= now) {
-      this.modalError.set(this.translate.instant('home.errors.pastDateTime'));
+      this.modalError.set('Alış tarihi ve saati geçmişte olamaz.');
       return;
     }
     const minPickup = new Date(now.getTime() + this.MIN_ADVANCE_MINUTES * 60 * 1000);
     if (pickupDT < minPickup) {
-      this.modalError.set(this.translate.instant('home.errors.minAdvance', { min: this.MIN_ADVANCE_MINUTES }));
+      this.modalError.set(`Alış zamanı şu andan en az ${this.MIN_ADVANCE_MINUTES} dakika sonra olmalı.`);
       return;
     }
     if (returnDT <= pickupDT) {
-      this.modalError.set(this.translate.instant('home.errors.returnBeforePickup'));
+      this.modalError.set('İade zamanı alış zamanından sonra olmalı.');
       return;
     }
 
@@ -941,11 +973,8 @@ export class CarDetailComponent implements OnInit {
   }
 
   private formatDisplayDate(d: Date): string {
-    const currentLang = this.translate.getCurrentLang() || 'tr';
-    const locale = currentLang === 'en' ? 'en-US' : 'tr-TR';
-    return new Intl.DateTimeFormat(locale, {
-      day: 'numeric', month: 'short', year: 'numeric'
-    }).format(d);
+    const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
 
   private isSameDay(a: Date, b: Date): boolean {
@@ -971,31 +1000,15 @@ export class CarDetailComponent implements OnInit {
     return times;
   }
 
-  // ⭐ Translation key döner
-  protected getFuelKey(fuel: number): string {
-    return ({
-      1: 'home.fuel.gasoline',
-      2: 'home.fuel.diesel',
-      3: 'home.fuel.electric',
-      4: 'home.fuel.hybrid',
-      5: 'home.fuel.lpg'
-    } as any)[fuel] ?? '—';
+  protected getFuelLabel(fuel: number): string {
+    return ({ 1: 'Benzin', 2: 'Dizel', 3: 'Elektrik', 4: 'Hibrit', 5: 'LPG' } as any)[fuel] ?? '—';
   }
 
-  protected getTransKey(trans: number): string {
-    return ({
-      1: 'home.transmission.manual',
-      2: 'home.transmission.automatic',
-      3: 'home.transmission.semiAutomatic'
-    } as any)[trans] ?? '—';
+  protected getTransLabel(trans: number): string {
+    return ({ 1: 'Manuel', 2: 'Otomatik', 3: 'Yarı Otomatik' } as any)[trans] ?? '—';
   }
 
-  protected getStatusKey(status: number): string {
-    return ({
-      1: 'cars.detail.status.available',
-      2: 'cars.detail.status.rented',
-      3: 'cars.detail.status.maintenance',
-      4: 'cars.detail.status.inactive'
-    } as any)[status] ?? '—';
+  protected getStatusLabel(status: number): string {
+    return ({ 1: 'Müsait', 2: 'Kirada', 3: 'Bakımda', 4: 'Pasif' } as any)[status] ?? '—';
   }
 }

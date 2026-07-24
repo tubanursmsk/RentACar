@@ -1,0 +1,65 @@
+═══════════════════════════════════════════════════════════════════
+YENİ DOSYA: public/robots.txt
+═══════════════════════════════════════════════════════════════════
+
+Angular 20'de "public/" klasörü otomatik olarak build içinde kopyalanır.
+Bu dosyayı public/robots.txt olarak oluştur:
+
+
+# ═══════════════════════════════════════════════════════════════════
+# RentACar — robots.txt
+# ═══════════════════════════════════════════════════════════════════
+
+User-agent: *
+Allow: /
+
+# Kullanıcıya özel sayfalar (indexlenmesin)
+Disallow: /profile
+Disallow: /rezervasyonlarim
+Disallow: /rezervasyon
+Disallow: /rezervasyon-basarili
+Disallow: /odeme-sonuc
+Disallow: /sifremi-unuttum
+Disallow: /sifre-sifirla
+Disallow: /login
+Disallow: /register
+
+# API endpoint'leri
+Disallow: /api/
+
+# Sitemap konumu
+Sitemap: https://rentacar.tubanursimsek.com.tr/sitemap.xml
+
+# ═══════════════════════════════════════════════════════════════════
+# Bilinen kötü botları engelle (opsiyonel)
+# ═══════════════════════════════════════════════════════════════════
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# ═══════════════════════════════════════════════════════════════════
+# Google, Bing gibi büyük arama motorlarına aç
+# ═══════════════════════════════════════════════════════════════════
+
+User-agent: Googlebot
+Allow: /
+Disallow: /profile
+Disallow: /rezervasyonlarim
+Disallow: /rezervasyon
+Disallow: /api/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /profile
+Disallow: /rezervasyonlarim
+Disallow: /rezervasyon
+Disallow: /api/

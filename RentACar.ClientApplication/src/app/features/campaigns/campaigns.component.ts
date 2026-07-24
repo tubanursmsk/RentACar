@@ -14,7 +14,7 @@ interface Campaign {
 @Component({
   selector: 'app-campaigns',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   template: `
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- HERO — Ofisler sayfasıyla birebir aynı desen         -->
@@ -112,20 +112,20 @@ export class CampaignsComponent {
       description: 'Sürdürülebilir bir gelecek için elektrikli veya hibrit araç kiralayın, hesabınıza çifte sadakat puanı yüklensin.'
     },
     {
-        id: 5,
-        title: 'Uzun Dönem Kiralamalarda Özel İndirim',
-        imageIcon: '📅',
-        bgColor: 'bg-gradient-to-r from-red-50 to-red-100',
-        validUntil: '31.12.2026',
-        description: '30 gün ve üzeri kiralamalarda toplam ücret üzerinden %20 indirim fırsatını kaçırmayın.'
+      id: 5,
+      title: 'Uzun Dönem Kiralamalarda Özel İndirim',
+      imageIcon: '📅',
+      bgColor: 'bg-gradient-to-r from-red-50 to-red-100',
+      validUntil: '31.12.2026',
+      description: '30 gün ve üzeri kiralamalarda toplam ücret üzerinden %20 indirim fırsatını kaçırmayın.'
     },
     {
-        id: 6,
-        title: 'Öğrencilere Özel Kampanya',
-        imageIcon: '🎓' ,
-        bgColor: 'bg-gradient-to-r from-gray-50 to-gray-200',
-        validUntil: '30.09.2026',
-        description: 'Geçerli öğrenci kimliği ile yapılan kiralamalarda anında %10 indirim fırsatı sizi bekliyor.'
+      id: 6,
+      title: 'Öğrencilere Özel Kampanya',
+      imageIcon: '🎓',
+      bgColor: 'bg-gradient-to-r from-gray-50 to-gray-200',
+      validUntil: '30.09.2026',
+      description: 'Geçerli öğrenci kimliği ile yapılan kiralamalarda anında %10 indirim fırsatı sizi bekliyor.'
     }
   ]);
 }

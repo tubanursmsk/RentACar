@@ -3,6 +3,23 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { INFO_PAGES, InfoPage } from './info-pages.data';
 import { ContactBarComponent } from '../../shared/components/contact-bar.component';
+import { SeoService } from '../../core/services/seo.service';
+import { SEO_CONFIG } from '../../core/services/seo.config';
+
+// Slug → SEO config key eşleme
+const SLUG_TO_SEO_KEY: Record<string, string> = {
+  'hakkimizda': 'hakkimizda',
+  'kurumsal-cozumler': 'kurumsalCozumler',
+  'soforlu-hizmet': 'soforluHizmet',
+  'uzun-donem-kiralama': 'uzunDonemKiralama',
+  'kariyer': 'kariyer',
+  'basin-odasi': 'basinOdasi',
+  'iletisim': 'iletisim',
+  'sikca-sorulan-sorular': 'sikcaSorulanSorular',
+  'kiralama-kosullari': 'kiralamaKosullari',
+  'gizlilik-politikasi': 'gizlilikPolitikasi',
+  'kvkk': 'kvkk'
+};
 
 @Component({
   selector: 'app-info-page',
@@ -22,7 +39,6 @@ import { ContactBarComponent } from '../../shared/components/contact-bar.compone
 
           <div class="relative page-container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 z-10">
             <!-- Breadcrumb -->
-            
             <nav class="text-sm font-bold text-white/80 tracking-widest uppercase mb-2 flex items-center gap-2 flex-wrap">
               <a routerLink="/" class="hover:text-white transition">Ana Sayfa</a>
               <span>></span>
@@ -155,6 +171,7 @@ import { ContactBarComponent } from '../../shared/components/contact-bar.compone
 })
 export class InfoPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private seo = inject(SeoService);
 
   protected page = signal<InfoPage | null>(null);
 
@@ -169,6 +186,20 @@ export class InfoPageComponent implements OnInit {
       const slug = data['slug'] as string;
       const found = INFO_PAGES.find(p => p.slug === slug);
       this.page.set(found ?? null);
+
+      // ⭐ SEO uygula
+      const seoKey = SLUG_TO_SEO_KEY[slug];
+      if (seoKey && SEO_CONFIG[seoKey]) {
+        this.seo.updateSeo(SEO_CONFIG[seoKey]);
+      } else if (found) {
+        // Fallback: SEO config'te yoksa, InfoPage bilgilerinden oluştur
+        this.seo.updateSeo({
+          title: found.title,
+          description: found.subtitle || 'RentACar bilgi sayfası',
+          lang: 'tr'
+        });
+      }
+
       window.scrollTo({ top: 0, behavior: 'instant' });
     });
   }

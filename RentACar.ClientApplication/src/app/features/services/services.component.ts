@@ -2,6 +2,9 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdditionalServiceService, AdditionalService } from '../../core/services/additional-service.service';
 import { ApiResponse } from '../../core/models/api-response.model';
+import { environment } from '../../../environments/environment';
+import { SeoService } from '../../core/services/seo.service';
+import { SEO_CONFIG } from '../../core/services/seo.config';
 
 @Component({
   selector: 'app-services',
@@ -113,8 +116,11 @@ export class ServicesComponent implements OnInit {
       return list.filter(s => !s.name.toLowerCase().includes('sigorta') && !s.name.toLowerCase().includes('güvence'));
     }
   });
+  seo: any;
+  
 
   ngOnInit(): void {
+    this.seo.updateSeo(SEO_CONFIG['services']);
     this.serviceApi.getAll().subscribe({
       // HATA ÇÖZÜMÜ: res parametresine tip ataması yapıldı
       next: (res: ApiResponse<AdditionalService[]>) => {

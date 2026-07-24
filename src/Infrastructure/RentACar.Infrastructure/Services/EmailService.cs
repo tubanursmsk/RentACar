@@ -16,6 +16,86 @@ public class EmailService : IEmailService
     private readonly ILogger<EmailService> _logger;
     private static readonly CultureInfo TrCulture = new("tr-TR");
 
+     private string BuildPasswordResetHtml(User user, string token)
+    {
+        var safeName = System.Net.WebUtility.HtmlEncode($"{user.FirstName} {user.LastName}".Trim());
+ 
+        // ⚠️ ÖNEMLİ: Frontend URL'ini appsettings'ten okumak DAHA GÜVENLİDİR
+        // Şimdilik direkt gömüyoruz - production URL'inizi kullanın!
+        var frontendUrl = _settings.FrontendUrl?.TrimEnd('/') ?? "https://rentacar.tubanursimsek.com.tr";
+        var resetLink = $"{frontendUrl}/sifre-sifirla?token={token}";
+ 
+        var requestTime = DateTime.Now.ToString("dd MMMM yyyy HH:mm", TrCulture);
+ 
+        return $@"
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <style>
+    body {{ font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f4f7; margin: 0; padding: 20px; color: #333; }}
+    .container {{ max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }}
+    .header {{ background: linear-gradient(135deg, #e2091d 0%, #b8071a 100%); color: white; padding: 40px 30px; text-align: center; }}
+    .header .icon {{ font-size: 48px; margin-bottom: 12px; }}
+    .header h1 {{ margin: 0; font-size: 24px; font-weight: 800; }}
+    .content {{ padding: 40px 30px; line-height: 1.7; color: #444; }}
+    .content p {{ margin: 0 0 16px; font-size: 15px; }}
+    .cta-wrap {{ text-align: center; margin: 32px 0; }}
+    .cta-btn {{ display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #e2091d 0%, #b8071a 100%); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 15px; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(226, 9, 29, 0.3); }}
+    .link-box {{ background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 16px; margin: 20px 0; word-break: break-all; }}
+    .link-box p {{ margin: 0 0 8px; font-size: 12px; color: #999; text-transform: uppercase; font-weight: 600; }}
+    .link-box a {{ color: #e2091d; text-decoration: none; font-size: 13px; word-break: break-all; }}
+    .warning-box {{ background: #fef2f2; border-left: 4px solid #e2091d; border-radius: 4px; padding: 16px; margin: 24px 0; }}
+    .warning-box p {{ margin: 0; font-size: 13px; color: #666; }}
+    .info-row {{ padding: 10px 0; font-size: 13px; color: #666; border-top: 1px solid #f0f0f0; }}
+    .info-row strong {{ color: #333; }}
+    .footer {{ background: #f9f9f9; padding: 24px; text-align: center; font-size: 12px; color: #999; }}
+    .footer a {{ color: #666; text-decoration: none; }}
+  </style>
+</head>
+<body>
+  <div class='container'>
+    <div class='header'>
+      <div class='icon'>🔐</div>
+      <h1>Şifre Sıfırlama Talebi</h1>
+    </div>
+ 
+    <div class='content'>
+      <p>Merhaba <strong>{safeName}</strong>,</p>
+      <p>RentACar hesabınız için bir şifre sıfırlama talebi aldık. Yeni bir şifre belirlemek için aşağıdaki butona tıklayın:</p>
+ 
+      <div class='cta-wrap'>
+        <a href='{resetLink}' class='cta-btn'>ŞİFREMİ SIFIRLA →</a>
+      </div>
+ 
+      <div class='link-box'>
+        <p>Buton çalışmıyorsa bu bağlantıyı kopyalayıp tarayıcınıza yapıştırın:</p>
+        <a href='{resetLink}'>{resetLink}</a>
+      </div>
+ 
+      <div class='warning-box'>
+        <p><strong>⏱️ Bu bağlantı 1 saat geçerlidir</strong> ve sadece bir kez kullanılabilir.</p>
+      </div>
+ 
+      <div class='info-row'>
+        <strong>Talep zamanı:</strong> {requestTime}
+      </div>
+ 
+      <p style='margin-top: 24px; font-size: 13px; color: #999;'>
+        <strong>Bu talebi siz yapmadıysanız</strong> bu maili görmezden gelin. Şifreniz değişmeyecek ve hesabınız güvende kalacaktır.
+        Şüpheli bir durum fark ederseniz lütfen bizimle iletişime geçin.
+      </p>
+    </div>
+ 
+    <div class='footer'>
+      <p>Bu otomatik bir maildir, lütfen bu adrese yanıt vermeyin.</p>
+      <p>© {DateTime.Now.Year} RentACar. Tüm hakları saklıdır.</p>
+    </div>
+  </div>
+</body>
+</html>";
+    }
+
     public EmailService(IOptions<EmailSettings> options, ILogger<EmailService> logger)
     {
         _settings = options.Value;
@@ -62,6 +142,16 @@ public class EmailService : IEmailService
             return false;
         }
     }
+
+     public async Task<bool> SendPasswordResetEmailAsync(User user, string token)
+    {
+        var toName = $"{user.FirstName} {user.LastName}".Trim();
+        var subject = "Şifre Sıfırlama Talebi — RentACar";
+        var htmlBody = BuildPasswordResetHtml(user, token);
+ 
+        return await SendEmailAsync(user.Email, toName, subject, htmlBody);
+    }
+ 
 
     // ═══════════════════════════════════════════════════════════════════
     // REZERVASYON ONAY MAİLİ

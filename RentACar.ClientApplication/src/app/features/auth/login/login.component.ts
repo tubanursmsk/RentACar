@@ -30,7 +30,14 @@ import { AuthService } from '../../../core/services/auth.service';
             </div>
 
             <div>
-              <label class="text-xs font-bold text-ink-700 uppercase">Şifre</label>
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-ink-700 uppercase">Şifre</label>
+                <!-- ⭐ YENİ: Şifremi Unuttum linki -->
+                <a routerLink="/sifremi-unuttum"
+                   class="text-xs font-semibold text-brand-600 hover:underline">
+                  Şifremi Unuttum?
+                </a>
+              </div>
               <input type="password"
                      [(ngModel)]="password"
                      name="password"

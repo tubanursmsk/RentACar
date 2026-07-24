@@ -26,4 +26,5 @@ public class UserUpdateDto
 
     [StringLength(500, ErrorMessage = "Adres en fazla 500 karakter olabilir.")]
     public string? Address { get; set; }
+    public string Email { get; set; }
 }

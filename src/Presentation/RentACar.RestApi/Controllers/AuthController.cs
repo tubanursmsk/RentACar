@@ -97,4 +97,38 @@ public class AuthController : ControllerBase
         var result = await userService.GetUserByIdAsync(int.Parse(currentUserIdStr));
         return Ok(result);
     }
+
+    
+    //ŞİFREMİ UNUTTUM
+    [HttpPost("ForgotPassword")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        // İstemci IP'sini al (rate limit için)
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+ 
+        // Proxy arkasında (nginx, cloudflare, ngrok) X-Forwarded-For dene
+        if (Request.Headers.TryGetValue("X-Forwarded-For", out var forwarded))
+            ipAddress = forwarded.ToString().Split(',').FirstOrDefault()?.Trim() ?? ipAddress;
+ 
+        var result = await _authService.ForgotPasswordAsync(dto, ipAddress);
+        return Ok(result);
+    }
+ 
+
+    // ŞİFRE SIFIRLA — Token ile
+    [HttpPost("ResetPassword")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        var result = await _authService.ResetPasswordAsync(dto);
+ 
+        // Başarılıysa JWT'yi cookie olarak set et (otomatik giriş)
+        if (result.Success && !string.IsNullOrEmpty(result.Data))
+        {
+            Response.Cookies.Append("RentACarAuth", result.Data, BuildCookieOptions());
+        }
+ 
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
 }

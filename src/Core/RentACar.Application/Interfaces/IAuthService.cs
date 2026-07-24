@@ -10,4 +10,6 @@ public interface IAuthService
     Task<ApiResponse<int>> RegisterForCompanyAsync(RegisterDto dto, int companyId);
     Task<ApiResponse<bool>> ChangePasswordAsync(ChangePasswordDto dto);
     Task<ApiResponse<int>> RegisterCustomerAsync(RegisterCustomerDto dto);
+     Task<ApiResponse<bool>> ForgotPasswordAsync(ForgotPasswordDto dto, string? ipAddress);
+    Task<ApiResponse<string>> ResetPasswordAsync(ResetPasswordDto dto);
 }

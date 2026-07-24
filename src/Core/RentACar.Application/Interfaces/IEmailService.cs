@@ -28,6 +28,9 @@ public interface IEmailService
         string subject,
         string message);
 
-    // ⭐ YENİ: Yeni rezervasyon oluştuğunda firmaya bildirim
+    //Yeni rezervasyon oluştuğunda firmaya bildirim
     Task<bool> SendReservationNotificationToAdminAsync(Rental rental);
+
+     Task<bool> SendPasswordResetEmailAsync(User user, string token);
+ 
 }

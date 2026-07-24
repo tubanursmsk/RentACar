@@ -12,7 +12,12 @@ public class EmailSettings
 
     // Test için: email'leri gerçekten göndermeyip loglara yazan mod
     public bool EnableInDevelopment { get; set; } = true;
-    
+
     public string AdminEmail { get; set; } = string.Empty;
+
+    // Mail'lerde kullanılacak frontend URL'i (şifre reset linki için)
+    public string FrontendUrl { get; set; } = string.Empty;
+
+
 
 }

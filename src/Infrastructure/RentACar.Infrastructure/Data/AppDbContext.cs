@@ -17,10 +17,23 @@ public class AppDbContext : DbContext
     public DbSet<AdditionalProduct> AdditionalProducts { get; set; } = null!;
     public DbSet<RentalAdditionalProduct> RentalAdditionalProducts { get; set; } = null!;
     public DbSet<Payment> Payments { get; set; } = null!;
+    public DbSet<PasswordReset> PasswordResets { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // PasswordReset ilişkileri 
+        modelBuilder.Entity<PasswordReset>()
+            .HasOne(pr => pr.User)
+            .WithMany()
+            .HasForeignKey(pr => pr.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Token üzerinde hızlı arama için index
+        modelBuilder.Entity<PasswordReset>()
+            .HasIndex(pr => pr.Token)
+            .IsUnique();
 
         // Car - DailyPrice için
         modelBuilder.Entity<Car>()

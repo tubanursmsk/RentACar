@@ -136,4 +136,45 @@ export class AuthService {
     } catch { /* sessizce yut */ }
   }
 
+  
+  // ───  ŞİFREMİ UNUTTUM ───
+  forgotPassword(email: string): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(
+      `${environment.apiUrl}/Auth/ForgotPassword`,
+      { email }
+    );
+  }
+ 
+  //  ŞİFRE SIFIRLA
+  // Backend başarılıysa cookie set eder ve JWT döner
+  // Sonrasında /Me çağırıp user'ı sync ediyoruz (otomatik giriş)
+  resetPassword(token: string, newPassword: string): Observable<ApiResponse<string>> {
+    this._isLoading.set(true);
+    return this.http.post<ApiResponse<string>>(
+      `${environment.apiUrl}/Auth/ResetPassword`,
+      { token, newPassword }
+    ).pipe(
+      switchMap(res => {
+        if (res.success) {
+          // Cookie set edildi, kullanıcı bilgisini çek
+          return this.http.get<ApiResponse<User>>(`${environment.apiUrl}/Auth/Me`).pipe(
+            tap(meRes => {
+              if (meRes.success && meRes.data) {
+                this._user.set(meRes.data);
+              }
+            }),
+            map(() => res),
+            catchError(() => of(res))
+          );
+        }
+        return of(res);
+      }),
+      tap(() => this._isLoading.set(false)),
+      catchError(err => {
+        this._isLoading.set(false);
+        throw err;
+      })
+    );
+  }
+
 }

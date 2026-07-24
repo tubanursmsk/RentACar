@@ -53,6 +53,24 @@ export const routes: Routes = [
       import('./features/auth/register/register.component').then(m => m.RegisterComponent),
     title: 'Kayıt Ol — RentACar'
   },
+   
+ 
+  // Şifremi Unuttum
+  {
+    path: 'sifremi-unuttum',
+    loadComponent: () =>
+      import('./features/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
+    title: 'Şifremi Unuttum — RentACar'
+  },
+ 
+  // Şifre Sıfırla (Mail'den gelen link buraya düşer)
+  {
+    path: 'sifre-sifirla',
+    loadComponent: () =>
+      import('./features/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
+    title: 'Şifre Sıfırla — RentACar'
+  },
+
   {
     path: 'profile',
     canActivate: [authGuard],
@@ -200,7 +218,7 @@ export const routes: Routes = [
   },
 
 
-  
+
 
   // ⚠️ WILDCARD — HER ZAMAN EN SONDA olsun
   // Yukarıdaki hiçbir route eşleşmezse buraya düşer, ana sayfaya yönlendirir.

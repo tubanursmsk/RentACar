@@ -8,6 +8,8 @@ import { BrandService } from '../../../core/services/brand.service';
 import { LocationService } from '../../../core/services/location.service';
 import { Car, CarFilter, FuelType, TransmissionType } from '../../../core/models/car.model';
 import { environment } from '../../../../environments/environment';
+import { SeoService } from '../../../core/services/seo.service';
+import { SEO_CONFIG } from '../../../core/services/seo.config';
 
 @Component({
   selector: 'app-car-list',
@@ -16,14 +18,15 @@ import { environment } from '../../../../environments/environment';
   template: `
     <div class="bg-ink-100/30 min-h-screen">
 
-      <!-- ═══ Başlık Bölümü ═══ -->
-          <div class="relative bg-ink-900 overflow-hidden">
+      <!-- ═══ Başlık Bölümü (Ofisler tarzı hero) ═══ -->
+      <div class="relative bg-ink-900 overflow-hidden">
         <div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('assets/cars/hero-1.png');"></div>
         <div class="absolute inset-0 bg-gradient-to-r from-ink-900 to-transparent"></div>
- 
+
         <div class="relative page-container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 z-10">
-         <div class="text-sm font-bold text-avis-500 tracking-widest uppercase mb-2">
- Ana Sayfa > Araçlar</div>
+          <div class="text-sm font-bold text-white/80 tracking-widest uppercase mb-2">
+            Ana Sayfa > Araçlar
+          </div>
           <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-4">
             {{ 'cars.list.pageTitle' | translate }}
           </h1>
@@ -32,7 +35,7 @@ import { environment } from '../../../../environments/environment';
           </p>
         </div>
       </div>
- 
+
       <!-- ═══ Mobil Filtre Butonu Bar'ı (Hero'nun ALTINDA) ═══ -->
       <section class="lg:hidden bg-white border-b border-ink-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
@@ -55,8 +58,6 @@ import { environment } from '../../../../environments/environment';
           </button>
         </div>
       </section>
- 
- 
 
       <div class="max-w-[1400px] mx-auto px-4 sm:px-6 pt-5 pb-8">
         <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
@@ -323,6 +324,7 @@ export class CarListComponent implements OnInit {
   private locationService = inject(LocationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private seo = inject(SeoService);
 
   protected brands = this.brandService.brands;
   protected locations = this.locationService.locations;
@@ -371,6 +373,9 @@ export class CarListComponent implements OnInit {
   private readonly pageSize = 12;
 
   ngOnInit(): void {
+    // ⭐ SEO — Meta tag'leri uygula
+    this.seo.updateSeo(SEO_CONFIG['cars']);
+
     if (this.brands().length === 0) this.brandService.getAll().subscribe();
     if (this.locations().length === 0) this.locationService.getAll().subscribe();
 

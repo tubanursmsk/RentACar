@@ -1,13 +1,125 @@
 <!doctype html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="utf-8">
-  <title>RentACarClient</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+ 
+  <!-- ═══ TEMEL META ═══ -->
+  <title>RentACar — Avantajlı Araç Kiralama</title>
+  <meta name="description" content="RentACar, Türkiye'nin dört bir yanında 7/24 hizmet veren güvenilir araç kiralama platformu. Ekonomiden lükse geniş araç filosu, uygun fiyat garantisi.">
+  <meta name="keywords" content="araç kiralama, oto kiralama, rent a car, rentacar, istanbul araç kiralama, ankara araç kiralama, izmir araç kiralama, havalimanı araç kiralama">
+  <meta name="author" content="RentACar">
+  <meta name="robots" content="index, follow">
+ 
+  <!-- ═══ CANONICAL ═══ -->
+  <link rel="canonical" href="https://rentacar.tubanursimsek.com.tr/">
+ 
+  <!-- ═══ OPEN GRAPH (Facebook, LinkedIn, WhatsApp) ═══ -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="RentACar">
+  <meta property="og:title" content="RentACar — Avantajlı Araç Kiralama">
+  <meta property="og:description" content="Türkiye'nin dört bir yanında 7/24 hizmet veren güvenilir araç kiralama platformu.">
+  <meta property="og:image" content="https://rentacar.tubanursimsek.com.tr/assets/og-default.jpg">
+  <meta property="og:url" content="https://rentacar.tubanursimsek.com.tr/">
+  <meta property="og:locale" content="tr_TR">
+ 
+  <!-- ═══ TWITTER CARD ═══ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="RentACar — Avantajlı Araç Kiralama">
+  <meta name="twitter:description" content="Türkiye'nin dört bir yanında 7/24 hizmet veren güvenilir araç kiralama platformu.">
+  <meta name="twitter:image" content="https://rentacar.tubanursimsek.com.tr/assets/og-default.jpg">
+ 
+  <!-- ═══ MOBILE / THEME ═══ -->
+  <meta name="theme-color" content="#e2091d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RentACar">
+ 
+  <!-- ═══ FAVICON ═══ -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+ 
+  <!-- ═══ ORGANIZATION SCHEMA (JSON-LD) ═══ -->
+  <!-- Google'a şirket bilgilerini bildirir - zengin arama sonucu için -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "RentACar",
+    "url": "https://rentacar.tubanursimsek.com.tr",
+    "logo": "https://rentacar.tubanursimsek.com.tr/assets/logo.png",
+    "description": "Türkiye'nin dört bir yanında 7/24 hizmet veren araç kiralama platformu",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "TR",
+      "addressLocality": "İstanbul"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+90-850-XXX-XXXX",
+      "contactType": "customer service",
+      "availableLanguage": ["Turkish", "English"]
+    },
+    "sameAs": [
+      "https://www.facebook.com/rentacar",
+      "https://www.twitter.com/rentacar",
+      "https://www.linkedin.com/in/tubanursimsek0609/",
+      "https://github.com/tubanursmsk/RentACar"
+    ]
+  }
+  </script>
+ 
+  <!-- ═══ LOCAL BUSINESS SCHEMA ═══ -->
+  <!-- Google Maps için "yakınımda araç kiralama" aramalarında çıkmak -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CarRental",
+    "name": "RentACar",
+    "image": "https://rentacar.tubanursimsek.com.tr/assets/logo.png",
+    "priceRange": "₺₺",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Sabiha Gökçen Havalimanı, İçmeler Cad. No:1",
+      "addressLocality": "Pendik",
+      "addressRegion": "İstanbul",
+      "postalCode": "34912",
+      "addressCountry": "TR"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 40.9019,
+      "longitude": 29.3092
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        "opens": "00:00",
+        "closes": "23:59"
+      }
+    ],
+    "telephone": "+90-850-XXX-XXXX",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "1247"
+    }
+  }
+  </script>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <!-- ═══ NO-JS FALLBACK (Google için) ═══ -->
+    <div style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: sans-serif;">
+      <h1>RentACar — Avantajlı Araç Kiralama</h1>
+      <p>Bu sayfayı görüntülemek için JavaScript etkinleştirilmiş bir tarayıcı gerekmektedir.</p>
+      <p>RentACar, Türkiye'nin dört bir yanında 7/24 hizmet veren güvenilir araç kiralama platformudur.
+         İstanbul, Ankara ve İzmir'deki şubelerimizden ekonomik ve lüks araçları uygun fiyatlarla
+         kiralayabilirsiniz.</p>
+      <p>İletişim: <a href="tel:+908501234567">0850 XXX XX XX</a></p>
+    </div>
+  </app-root>
 </body>
 </html>

@@ -14,10 +14,11 @@ import { SEO_CONFIG } from '../../core/services/seo.config';
     <div class="relative bg-ink-900 overflow-hidden">
       <div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('assets/cars/hero-1.png');"></div>
       <div class="absolute inset-0 bg-gradient-to-r from-ink-900 to-transparent"></div>
- 
+
       <div class="relative page-container mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24 z-10">
-       <div class="text-sm font-bold text-avis-500 tracking-widest uppercase mb-2">
- Ana Sayfa > Ek Hizmetler ve Güvenceler</div>
+        <div class="text-sm font-bold text-white/80 tracking-widest uppercase mb-2">
+          Ana Sayfa > Ek Hizmetler ve Güvenceler
+        </div>
         <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-4">Ek Hizmetler ve Güvenceler</h1>
         <p class="text-lg text-ink-300 max-w-2xl">
           Kiralama deneyiminizi daha konforlu ve güvenli hale getirmek için sunduğumuz ek ürün ve güvence paketlerimizi inceleyebilirsiniz.
@@ -59,7 +60,7 @@ import { SEO_CONFIG } from '../../core/services/seo.config';
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           @for (service of filteredServices(); track service.id) {
             <div class="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
-              
+
               <div class="h-48 bg-gray-50 flex items-center justify-center relative overflow-hidden">
                  <div class="text-6xl group-hover:scale-110 transition-transform duration-500">
                     {{ getServiceIcon(service.name) }}
@@ -96,9 +97,9 @@ import { SEO_CONFIG } from '../../core/services/seo.config';
     </div>
   `
 })
-
 export class ServicesComponent implements OnInit {
   private serviceApi = inject(AdditionalServiceService);
+  private seo = inject(SeoService);   // ⭐ DÜZELTİLDİ: private + inject
 
   protected services = signal<AdditionalService[]>([]);
   protected loading = signal(true);
@@ -116,13 +117,12 @@ export class ServicesComponent implements OnInit {
       return list.filter(s => !s.name.toLowerCase().includes('sigorta') && !s.name.toLowerCase().includes('güvence'));
     }
   });
-  seo: any;
-  
 
   ngOnInit(): void {
+    // ⭐ SEO uygula
     this.seo.updateSeo(SEO_CONFIG['services']);
+
     this.serviceApi.getAll().subscribe({
-      // HATA ÇÖZÜMÜ: res parametresine tip ataması yapıldı
       next: (res: ApiResponse<AdditionalService[]>) => {
         if (res.success && res.data) {
           this.services.set(res.data);

@@ -4,10 +4,10 @@ import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
-
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { LanguageService } from './core/services/language.service';
+import { ngrokBypassInterceptor } from './core/interceptors/ngrok-bypass.interceptor';  
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,7 +16,7 @@ export const appConfig: ApplicationConfig = {
 
     provideHttpClient(
       withFetch(),
-      withInterceptors([authInterceptor])
+      withInterceptors([ngrokBypassInterceptor, authInterceptor])
     ),
 
     provideAnimations(),

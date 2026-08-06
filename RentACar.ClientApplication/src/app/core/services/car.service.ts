@@ -47,7 +47,8 @@ export class CarService {
     return this.http.get<ApiResponse<Car>>(`${this.baseUrl}/${id}`);
   }
 
+  
   getAll(): Observable<ApiResponse<Car[]>> {
-    return this.http.get<ApiResponse<Car[]>>(this.baseUrl);
+    return this.http.get<ApiResponse<Car[]>>(`${this.baseUrl}/All`);
   }
 }

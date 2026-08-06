@@ -17,10 +17,11 @@ import { SEO_CONFIG } from '../../core/services/seo.config';
     <div class="relative bg-ink-900 overflow-hidden">
       <div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('assets/cars/hero-1.png');"></div>
       <div class="absolute inset-0 bg-gradient-to-r from-ink-900 to-transparent"></div>
-      
+
       <div class="relative page-container mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24 z-10">
-       <div class="text-sm font-bold text-avis-500 tracking-widest uppercase mb-2">
- Ana Sayfa > RentACar Ofisleri</div>
+        <div class="text-sm font-bold text-white/80 tracking-widest uppercase mb-2">
+          Ana Sayfa > RentACar Ofisleri
+        </div>
         <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-4">Araç Kiralama Ofisleri</h1>
         <p class="text-lg text-ink-300 max-w-2xl">
           Türkiye'nin dört bir yanındaki şehir ve havalimanı ofislerimizle, yola çıkmak istediğiniz her an yanınızdayız.
@@ -35,7 +36,7 @@ import { SEO_CONFIG } from '../../core/services/seo.config';
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
           <input type="text"
-                 [ngModel]="searchQuery()" 
+                 [ngModel]="searchQuery()"
                  (ngModelChange)="searchQuery.set($event)"
                  placeholder="Şehir, havalimanı veya ofis adı arayın..."
                  class="w-full pl-12 pr-4 py-3 rounded-xl border border-ink-200 focus:border-avis-600 focus:ring-2 focus:ring-avis-100 outline-none transition text-lg">
@@ -65,7 +66,7 @@ import { SEO_CONFIG } from '../../core/services/seo.config';
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @for (office of group.offices; track office.id) {
                   <div class="bg-white border border-ink-100 rounded-2xl p-6 hover:shadow-xl transition-shadow group flex flex-col h-full">
-                    
+
                     <div class="flex items-start justify-between mb-4">
                       <div>
                         <h3 class="font-bold text-lg text-ink-900 group-hover:text-brand-600 transition-colors">{{ office.name }}</h3>
@@ -88,7 +89,7 @@ import { SEO_CONFIG } from '../../core/services/seo.config';
                       </div>
                     </div>
 
-                    <a [routerLink]="['/araclar']" [queryParams]="{ locationId: office.id }" 
+                    <a [routerLink]="['/araclar']" [queryParams]="{ locationId: office.id }"
                        class="w-full block text-center bg-ink-100 hover:bg-brand-600 text-ink-900 hover:text-white font-bold py-3 px-4 rounded-xl transition-colors">
                       Bu Ofisten Araç Kirala
                     </a>
@@ -104,17 +105,18 @@ import { SEO_CONFIG } from '../../core/services/seo.config';
 })
 export class OfficesComponent implements OnInit {
   private locationService = inject(LocationService);
+  private seo = inject(SeoService);   // ⭐ DÜZELTİLDİ: private + inject
 
   protected searchQuery = signal('');
   protected loading = signal(true);
-  
+
   // Servisteki veriyi alıyoruz
   private locations = this.locationService.locations;
-  seo: any;
 
   ngOnInit(): void {
+    // ⭐ SEO uygula
     this.seo.updateSeo(SEO_CONFIG['offices']);
-    
+
     if (this.locations().length === 0) {
       this.locationService.getAll().subscribe({
         next: () => this.loading.set(false),
@@ -131,8 +133,8 @@ export class OfficesComponent implements OnInit {
     let filtered = this.locations();
 
     if (query) {
-      filtered = filtered.filter(loc => 
-        loc.name.toLowerCase().includes(query) || 
+      filtered = filtered.filter(loc =>
+        loc.name.toLowerCase().includes(query) ||
         loc.city.toLowerCase().includes(query)
       );
     }

@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { SeoService } from '../../core/services/seo.service';
+import { SEO_CONFIG } from '../../core/services/seo.config';
 
 interface Campaign {
   id: number;
@@ -14,7 +16,7 @@ interface Campaign {
 @Component({
   selector: 'app-campaigns',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- HERO — Ofisler sayfasıyla birebir aynı desen         -->
@@ -24,8 +26,9 @@ interface Campaign {
       <div class="absolute inset-0 bg-gradient-to-r from-ink-900 to-transparent"></div>
 
       <div class="relative page-container mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24 z-10">
-       <div class="text-sm font-bold text-avis-500 tracking-widest uppercase mb-2">
- Ana Sayfa > Kampanyalar</div>
+        <div class="text-sm font-bold text-white/80 tracking-widest uppercase mb-2">
+          <a routerLink="/" class="hover:text-white transition">Ana Sayfa</a> > Kampanyalar
+        </div>
         <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-4">Kampanyalar</h1>
         <p class="text-lg text-ink-300 max-w-2xl">
           Size özel fırsatları kaçırmayın! RentACar'ın ayrıcalıklı dünyasında seyahatlerinizi daha avantajlı hale getirecek güncel kampanyalarımızı keşfedin.
@@ -77,7 +80,14 @@ interface Campaign {
     </div>
   `
 })
-export class CampaignsComponent {
+export class CampaignsComponent implements OnInit {
+  private seo = inject(SeoService);   // ⭐ SEO servisi
+
+  ngOnInit(): void {
+    // ⭐ SEO uygula
+    this.seo.updateSeo(SEO_CONFIG['campaigns']);
+  }
+
   campaigns = signal<Campaign[]>([
     {
       id: 1,

@@ -1,8 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { SeoService } from '../../../core/services/seo.service';
+import { SEO_CONFIG } from '../../../core/services/seo.config';
 
 @Component({
   selector: 'app-register',
@@ -149,9 +151,10 @@ import { AuthService } from '../../../core/services/auth.service';
     </div>
   `
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   protected auth = inject(AuthService);
   private router = inject(Router);
+  private seo = inject(SeoService);   // ⭐ SEO servisi
 
   protected firstName = '';
   protected lastName = '';
@@ -170,6 +173,11 @@ export class RegisterComponent {
     d.setFullYear(d.getFullYear() - 18);
     return d.toISOString().split('T')[0];
   })();
+
+  ngOnInit(): void {
+    // ⭐ SEO uygula
+    this.seo.updateSeo(SEO_CONFIG['register']);
+  }
 
   protected isFormValid(): boolean {
     return !!(

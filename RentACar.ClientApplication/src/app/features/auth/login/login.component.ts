@@ -1,8 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { SeoService } from '../../../core/services/seo.service';
+import { SEO_CONFIG } from '../../../core/services/seo.config';
 
 
 @Component({
@@ -32,7 +34,6 @@ import { AuthService } from '../../../core/services/auth.service';
             <div>
               <div class="flex items-center justify-between">
                 <label class="text-xs font-bold text-ink-700 uppercase">Şifre</label>
-                <!-- ⭐ YENİ: Şifremi Unuttum linki -->
                 <a routerLink="/sifremi-unuttum"
                    class="text-xs font-semibold text-brand-600 hover:underline">
                   Şifremi Unuttum?
@@ -74,14 +75,20 @@ import { AuthService } from '../../../core/services/auth.service';
     </div>
   `
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   protected auth = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private seo = inject(SeoService);   // ⭐ SEO servisi
 
   protected email = '';
   protected password = '';
   protected error = signal<string | null>(null);
+
+  ngOnInit(): void {
+    // ⭐ SEO uygula (login sayfası noindex olarak işaretli)
+    this.seo.updateSeo(SEO_CONFIG['login']);
+  }
 
   login(event: Event): void {
     event.preventDefault();
